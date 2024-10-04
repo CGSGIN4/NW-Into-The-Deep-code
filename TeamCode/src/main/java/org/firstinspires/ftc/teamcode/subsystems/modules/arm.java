@@ -13,8 +13,6 @@ public class arm {
     public AnalogInput rotationBtn;
 
     /* ------------------ AFTER-INIT-CONSTANTS ------------------ */
-    int initialExtensionTicks = 0;
-    int initialRotationTicks = 0;
     int EXTENSION_FULL = 340;
     int EXTENSION_FRONT_MAX = 260;
     int EXTENSION_LOW_CHAMBER = 220;
@@ -75,18 +73,6 @@ public class arm {
         resetRotationEncoders();
 
         rotationBtn = HM.get(AnalogInput.class, "rotationBtn");
-        /* prob dont need it */
-        initialExtensionTicks = extensionMotor.getCurrentPosition();
-        initialRotationTicks = rotationMotor.getCurrentPosition();
-
-        EXTENSION_FULL = EXTENSION_FULL + initialExtensionTicks;
-        EXTENSION_LOW_CHAMBER = EXTENSION_LOW_CHAMBER + initialExtensionTicks;
-        EXTENSION_HIGH_CHAMBER = EXTENSION_HIGH_CHAMBER + initialExtensionTicks;
-        EXTENSION_FRONT_MAX = EXTENSION_FRONT_MAX + initialExtensionTicks;
-
-        ROTATION_BACK = ROTATION_BACK + initialRotationTicks;
-        ROTATION_FRONT = ROTATION_FRONT + initialRotationTicks;
-        ROTATION_LIFT = ROTATION_LIFT + initialRotationTicks;
     }
 
     private void resetRotationEncoders() {
@@ -115,7 +101,7 @@ public class arm {
             case EXTENDED:
                 return EXTENSION_FULL;
             case CLOSED:
-                return initialExtensionTicks;
+                return 0;
             case LOW_CHAMBER:
                 return EXTENSION_LOW_CHAMBER;
             case HIGH_CHAMBER:
