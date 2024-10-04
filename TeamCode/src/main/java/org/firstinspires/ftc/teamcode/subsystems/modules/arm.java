@@ -66,14 +66,13 @@ public class arm {
         rotationMotor = HM.get(DcMotor.class, "armRotationMotor");
         rotationMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rotationMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        rotationMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rotationMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        resetRotationEncoders();
+
 
         extensionMotor = HM.get(DcMotor.class, "armExtensionMotor");
         extensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         extensionMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        extensionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        extensionMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        resetRotationEncoders();
 
         rotationBtn = HM.get(AnalogInput.class, "rotationBtn");
         /* prob dont need it */
@@ -90,6 +89,11 @@ public class arm {
         ROTATION_LIFT = ROTATION_LIFT + initialRotationTicks;
     }
 
+    private void resetRotationEncoders() {
+        rotationMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rotationMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
     public void update(){
         if (!extensionState.equals(extension.MANUAL))
             setExtension(extensionState);
@@ -98,10 +102,8 @@ public class arm {
         rotationAngle = getRotationAngle();
         extensionLen = getExtensionLength();
         if (rotationBtn.getVoltage() < 0.4 && rotationState == rotation.FRONT) /* pressed */ {
-            //TODO: separate function reset
-            rotationMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            rotationMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            this.rotationState = rotation.RESET;
+            resetRotationEncoders();
+            rotationState = rotation.RESET;
             rotationMotor.setPower(0);
         }
     }
@@ -212,8 +214,7 @@ public class arm {
     {
         if (rotationState == rotation.RESET)
         {
-            rotationMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            rotationMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            resetRotationEncoders();
         }
 
         if (extensionState == extension.CLOSED) {
