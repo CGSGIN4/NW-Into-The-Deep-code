@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 public class arm {
     /* ------------------ MOTORS ------------------ */
@@ -31,7 +32,7 @@ public class arm {
     public double extensionLen = 0.3;
 
     /* ------------------ PID ------------------ */
-    final PIDCoefficients ROTATION_PID = new PIDCoefficients(0.0026, 0, 0.02);
+    final PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.0026, 0, 0.02, 0.03);
     final PIDCoefficients EXTENSION_PID = new PIDCoefficients(0.02, 0.0003, 0.002);
     final double EXTENSION_STATIC = 0;
     final PIDCoefficients BASKET_PID = new PIDCoefficients(0.004, 0, 0.06);
@@ -151,9 +152,6 @@ public class arm {
     public double pidCalculateRotationPower(int targetPos){
         int error = targetPos - rotationMotor.getCurrentPosition();
         int delta = error - oldRotationError;
-        double kp, kd;
-        //TODO: reorganise kG to be constant defined up in file
-        double kG = 0.03;
 
         if (Math.abs(error) < 40)
             rotationSum += error;
@@ -180,11 +178,8 @@ public class arm {
         }
         */
 
-        kp = ROTATION_PID.p;
-        kd = ROTATION_PID.d;
-
         oldRotationError = error;
-        return (error * kp + delta * kd + kG * Math.sin(Math.toRadians(rotationAngle)) * extensionLen);
+        return (error * ROTATION_PIDF.p + delta * ROTATION_PIDF.d + ROTATION_PIDF.f * Math.sin(Math.toRadians(rotationAngle)) * extensionLen);
     }
     public void setExtension(extension target)
     {
