@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
 public class arm {
     /* ------------------ MOTORS ------------------ */
@@ -30,15 +31,11 @@ public class arm {
     public double extensionLen = 0.3;
 
     /* ------------------ PID ------------------ */
-    final double ROTATION_P = 0.0026;
-    final double ROTATION_I = 0;
-    final double ROTATION_D = 0.02;
-    final double BASKET_ROTATION_P = 0.004;
-    final double BASKET_ROTATION_D = 0.06;
-    final double EXTENSION_P = 0.02;
-    final double EXTENSION_I = 0.0003;
-    final double EXTENSION_D = 0.002;
+    final PIDCoefficients ROTATION_PID = new PIDCoefficients(0.0026, 0, 0.02);
+    final PIDCoefficients EXTENSION_PID = new PIDCoefficients(0.02, 0.0003, 0.002);
     final double EXTENSION_STATIC = 0;
+    final PIDCoefficients BASKET_PID = new PIDCoefficients(0.004, 0, 0.06);
+
     int oldExtensionError = 0;
     int oldRotationError = 0;
     int extensionSum = 0;
@@ -148,7 +145,7 @@ public class arm {
 
         oldExtensionError = error;
 
-        return (error * EXTENSION_P + delta * EXTENSION_D + extensionSum * EXTENSION_I);
+        return (error * EXTENSION_PID.p + extensionSum * EXTENSION_PID.i + delta * EXTENSION_PID.d);
     }
 
     public double pidCalculateRotationPower(int targetPos){
@@ -183,8 +180,8 @@ public class arm {
         }
         */
 
-        kp = ROTATION_P;
-        kd = ROTATION_D;
+        kp = ROTATION_PID.p;
+        kd = ROTATION_PID.d;
 
         oldRotationError = error;
         return (error * kp + delta * kd + kG * Math.sin(Math.toRadians(rotationAngle)) * extensionLen);
