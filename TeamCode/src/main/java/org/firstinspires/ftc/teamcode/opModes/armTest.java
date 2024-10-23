@@ -5,11 +5,13 @@ import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.EX
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.FRONTAL_EXTENSION;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.HIGH_CHAMBER;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.LOW_CHAMBER;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.BACK;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.FRONT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.LIFT;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
@@ -27,12 +29,14 @@ import org.firstinspires.ftc.teamcode.subsystems.path_follower;
 import org.firstinspires.ftc.teamcode.subsystems.velocity_calculator;
 import org.firstinspires.ftc.teamcode.utils.painter;
 
+@Config
 @TeleOp
 public class armTest extends LinearOpMode {
     Robot robot;
 
     Vector2d gamepad;
     arm arm;
+    public static double p = 0, i = 0, d = 0, f = 0;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -57,12 +61,16 @@ public class armTest extends LinearOpMode {
             currentGamepad2.copy(gamepad2);
 
             arm.update();
-            if (gamepad1.a)
+
+            if (currentGamepad1.a && !PreviousGamepad1.a)
             {
-                arm.setRotation(LIFT);
+                if (arm.rotationState == LIFT)
+                    arm.setRotation(BACK);
+                else
+                    arm.setRotation(LIFT);
             }
 
-            if (gamepad1.b)
+            if (currentGamepad1.b && !PreviousGamepad1.b)
             {
                 arm.setRotation(FRONT);
             }
@@ -81,6 +89,7 @@ public class armTest extends LinearOpMode {
                 arm.setExtension(CLOSED);
 
 
+
             /*
             if (Math.abs(gamepad1.right_stick_y) > 0.01)
                 arm.manuallyRotate(-gamepad1.right_stick_y);
@@ -91,6 +100,7 @@ public class armTest extends LinearOpMode {
 
             packet.put("target pos", arm.targetRotationPos);
             packet.put("current pos", arm.rotationMotor.getCurrentPosition());
+            packet.put("rotation state", arm.rotationState.toString());
             dashboard.sendTelemetryPacket(packet);
             telemetry.addData("rotation pos", arm.rotationMotor.getCurrentPosition());
             telemetry.addData("gamepad", gamepad1.right_stick_y);

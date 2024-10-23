@@ -17,13 +17,13 @@ public class arm {
     public AnalogInput rotationBtn;
 
     /* ------------------ AFTER-INIT-CONSTANTS ------------------ */
-    int EXTENSION_FULL = 370;
-    int EXTENSION_FRONT_MAX = 260;
+    int EXTENSION_FULL = 290; //370
+    int EXTENSION_FRONT_MAX = 220;
     int EXTENSION_LOW_CHAMBER = 130;
     int EXTENSION_HIGH_CHAMBER = 200;
     int ROTATION_FRONT = 0;
-    int ROTATION_BACK = 928;
-    int ROTATION_LIFT = 600;
+    int ROTATION_BACK = 928 / 2;
+    int ROTATION_LIFT = 928 - 300;
 
     /* ------------------ ON-FLY ------------------ */
     public int targetRotationPos;
@@ -34,34 +34,35 @@ public class arm {
     public double extensionLen = 0.3;
 
     /* ------------------ PID ------------------ */
-    /* no load 1:4 */ final PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.002, 0, 0, 0.028);
+    /* no load 1:4 */ //public PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.0069, 0, 0.0003, -0.0064);
     /* no load 1:1.17 *///final PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.009, 0, 0.019, 0.028);
     /* load 1:1.17 *///final PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.02, 0, 0.04, 0.052);
-    final PIDFCoefficients EXTENSION_PID = new PIDFCoefficients(0.007, 0.0005, 0.033, 0.02);
+    /* load 1:4 */ final PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.0058, 0, 0.0003, -0.0134);
+    final PIDFCoefficients EXTENSION_PID = new PIDFCoefficients(0.007, 0.0005, 0.02, 0.02);
     int oldExtensionError = 0;
     int oldRotationError = 0;
     int extensionSum = 0;
     int rotationSum = 0;
 
     /* ------------------ PHYSICAL MODEL ------------------ */
-    public final double m_1 = 0.05;
-    //public final double m_1 = 0.5426;
+    //public final double m_1 = 0.05;
+    public final double m_1 = 0.291762;
     public final double m_2 = 0.126;
     public final double m_3 = 0.126;
     public final double m_4 = 0.126;
-    public final double m_5 = 0.34;
-    public double l_1 = 0.135;
-    //public double l_1 = 0.2352;
+    public final double m_5 = 0.4554;
+    //public double l_1 = 0.135;
+    public double l_1 = 0.218;
     public double l_2 = 0.135;
     public double l_3 = 0.135;
     public double l_4 = 0.135;
-    public double l_5 = 0.054;
-    public final double h_1 = 0.068;
-    //public final double h_1 = 0.099;
+    public double l_5 = 0.041;
+    //public final double h_1 = 0.068;
+    public final double h_1 = 0.074;
     public final double h_2 = 0.0605;
     public final double h_3 = 0.0465;
     public final double h_4 = 0.0325;
-    public final double h_5 = 0.014;
+    public final double h_5 = 0.0107;
 
 
     public enum extension {
@@ -125,7 +126,7 @@ public class arm {
             case EXTENDED:
                 return EXTENSION_FULL;
             case CLOSED:
-                return (int)(-(0.33 / 928) * rotationMotor.getCurrentPosition());
+                return (int)(-(33.0 / 928) * rotationMotor.getCurrentPosition());
             case LOW_CHAMBER:
                 return EXTENSION_LOW_CHAMBER;
             case HIGH_CHAMBER:
@@ -169,8 +170,10 @@ public class arm {
         if (error * oldExtensionError <= 0)
             extensionSum = 0;
 
-
         oldExtensionError = error;
+
+        if (rotationState == rotation.LIFT && extensionState == extension.CLOSED && Math.abs(error) < 40)
+            return 0;
 
         return (error * EXTENSION_PID.p + extensionSum * EXTENSION_PID.i + delta * EXTENSION_PID.d + EXTENSION_PID.f * Math.cos(Math.toRadians(rotationAngle)));
     }
@@ -193,15 +196,19 @@ public class arm {
         oldRotationError = error;
 
         if (rotationState == rotation.FRONT && rotationAngle < -50)
-            error /= 10;
+            error /= 2;
 
-        return (error * ROTATION_PIDF.p + delta * ROTATION_PIDF.d + ROTATION_PIDF.f * Math.sin(Math.toRadians(rotationAngle + 12)) * ratio);
+        return (error * ROTATION_PIDF.p + delta * ROTATION_PIDF.d + ROTATION_PIDF.f * Math.sin(Math.toRadians(rotationAngle)) * ratio);
     }
     public void setExtension(extension target)
     {
         this.targetExtensionPos = extensionPosToTicks(target);
         this.extensionState = target;
-        this.setExtensionMotorPower(pidCalculateExtensionPower(targetExtensionPos));
+
+        if (Math.abs(rotationPosToTicks(rotationState) - rotationMotor.getCurrentPosition()) > 60)
+            this.extensionMotor.setPower(-0.2);
+        else
+            this.setExtensionMotorPower(pidCalculateExtensionPower(targetExtensionPos));
     }
 
     public void setRotation(rotation target)
@@ -215,6 +222,7 @@ public class arm {
             this.targetRotationPos = rotationPosToTicks(target);
             this.rotationState = target;
         }
+
         this.setRotationMotorPower(pidCalculateRotationPower(targetRotationPos));
     }
 
@@ -242,10 +250,10 @@ public class arm {
 
     public double getExtensionLength(){
         double pos = extensionMotor.getCurrentPosition();
-        double k = 0.7 / 340;
+        double k = 0.54 / 300;
         double b = 0.3;
 
-        l_1 = 0.135 + 0.0018 * pos;
+        l_1 = 0.218 + 0.0018 * pos;
         //l_1 = 0.135 + 0.0018 * pos;
         if (pos > 100)
             l_2 = 0.135 + 0.0018 * (pos - 100);
