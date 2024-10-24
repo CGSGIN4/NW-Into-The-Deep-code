@@ -62,33 +62,33 @@ public class armTest extends LinearOpMode {
             currentGamepad1.copy(gamepad1);
             currentGamepad2.copy(gamepad2);
 
-            arm.update();
+            arm.update(tele);
 
             if (currentGamepad1.a && !PreviousGamepad1.a)
             {
                 if (arm.rotationState == LIFT)
-                    arm.setRotation(BACK);
+                    tele.addData("rotation power", arm.setRotation(BACK));
                 else
-                    arm.setRotation(LIFT);
+                    tele.addData("rotation power", arm.setRotation(LIFT));
             }
 
             if (currentGamepad1.b && !PreviousGamepad1.b)
             {
-                arm.setRotation(FRONT);
+                tele.addData("rotation power", arm.setRotation(FRONT));
             }
 
             if (gamepad1.dpad_right)
-                arm.setExtension(LOW_CHAMBER);
+                tele.addData("extension power", arm.setExtension(LOW_CHAMBER));
             if (gamepad1.dpad_left)
-                arm.setExtension(HIGH_CHAMBER);
+                tele.addData("extension power", arm.setExtension(HIGH_CHAMBER));
             if (gamepad1.dpad_down)
-                arm.setExtension(FRONTAL_EXTENSION);
+                tele.addData("extension power", arm.setExtension(FRONTAL_EXTENSION));
             if (gamepad1.dpad_up)
-                arm.setExtension(EXTENDED);
+                tele.addData("extension power", arm.setExtension(EXTENDED));
 
 
             if (gamepad1.y)
-                arm.setExtension(CLOSED);
+                tele.addData("extension power", arm.setExtension(CLOSED));
 
             arm.EXTENSION_PID.p = p;
             arm.EXTENSION_PID.i = i;
@@ -106,13 +106,10 @@ public class armTest extends LinearOpMode {
             tele.addData("rotation pos", arm.rotationMotor.getCurrentPosition());
             tele.addData("gamepad", gamepad1.right_stick_y);
             tele.addData("extension pos", arm.extensionMotor.getCurrentPosition());
-            tele.addData("extension power", -gamepad1.left_stick_y / 10);
-            tele.addData("rotation power", arm.pidCalculateRotationPower(arm.targetRotationPos));
             tele.addData("rotation state", arm.rotationState.toString());
             tele.addData("extension state", arm.extensionState.toString());
             tele.addData("rotation angle", arm.getRotationAngle());
             tele.addData("extension length", arm.getExtensionLength());
-            tele.addData("hold power", 0.03 * Math.sin(Math.toRadians(arm.rotationAngle)) * arm.extensionLen);
             tele.addData("cog", (arm.m_1 * Math.sqrt(arm.l_1 * arm.l_1 + arm.h_1 * arm.h_1) + arm.m_2 * Math.sqrt(arm.l_2 * arm.l_2 + arm.h_2 * arm.h_2) + arm.m_3 * Math.sqrt(arm.l_3 * arm.l_3 + arm.h_3 * arm.h_3) + arm.m_4 * Math.sqrt(arm.l_4 * arm.l_4 + arm.h_4 * arm.h_4) + arm.m_5 * Math.sqrt(arm.l_5 * arm.l_5 + arm.h_5 * arm.h_5)) / (arm.m_1 + arm.m_2 + arm.m_3 + arm.m_4 + arm.m_5));
             tele.addData("cycle time", timer.milliseconds());
             tele.update();
