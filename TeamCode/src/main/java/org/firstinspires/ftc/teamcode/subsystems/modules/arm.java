@@ -38,7 +38,7 @@ public class arm {
     /* no load 1:1.17 *///final PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.009, 0, 0.019, 0.028);
     /* load 1:1.17 *///final PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.02, 0, 0.04, 0.052);
     /* load 1:4 */ final PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.0058, 0, 0.0003, -0.0134);
-    final PIDFCoefficients EXTENSION_PID = new PIDFCoefficients(0.007, 0.0005, 0.02, 0.02);
+    public PIDFCoefficients EXTENSION_PID = new PIDFCoefficients(0.007, 0.0005, 0.02, 0.02);
     int oldExtensionError = 0;
     int oldRotationError = 0;
     int extensionSum = 0;
@@ -164,6 +164,11 @@ public class arm {
         int error = targetPos - extensionMotor.getCurrentPosition();
         int delta = error - oldExtensionError;
 
+        //TODO: calculate in update()
+        double cog = (m_1 * Math.sqrt(l_1 * l_1 + h_1 * h_1) + m_2 * Math.sqrt(l_2 * l_2 + h_2 * h_2) + m_3 * Math.sqrt(l_3 * l_3 + h_3 * h_3) + m_4 * Math.sqrt(l_4 * l_4 + h_4 * h_4) + m_5 * Math.sqrt(l_5 * l_5 + h_5 * h_5)) / (m_1 + m_2 + m_3 + m_4 + m_5);
+        double cog_max = 0.33;
+        double ratio = cog / cog_max;
+
         if (Math.abs(error) < 40)
             extensionSum += error;
 
@@ -175,7 +180,7 @@ public class arm {
         if (rotationState == rotation.LIFT && extensionState == extension.CLOSED && Math.abs(error) < 40)
             return 0;
 
-        return (error * EXTENSION_PID.p + extensionSum * EXTENSION_PID.i + delta * EXTENSION_PID.d + EXTENSION_PID.f * Math.cos(Math.toRadians(rotationAngle)));
+        return (error * EXTENSION_PID.p + extensionSum * EXTENSION_PID.i + delta * EXTENSION_PID.d + EXTENSION_PID.f * Math.cos(Math.toRadians(rotationAngle)) * ratio);
     }
 
     public double pidCalculateRotationPower(int targetPos){
@@ -197,6 +202,11 @@ public class arm {
 
         if (rotationState == rotation.FRONT && rotationAngle < -50)
             error /= 2;
+
+        if (Math.abs(rotationAngle) < 10 && rotationState == rotation.BACK) {
+            error /= 2;
+            delta *= 1.3;
+        }
 
         return (error * ROTATION_PIDF.p + delta * ROTATION_PIDF.d + ROTATION_PIDF.f * Math.sin(Math.toRadians(rotationAngle)) * ratio);
     }

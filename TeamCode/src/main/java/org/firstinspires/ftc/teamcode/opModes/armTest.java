@@ -12,6 +12,7 @@ import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.LIF
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
@@ -50,11 +51,12 @@ public class armTest extends LinearOpMode {
 
         ElapsedTime timer = new ElapsedTime();
         FtcDashboard dashboard = FtcDashboard.getInstance();
+        Telemetry dashboardTelemetry = dashboard.getTelemetry();
+        MultipleTelemetry tele = new MultipleTelemetry(dashboardTelemetry, telemetry);
 
         waitForStart();
 
         while (opModeIsActive()) {
-            TelemetryPacket packet = new TelemetryPacket();
             PreviousGamepad1.copy(currentGamepad1);
             PreviousGamepad2.copy(currentGamepad2);
             currentGamepad1.copy(gamepad1);
@@ -88,6 +90,10 @@ public class armTest extends LinearOpMode {
             if (gamepad1.y)
                 arm.setExtension(CLOSED);
 
+            arm.EXTENSION_PID.p = p;
+            arm.EXTENSION_PID.i = i;
+            arm.EXTENSION_PID.d = d;
+            arm.EXTENSION_PID.f = f;
 
 
             /*
@@ -97,24 +103,19 @@ public class armTest extends LinearOpMode {
                 arm.rotationMotor.setPower(0);
             */
 
-
-            packet.put("target pos", arm.targetRotationPos);
-            packet.put("current pos", arm.rotationMotor.getCurrentPosition());
-            packet.put("rotation state", arm.rotationState.toString());
-            dashboard.sendTelemetryPacket(packet);
-            telemetry.addData("rotation pos", arm.rotationMotor.getCurrentPosition());
-            telemetry.addData("gamepad", gamepad1.right_stick_y);
-            telemetry.addData("extension pos", arm.extensionMotor.getCurrentPosition());
-            telemetry.addData("extension power", -gamepad1.left_stick_y / 10);
-            telemetry.addData("rotation power", arm.pidCalculateRotationPower(arm.targetRotationPos));
-            telemetry.addData("rotation state", arm.rotationState.toString());
-            telemetry.addData("extension state", arm.extensionState.toString());
-            telemetry.addData("rotation angle", arm.getRotationAngle());
-            telemetry.addData("extension length", arm.getExtensionLength());
-            telemetry.addData("hold power", 0.03 * Math.sin(Math.toRadians(arm.rotationAngle)) * arm.extensionLen);
-            telemetry.addData("cog", (arm.m_1 * Math.sqrt(arm.l_1 * arm.l_1 + arm.h_1 * arm.h_1) + arm.m_2 * Math.sqrt(arm.l_2 * arm.l_2 + arm.h_2 * arm.h_2) + arm.m_3 * Math.sqrt(arm.l_3 * arm.l_3 + arm.h_3 * arm.h_3) + arm.m_4 * Math.sqrt(arm.l_4 * arm.l_4 + arm.h_4 * arm.h_4) + arm.m_5 * Math.sqrt(arm.l_5 * arm.l_5 + arm.h_5 * arm.h_5)) / (arm.m_1 + arm.m_2 + arm.m_3 + arm.m_4 + arm.m_5));
-            telemetry.addData("cycle time", timer.milliseconds());
-            telemetry.update();
+            tele.addData("rotation pos", arm.rotationMotor.getCurrentPosition());
+            tele.addData("gamepad", gamepad1.right_stick_y);
+            tele.addData("extension pos", arm.extensionMotor.getCurrentPosition());
+            tele.addData("extension power", -gamepad1.left_stick_y / 10);
+            tele.addData("rotation power", arm.pidCalculateRotationPower(arm.targetRotationPos));
+            tele.addData("rotation state", arm.rotationState.toString());
+            tele.addData("extension state", arm.extensionState.toString());
+            tele.addData("rotation angle", arm.getRotationAngle());
+            tele.addData("extension length", arm.getExtensionLength());
+            tele.addData("hold power", 0.03 * Math.sin(Math.toRadians(arm.rotationAngle)) * arm.extensionLen);
+            tele.addData("cog", (arm.m_1 * Math.sqrt(arm.l_1 * arm.l_1 + arm.h_1 * arm.h_1) + arm.m_2 * Math.sqrt(arm.l_2 * arm.l_2 + arm.h_2 * arm.h_2) + arm.m_3 * Math.sqrt(arm.l_3 * arm.l_3 + arm.h_3 * arm.h_3) + arm.m_4 * Math.sqrt(arm.l_4 * arm.l_4 + arm.h_4 * arm.h_4) + arm.m_5 * Math.sqrt(arm.l_5 * arm.l_5 + arm.h_5 * arm.h_5)) / (arm.m_1 + arm.m_2 + arm.m_3 + arm.m_4 + arm.m_5));
+            tele.addData("cycle time", timer.milliseconds());
+            tele.update();
             timer.reset();
             /*
             maxVel = Math.max(maxVel, dataStorage.RobotVelocity.norm());
