@@ -6,6 +6,7 @@ import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.FR
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.HIGH_CHAMBER;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.LOW_CHAMBER;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.BACK;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.CHAMBER;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.FRONT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.LIFT;
 
@@ -46,8 +47,8 @@ public class armTest extends LinearOpMode {
         //robot.init();
         Gamepad currentGamepad1 = new Gamepad();
         Gamepad currentGamepad2 = new Gamepad();
-        Gamepad PreviousGamepad1 = new Gamepad();
-        Gamepad PreviousGamepad2 = new Gamepad();
+        Gamepad previousGamepad1 = new Gamepad();
+        Gamepad previousGamepad2 = new Gamepad();
 
         ElapsedTime timer = new ElapsedTime();
         FtcDashboard dashboard = FtcDashboard.getInstance();
@@ -57,43 +58,73 @@ public class armTest extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-            PreviousGamepad1.copy(currentGamepad1);
-            PreviousGamepad2.copy(currentGamepad2);
+            previousGamepad1.copy(currentGamepad1);
+            previousGamepad2.copy(currentGamepad2);
             currentGamepad1.copy(gamepad1);
             currentGamepad2.copy(gamepad2);
 
             arm.update();
 
-            if (currentGamepad1.a && !PreviousGamepad1.a)
+            if (currentGamepad1.a && !previousGamepad1.a)
             {
                 if (arm.rotationState == LIFT)
                     arm.setRotation(BACK);
+<<<<<<< Updated upstream
                 else
                     arm.setRotation(LIFT);
+=======
+                    //tele.addData("rotation power", arm.setRotation(BACK));
+                else if (arm.rotationState == CHAMBER)
+                    arm.setRotation(LIFT);
+                else
+                    arm.setRotation(CHAMBER);
+                    //tele.addData("rotation power", arm.setRotation(LIFT));
+>>>>>>> Stashed changes
             }
 
-            if (currentGamepad1.b && !PreviousGamepad1.b)
+            if (currentGamepad1.b && !previousGamepad1.b)
             {
                 arm.setRotation(FRONT);
+<<<<<<< Updated upstream
+=======
+                //tele.addData("rotation power", arm.setRotation(FRONT));
+>>>>>>> Stashed changes
             }
 
             if (gamepad1.dpad_right)
                 arm.setExtension(LOW_CHAMBER);
+<<<<<<< Updated upstream
             if (gamepad1.dpad_left)
                 arm.setExtension(HIGH_CHAMBER);
             if (gamepad1.dpad_down)
                 arm.setExtension(FRONTAL_EXTENSION);
             if (gamepad1.dpad_up)
                 arm.setExtension(EXTENDED);
+=======
+                //tele.addData("extension power", arm.setExtension(LOW_CHAMBER));
+            if (gamepad1.dpad_left)
+                arm.setExtension(HIGH_CHAMBER);
+                //tele.addData("extension power", arm.setExtension(HIGH_CHAMBER));
+            if (gamepad1.dpad_down)
+                arm.setExtension(FRONTAL_EXTENSION);
+                //tele.addData("extension power", arm.setExtension(FRONTAL_EXTENSION));
+            if (gamepad1.dpad_up)
+                arm.setExtension(EXTENDED);
+                //tele.addData("extension power", arm.setExtension(EXTENDED));
+>>>>>>> Stashed changes
 
 
             if (gamepad1.y)
                 arm.setExtension(CLOSED);
+<<<<<<< Updated upstream
+=======
+                //tele.addData("extension power", arm.setExtension(CLOSED));
+>>>>>>> Stashed changes
 
-            arm.EXTENSION_PID.p = p;
-            arm.EXTENSION_PID.i = i;
-            arm.EXTENSION_PID.d = d;
-            arm.EXTENSION_PID.f = f;
+            //arm.ROTATION_PIDF.p = p;
+            //arm.ROTATION_PIDF.i = i;
+            //arm.ROTATION_PIDF.d = d;
+            //arm.ROTATION_PIDF.f = f;
 
 
             /*

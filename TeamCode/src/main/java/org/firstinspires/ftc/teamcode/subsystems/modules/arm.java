@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems.modules;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.controller.wpilibcontroller.ArmFeedforward;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -9,6 +10,12 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
+<<<<<<< Updated upstream
+=======
+import org.apache.commons.math3.analysis.function.Power;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
+>>>>>>> Stashed changes
 @Config
 public class arm {
     /* ------------------ HARDWARE ------------------ */
@@ -16,14 +23,20 @@ public class arm {
     public DcMotor extensionMotor;
     public AnalogInput rotationBtn;
 
-    /* ------------------ AFTER-INIT-CONSTANTS ------------------ */
-    int EXTENSION_FULL = 290; //370
+    /* ------------------ CONSTANTS ------------------ */
+    int EXTENSION_FULL = 360; //370
     int EXTENSION_FRONT_MAX = 220;
     int EXTENSION_LOW_CHAMBER = 130;
     int EXTENSION_HIGH_CHAMBER = 200;
     int ROTATION_FRONT = 0;
+<<<<<<< Updated upstream
     int ROTATION_BACK = 928 / 2;
     int ROTATION_LIFT = 928 - 300;
+=======
+    int ROTATION_BACK = 928;
+    int ROTATION_LIFT = 928 / 2;
+    int ROTATION_CHAMBER = 300;
+>>>>>>> Stashed changes
 
     /* ------------------ ON-FLY ------------------ */
     public int targetRotationPos;
@@ -33,12 +46,21 @@ public class arm {
     public double rotationAngle = -90;
     public double extensionLen = 0.3;
 
+    /* ------------------ CACHING ------------------ */
+    double extPower = 0;
+    double rotPower = 0;
+
     /* ------------------ PID ------------------ */
     /* no load 1:4 */ //public PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.0069, 0, 0.0003, -0.0064);
     /* no load 1:1.17 *///final PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.009, 0, 0.019, 0.028);
     /* load 1:1.17 *///final PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.02, 0, 0.04, 0.052);
+<<<<<<< Updated upstream
     /* load 1:4 */ final PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.0058, 0, 0.0003, -0.0134);
     public PIDFCoefficients EXTENSION_PID = new PIDFCoefficients(0.007, 0.0005, 0.02, 0.02);
+=======
+    /* load 1:4 */ public PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.0058, 0, 0.0003, -0.006);
+    public PIDFCoefficients EXTENSION_PIDF = new PIDFCoefficients(0.007, 0, 0.02, 0.02);
+>>>>>>> Stashed changes
     int oldExtensionError = 0;
     int oldRotationError = 0;
     int extensionSum = 0;
@@ -64,6 +86,14 @@ public class arm {
     public final double h_4 = 0.0325;
     public final double h_5 = 0.0107;
 
+<<<<<<< Updated upstream
+=======
+    final double COG_MAX = 0.39;
+    double cog = 0.12;
+    double ratio = 0.3;
+>>>>>>> Stashed changes
+
+    /* ------------------ POSITIONS ------------------ */
 
     public enum extension {
         EXTENDED,
@@ -119,6 +149,13 @@ public class arm {
         }
     }
 
+<<<<<<< Updated upstream
+=======
+    public void update() {
+        update(new MultipleTelemetry());
+    }
+
+>>>>>>> Stashed changes
     private int extensionPosToTicks(extension target)
     {
         switch (target)
@@ -152,12 +189,29 @@ public class arm {
         }
     }
 
+<<<<<<< Updated upstream
     private void setExtensionMotorPower(double power){
         this.extensionMotor.setPower(power);
     }
 
     private void setRotationMotorPower(double power){
         this.rotationMotor.setPower(power);
+=======
+    private double setExtensionMotorPower(double power){
+        if (Math.abs(extPower - power) > 0.001) {
+            this.extPower = power;
+            this.extensionMotor.setPower(extPower);
+        }
+        return extPower;
+    }
+
+    private double setRotationMotorPower(double power){
+        if (Math.abs(rotPower - power) > 0.001) {
+            this.rotPower = power;
+            this.rotationMotor.setPower(rotPower);
+        }
+        return rotPower;
+>>>>>>> Stashed changes
     }
 
     private double pidCalculateExtensionPower(int targetPos){
@@ -180,7 +234,11 @@ public class arm {
         if (rotationState == rotation.LIFT && extensionState == extension.CLOSED && Math.abs(error) < 40)
             return 0;
 
+<<<<<<< Updated upstream
         return (error * EXTENSION_PID.p + extensionSum * EXTENSION_PID.i + delta * EXTENSION_PID.d + EXTENSION_PID.f * Math.cos(Math.toRadians(rotationAngle)) * ratio);
+=======
+        return (error * EXTENSION_PIDF.p + delta * EXTENSION_PIDF.d + EXTENSION_PIDF.f * Math.cos(Math.toRadians(rotationAngle)) * ratio);
+>>>>>>> Stashed changes
     }
 
     public double pidCalculateRotationPower(int targetPos){
@@ -201,14 +259,14 @@ public class arm {
         oldRotationError = error;
 
         if (rotationState == rotation.FRONT && rotationAngle < -50)
-            error /= 2;
+            error /= 3;
 
-        if (Math.abs(rotationAngle) < 10 && rotationState == rotation.BACK) {
-            error /= 2;
-            delta *= 1.3;
+        if (Math.abs(rotationAngle) < 17 && rotationState == rotation.LIFT && extensionState == extension.EXTENDED) {
+            delta *= 35;
+            error *= 0.6;
         }
 
-        return (error * ROTATION_PIDF.p + delta * ROTATION_PIDF.d + ROTATION_PIDF.f * Math.sin(Math.toRadians(rotationAngle)) * ratio);
+        return (error * ROTATION_PIDF.p + delta * ROTATION_PIDF.d + ROTATION_PIDF.f * Math.sin(Math.toRadians(rotationAngle)) * (1 + ratio * ratio));
     }
     public void setExtension(extension target)
     {
