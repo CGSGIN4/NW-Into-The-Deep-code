@@ -19,6 +19,7 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -44,6 +45,7 @@ public class gamepadTest extends LinearOpMode {
         GamepadNW driverGamepad = new GamepadNW(gamepad1);
         GamepadNW assistGamepad = new GamepadNW(gamepad2);
         double cnt = 0;
+        DcMotor motor = hardwareMap.get(DcMotor.class, "armExtensionMotor");
 
         waitForStart();
 
@@ -60,9 +62,12 @@ public class gamepadTest extends LinearOpMode {
             telemetry.addData("cnt", cnt);
             if (driverGamepad.isPressed("a")){
                 telemetry.addData("ap", "pressed");
+                motor.setPower(0.004);
             }
-            else
+            else {
                 telemetry.addData("ap", "not pressed");
+                motor.setPower(0);
+            }
             telemetry.update();
         }
     }

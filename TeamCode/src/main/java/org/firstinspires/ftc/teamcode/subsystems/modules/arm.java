@@ -53,25 +53,25 @@ public class arm {
 
     /* ------------------ PHYSICAL MODEL ------------------ */
     //public final double m_1 = 0.05;
-    public final double m_1 = 0.291762;
+    public final double m_1 = 0.527672;
     public final double m_2 = 0.126;
     public final double m_3 = 0.126;
     public final double m_4 = 0.126;
     public final double m_5 = 0.4554;
     //public double l_1 = 0.135;
-    public double l_1 = 0.218;
+    public double l_1 = 0.180;
     public double l_2 = 0.135;
     public double l_3 = 0.135;
     public double l_4 = 0.135;
     public double l_5 = 0.041;
     //public final double h_1 = 0.068;
-    public final double h_1 = 0.074;
+    public final double h_1 = 0.07448;
     public final double h_2 = 0.0605;
     public final double h_3 = 0.0465;
     public final double h_4 = 0.0325;
     public final double h_5 = 0.0107;
 
-    final double COG_MAX = 0.39;
+    final double COG_MAX = 0.50;
     double cog = 0.12;
     double ratio = 0.3;
 
@@ -176,7 +176,7 @@ public class arm {
     }
 
     private double setExtensionMotorPower(double power){
-        if (Math.abs(extPower - power) > 0.001) {
+        if (Math.abs(extPower - power) > 0.00001) {
             this.extPower = power;
             this.extensionMotor.setPower(extPower);
         }
@@ -224,7 +224,7 @@ public class arm {
             error /= 3;
 
         if (Math.abs(rotationAngle) < 17 && rotationState == rotation.LIFT && extensionState == extension.EXTENDED) {
-            delta *= 35;
+            delta *= 55;
             error *= 0.6;
         }
 
@@ -283,7 +283,7 @@ public class arm {
         double k = 0.54 / 300;
         double b = 0.3;
 
-        l_1 = 0.218 + 0.0018 * pos;
+        l_1 = 0.180 + 0.0018 * pos;
         //l_1 = 0.135 + 0.0018 * pos;
         if (pos > 100)
             l_2 = 0.135 + 0.0018 * (pos - 100);
