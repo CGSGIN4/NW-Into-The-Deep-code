@@ -69,38 +69,22 @@ public class armTest extends LinearOpMode {
             {
                 if (arm.rotationState == LIFT)
                     arm.setRotation(BACK);
-<<<<<<< Updated upstream
-                else
-                    arm.setRotation(LIFT);
-=======
                     //tele.addData("rotation power", arm.setRotation(BACK));
                 else if (arm.rotationState == CHAMBER)
                     arm.setRotation(LIFT);
                 else
                     arm.setRotation(CHAMBER);
                     //tele.addData("rotation power", arm.setRotation(LIFT));
->>>>>>> Stashed changes
             }
 
             if (currentGamepad1.b && !previousGamepad1.b)
             {
                 arm.setRotation(FRONT);
-<<<<<<< Updated upstream
-=======
                 //tele.addData("rotation power", arm.setRotation(FRONT));
->>>>>>> Stashed changes
             }
 
             if (gamepad1.dpad_right)
                 arm.setExtension(LOW_CHAMBER);
-<<<<<<< Updated upstream
-            if (gamepad1.dpad_left)
-                arm.setExtension(HIGH_CHAMBER);
-            if (gamepad1.dpad_down)
-                arm.setExtension(FRONTAL_EXTENSION);
-            if (gamepad1.dpad_up)
-                arm.setExtension(EXTENDED);
-=======
                 //tele.addData("extension power", arm.setExtension(LOW_CHAMBER));
             if (gamepad1.dpad_left)
                 arm.setExtension(HIGH_CHAMBER);
@@ -111,15 +95,11 @@ public class armTest extends LinearOpMode {
             if (gamepad1.dpad_up)
                 arm.setExtension(EXTENDED);
                 //tele.addData("extension power", arm.setExtension(EXTENDED));
->>>>>>> Stashed changes
 
 
             if (gamepad1.y)
                 arm.setExtension(CLOSED);
-<<<<<<< Updated upstream
-=======
                 //tele.addData("extension power", arm.setExtension(CLOSED));
->>>>>>> Stashed changes
 
             //arm.ROTATION_PIDF.p = p;
             //arm.ROTATION_PIDF.i = i;
