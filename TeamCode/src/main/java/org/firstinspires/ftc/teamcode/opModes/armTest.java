@@ -101,11 +101,12 @@ public class armTest extends LinearOpMode {
                 arm.setExtension(CLOSED);
                 //tele.addData("extension power", arm.setExtension(CLOSED));
 
-            //arm.ROTATION_PIDF.p = p;
-            //arm.ROTATION_PIDF.i = i;
-            //arm.ROTATION_PIDF.d = d;
-            //arm.ROTATION_PIDF.f = f;
-
+            /*
+            arm.ROTATION_PIDF.p = p;
+            arm.ROTATION_PIDF.i = i;
+            arm.ROTATION_PIDF.d = d;
+            arm.ROTATION_PIDF.f = f;
+*/
 
             /*
             if (Math.abs(gamepad1.right_stick_y) > 0.01)
@@ -114,7 +115,7 @@ public class armTest extends LinearOpMode {
                 arm.rotationMotor.setPower(0);
             */
 
-            /*
+
             tele.addData("rotation pos", arm.rotationMotor.getCurrentPosition());
             tele.addData("gamepad", gamepad1.right_stick_y);
             tele.addData("extension pos", arm.extensionMotor.getCurrentPosition());
@@ -124,9 +125,9 @@ public class armTest extends LinearOpMode {
             tele.addData("extension length", arm.getExtensionLength());
             tele.addData("hold power", 0.03 * Math.sin(Math.toRadians(arm.rotationAngle)) * arm.extensionLen);
             tele.addData("cog", (arm.m_1 * Math.sqrt(arm.l_1 * arm.l_1 + arm.h_1 * arm.h_1) + arm.m_2 * Math.sqrt(arm.l_2 * arm.l_2 + arm.h_2 * arm.h_2) + arm.m_3 * Math.sqrt(arm.l_3 * arm.l_3 + arm.h_3 * arm.h_3) + arm.m_4 * Math.sqrt(arm.l_4 * arm.l_4 + arm.h_4 * arm.h_4) + arm.m_5 * Math.sqrt(arm.l_5 * arm.l_5 + arm.h_5 * arm.h_5)) / (arm.m_1 + arm.m_2 + arm.m_3 + arm.m_4 + arm.m_5));
-            tele.addData("cycle time", timer.milliseconds());
+            tele.addData("cycle time", arm.cycleTime);
+            tele.addData("velocity", arm.velocity);
 
-             */
             tele.update();
             timer.reset();
             /*

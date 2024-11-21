@@ -9,6 +9,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 @Config
@@ -19,13 +21,13 @@ public class arm {
     public AnalogInput rotationBtn;
 
     /* ------------------ CONSTANTS ------------------ */
-    int EXTENSION_FULL = 360; //370
-    int EXTENSION_FRONT_MAX = 220;
-    int EXTENSION_LOW_CHAMBER = 130;
-    int EXTENSION_HIGH_CHAMBER = 200;
+    int EXTENSION_FULL = 500; //370
+    int EXTENSION_FRONT_MAX = 305;
+    int EXTENSION_LOW_CHAMBER = 180;
+    int EXTENSION_HIGH_CHAMBER = 278;
     int ROTATION_FRONT = 0;
     int ROTATION_BACK = 928;
-    int ROTATION_LIFT = 928 / 2;
+    int ROTATION_LIFT = 464;
     int ROTATION_CHAMBER = 300;
 
     /* ------------------ ON-FLY ------------------ */
@@ -35,6 +37,9 @@ public class arm {
     public rotation rotationState = rotation.FRONT;
     public double rotationAngle = -90;
     public double extensionLen = 0.3;
+    ElapsedTime cycleTimer = new ElapsedTime();
+    public double cycleTime = 0;
+    public double velocity = 0;
 
     /* ------------------ CACHING ------------------ */
     double extPower = 0;
@@ -44,12 +49,13 @@ public class arm {
     /* no load 1:4 */ //public PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.0069, 0, 0.0003, -0.0064);
     /* no load 1:1.17 *///final PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.009, 0, 0.019, 0.028);
     /* load 1:1.17 *///final PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.02, 0, 0.04, 0.052);
-    /* load 1:4 */ public PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.0058, 0, 0.0003, -0.006);
-    public PIDFCoefficients EXTENSION_PIDF = new PIDFCoefficients(0.007, 0, 0.02, 0.02);
+    /* load 1:4 */ public PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.0058, 0, 0.0009, -0.006);
+    public PIDFCoefficients EXTENSION_PIDF = new PIDFCoefficients(0.009, 0, 0.02, 0.01);
     int oldExtensionError = 0;
-    int oldRotationError = 0;
+    public double oldRotationError = 0;
+    double rotDeltaRaw = 0;
+    double rotDeltaFiltered = 0;
     int extensionSum = 0;
-    int rotationSum = 0;
 
     /* ------------------ PHYSICAL MODEL ------------------ */
     //public final double m_1 = 0.05;
@@ -119,6 +125,9 @@ public class arm {
     }
 
     public void update(Telemetry telemetry) {
+        cycleTime = cycleTimer.milliseconds();
+        cycleTimer.reset();
+
         rotationAngle = getRotationAngle();
         extensionLen = getExtensionLength();
 
@@ -127,8 +136,9 @@ public class arm {
 
         if (!extensionState.equals(extension.MANUAL))
             telemetry.addData("extension power", setExtension(extensionState));
-        if (!rotationState.equals(rotation.MANUAL) && !rotationState.equals(rotation.RESET))
+        if (!rotationState.equals(rotation.MANUAL))
             telemetry.addData("rotation power", setRotation(rotationState));
+
         if (rotationBtn.getVoltage() < 0.4 && rotationState == rotation.FRONT) /* pressed */ {
             resetRotationEncoders();
             rotationState = rotation.RESET;
@@ -147,7 +157,7 @@ public class arm {
             case EXTENDED:
                 return EXTENSION_FULL;
             case CLOSED:
-                return (int)(-(33.0 / 928) * rotationMotor.getCurrentPosition());
+                return (int)(-(17.0 / 928) * rotationMotor.getCurrentPosition());
             case LOW_CHAMBER:
                 return EXTENSION_LOW_CHAMBER;
             case HIGH_CHAMBER:
@@ -203,29 +213,46 @@ public class arm {
 
         oldExtensionError = error;
 
-        if (rotationState == rotation.LIFT && extensionState == extension.CLOSED && Math.abs(error) < 40)
-            return 0;
+        if (rotationState == rotation.LIFT && extensionState == extension.CLOSED && Math.abs(error) < 60 && Math.abs(error) > 10) {
+            error /= 20;
+        }
 
         return (error * EXTENSION_PIDF.p + delta * EXTENSION_PIDF.d + EXTENSION_PIDF.f * Math.cos(Math.toRadians(rotationAngle)) * ratio);
     }
 
     public double pidCalculateRotationPower(int targetPos){
-        int error = targetPos - rotationMotor.getCurrentPosition();
-        int delta = error - oldRotationError;
+        double error = targetPos - rotationMotor.getCurrentPosition();
+        double k = 0.5;
+        rotDeltaRaw = error - oldRotationError; /* negative on moving front -> back, positive back -> front */
+        rotDeltaFiltered = rotDeltaRaw * k + rotDeltaFiltered * (1 - k);
 
-        if (Math.abs(error) < 10)
-            rotationSum += error;
-        else
-            rotationSum = 0;
+        double delta = rotDeltaFiltered;
+        velocity = (oldRotationError - error) / cycleTime;
 
         oldRotationError = error;
 
         if (rotationState == rotation.FRONT && rotationAngle < -50)
             error /= 3;
 
-        if (Math.abs(rotationAngle) < 17 && rotationState == rotation.LIFT && extensionState == extension.EXTENDED) {
-            delta *= 55;
-            error *= 0.6;
+        if (Math.abs(rotationAngle) < 20 && rotationState == rotation.LIFT && extensionState == extension.EXTENDED) {
+            if (Math.abs(error) > Math.abs(oldRotationError) && Math.abs(rotationAngle) > 2) /* error increased => wrong direction */
+                delta *= 3;
+
+            if (Math.abs(rotDeltaFiltered) > 13)
+            {
+                setExtension(extension.HIGH_CHAMBER);
+            }
+            if (Math.abs(error) < 40)
+                delta *= 17;
+            else if (Math.abs(error) < 80)
+                delta *= 22;
+            else if (Math.abs(error) < 120)
+                delta *= 25;
+            double modExponential = 0.00048759 * Math.pow(Math.abs(error), 1.461020);
+            if (error > 0)
+                error = modExponential / ROTATION_PIDF.p;
+            else 
+                error = -modExponential / ROTATION_PIDF.p;
         }
 
         return (error * ROTATION_PIDF.p + delta * ROTATION_PIDF.d + ROTATION_PIDF.f * Math.sin(Math.toRadians(rotationAngle)) * (1 + ratio * ratio));
@@ -235,7 +262,7 @@ public class arm {
         this.targetExtensionPos = extensionPosToTicks(target);
         this.extensionState = target;
 
-        if (Math.abs(rotationPosToTicks(rotationState) - rotationMotor.getCurrentPosition()) > 60)
+        if (Math.abs(rotationPosToTicks(rotationState) - rotationMotor.getCurrentPosition()) > 120)
             return this.setExtensionMotorPower(-0.2);
         else
             return this.setExtensionMotorPower(pidCalculateExtensionPower(targetExtensionPos));
@@ -280,21 +307,21 @@ public class arm {
 
     public double getExtensionLength(){
         double pos = extensionMotor.getCurrentPosition();
-        double k = 0.54 / 300;
+        double k = 0.715 / 500;
         double b = 0.3;
 
-        l_1 = 0.180 + 0.0018 * pos;
+        l_1 = 0.180 + k * pos;
         //l_1 = 0.135 + 0.0018 * pos;
-        if (pos > 100)
-            l_2 = 0.135 + 0.0018 * (pos - 100);
+        if (pos > 126)
+            l_2 = 0.135 + k * (pos - 126);
         else
             l_2 = 0.135;
-        if (pos > 200)
-            l_3 = 0.135 + 0.0018 * (pos - 200);
+        if (pos > 252)
+            l_3 = 0.135 + k * (pos - 252);
         else
             l_3 = 0.135;
-        if (pos > 300)
-            l_4 = 0.135 + 0.0018 * (pos - 300);
+        if (pos > 378)
+            l_4 = 0.135 + k * (pos - 378);
         else
             l_4 = 0.135;
 
