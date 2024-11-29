@@ -5,6 +5,7 @@ import static java.lang.Math.PI;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
@@ -41,8 +42,9 @@ public enum dataStorage {;
     public static double BrakeAccel = 104; //160
 
     public static Telemetry DSTelemetry;
+    public static Telemetry DashTelemetry;
+    public static MultipleTelemetry telemetry;
 
-    public static TelemetryPacket DashTelemetry;
     public static FtcDashboard dashboard;
     public static painter painter;
 
@@ -87,7 +89,7 @@ public enum dataStorage {;
         poseHistory.add(RobotPose);
 
         timer.reset();
-        DSTelemetry.update();
+        telemetry.update();
         //RobotVelocity = new Vector2d(drive.getPoseVelocity().getX(), drive.getPoseVelocity().getY());
     }
 
@@ -100,11 +102,13 @@ public enum dataStorage {;
         RobotVelocity = new Vector2d(0, 0);
         BrakeAccel = 0;
         DSTelemetry = telemetry;
+        DashTelemetry = dashboard.getTelemetry();
         OpMode = linearOpMode;
         poseHistory.clear();
         iter = 0;
         relocation_timer.reset();
         module_master.init();
+        telemetry = new MultipleTelemetry(DSTelemetry, DashTelemetry);
     }
 
     private static double calculateBrakeAccel(double v){

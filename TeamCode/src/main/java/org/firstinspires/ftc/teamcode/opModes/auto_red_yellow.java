@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.opModes;
 
-import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.DUMMY_ACTION_CLOSE;
-import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.DUMMY_ACTION_OPEN;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.CLAW_CLOSE;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.CLAW_OPEN;
 
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -73,7 +73,7 @@ public class auto_red_yellow extends LinearOpMode {
             path_follower.followTrajectoryBreak(curves[1], 0);
             timer.reset();
             while (timer.milliseconds() < 1000);
-            path_follower.followTrajectoryBreak(curves[2], Math.PI / 4, new double[]{0.2, 0.7}, new int[]{DUMMY_ACTION_OPEN, DUMMY_ACTION_CLOSE});
+            path_follower.followTrajectoryBreak(curves[2], Math.PI / 4, new double[]{0.2, 0.7}, new int[]{CLAW_OPEN, CLAW_CLOSE});
             timer.reset();
             while (timer.milliseconds() < 1000);
             path_follower.followTrajectoryBreak(curves[3], 0);

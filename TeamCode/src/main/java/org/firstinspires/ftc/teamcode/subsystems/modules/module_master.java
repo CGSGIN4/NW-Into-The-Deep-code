@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems.modules;
 
-import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.DUMMY_ACTION_CLOSE;
-import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.DUMMY_ACTION_OPEN;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.CLAW_CLOSE;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.CLAW_OPEN;
 
 import org.firstinspires.ftc.teamcode.data.dataStorage;
 import org.firstinspires.ftc.teamcode.subsystems.modules.test.dummyServo;
@@ -10,31 +10,37 @@ import org.firstinspires.ftc.teamcode.subsystems.modules.test.dummyServo;
 public class module_master {
     /* add actions here following byte flags conception */
     public enum action{;
-        public static final int DUMMY_ACTION_CLOSE = 0b0000001;
-        public static final int DUMMY_ACTION_OPEN = 0b0000010;
+        public static final int CLAW_CLOSE = 0b0000001;
+        public static final int CLAW_OPEN = 0b0000010;
     }
 
-    static dummyServo servak;
+    static differential differential;
+    static arm arm;
 
     public static void init(){
-         servak = new dummyServo(dataStorage.OpMode.hardwareMap);
+
     }
     public static boolean doAction(int action){
         /* continue ifing this as shown */
-        if ((action & DUMMY_ACTION_CLOSE) == DUMMY_ACTION_CLOSE){
-            action -= DUMMY_ACTION_CLOSE;
-            /* call function that opens claw */
-            servak.launch();
+        if ((action & CLAW_CLOSE) == CLAW_CLOSE){
+            action -= CLAW_CLOSE;
+            /* call function that closes claw */
+            differential.closeClaw();
         }
 
-        if ((action & DUMMY_ACTION_OPEN) == DUMMY_ACTION_OPEN){
-            action -= DUMMY_ACTION_OPEN;
+        if ((action & CLAW_OPEN) == CLAW_OPEN){
+            action -= CLAW_OPEN;
             /* call function that opens claw */
-            servak.prepare();
+            differential.openClaw();
         }
 
         /* check if all actions are done */
         return action == 0;
+    }
+
+    public void update(){
+        arm.update();
+        differential.update();
     }
 
 }
