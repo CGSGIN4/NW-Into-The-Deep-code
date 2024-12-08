@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opModes.tmp;
+package org.firstinspires.ftc.teamcode.opModes.tests;
 
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.CLOSED;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.EXTENDED;
@@ -32,7 +32,7 @@ import org.firstinspires.ftc.teamcode.subsystems.velocity_calculator;
 import org.firstinspires.ftc.teamcode.utils.GamepadNW;
 import org.firstinspires.ftc.teamcode.utils.painter;
 
-@TeleOp
+@TeleOp(group = "Tests")
 public class gamepadTest extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {

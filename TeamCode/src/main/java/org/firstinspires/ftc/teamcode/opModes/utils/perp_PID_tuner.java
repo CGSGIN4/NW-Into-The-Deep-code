@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opModes;
+package org.firstinspires.ftc.teamcode.opModes.utils;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.math.curve;
 import org.firstinspires.ftc.teamcode.subsystems.path_follower;
 import org.firstinspires.ftc.teamcode.subsystems.velocity_calculator;
 
-@Autonomous
+@Autonomous(group = "Utils")
 public class perp_PID_tuner extends LinearOpMode {
 
     Robot robot;
