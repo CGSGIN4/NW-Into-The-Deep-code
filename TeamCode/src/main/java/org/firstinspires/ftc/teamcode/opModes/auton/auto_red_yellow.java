@@ -74,7 +74,6 @@ public class auto_red_yellow extends LinearOpMode {
             /* PRELOAD */
             prepareToScoreHighBasket();
             path_follower.followTrajectoryBreak(curves[0], -Math.PI * 3 / 4);
-            waitArmRotation();
             scoreHighBasket();
 
             /* ---------1ST YELLOW--------- */
@@ -89,11 +88,10 @@ public class auto_red_yellow extends LinearOpMode {
             setExtensionAndWait(arm.extension.CLOSED);
             prepareToScoreHighBasket();
             path_follower.goToPos(dataStorage.RobotWorldX, dataStorage.RobotWorldY, -Math.PI / 2);
-            waitArmRotation();
             scoreHighBasket();
 
             /* ---------2ND YELLOW--------- */
-            path_follower.goToPos(dataStorage.RobotWorldX, dataStorage.RobotWorldY, -Math.PI / 2 - Math.toRadians(8));
+            path_follower.goToPos(dataStorage.RobotWorldX, dataStorage.RobotWorldY, -Math.PI / 2 + Math.toRadians(13));
             waitArmRotation();
 
             module_master.differential.pitchHalfDown();
@@ -104,13 +102,24 @@ public class auto_red_yellow extends LinearOpMode {
             setExtensionAndWait(arm.extension.CLOSED);
             prepareToScoreHighBasket();
             path_follower.goToPos(dataStorage.RobotWorldX, dataStorage.RobotWorldY, -Math.PI / 2);
-            waitArmRotation();
             scoreHighBasket();
+
+            /* ---------3RD YELLOW--------- */
+            module_master.differential.rollHalfRight();
+            path_follower.goToPos(dataStorage.RobotWorldX, dataStorage.RobotWorldY, -Math.PI / 2 + Math.toRadians(25));
             waitArmRotation();
 
+            setExtensionAndWait(arm.extension.YELLOW_1);
+
+            takeSample();
+
+            setExtensionAndWait(arm.extension.CLOSED);
+            prepareToScoreHighBasket();
+            path_follower.goToPos(dataStorage.RobotWorldX, dataStorage.RobotWorldY, -Math.PI / 2);
+            scoreHighBasket();
+
+            waitArmRotation();
             robot.stop();
-
-
 
             packet = new TelemetryPacket();
             fieldOverlay = packet.fieldOverlay();
@@ -165,8 +174,21 @@ public class auto_red_yellow extends LinearOpMode {
         module_master.differential.pitchForward();
     }
 
+    /** SET DIFFY PITCH DOWN AND ARM ROTATED TO LIFT **/
+    private void prepareToScoreHighBasket(){
+        module_master.doAction(SET_ROTATION_LIFT);
+        module_master.differential.pitchDown();
+    }
+
+    private void setExtensionAndWait(arm.extension extension){
+        module_master.arm.setExtension(extension);
+        waitArmExtension();
+    }
+
     /** RAISE ELEVATOR, SCORE SAMPLE, FOLD EXTENSION **/
     private void scoreHighBasket(){
+        waitArmRotation();
+
         /* RAISE ELEVATOR */
         module_master.doAction(SET_EXTENSION_LIFT);
         waitArmExtension();
@@ -186,16 +208,5 @@ public class auto_red_yellow extends LinearOpMode {
         waitArmExtension();
 
         module_master.doAction(SET_ROTATION_FRONT);
-    }
-
-    /** SET DIFFY PITCH DOWN AND ARM ROTATED TO LIFT **/
-    private void prepareToScoreHighBasket(){
-        module_master.doAction(SET_ROTATION_LIFT);
-        module_master.differential.pitchDown();
-    }
-
-    private void setExtensionAndWait(arm.extension extension){
-        module_master.arm.setExtension(extension);
-        waitArmExtension();
     }
 }
