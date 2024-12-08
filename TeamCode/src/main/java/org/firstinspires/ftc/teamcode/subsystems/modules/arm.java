@@ -355,11 +355,11 @@ public class arm {
 
     public boolean extensionReached()
     {
-        return Math.abs(targetExtensionPos - extensionMotor.getCurrentPosition()) < 20;
+        return Math.abs(targetExtensionPos - extensionMotor.getCurrentPosition()) < 5;
     }
 
     public boolean rotationReached()
     {
-        return Math.abs(targetRotationPos - rotationMotor.getCurrentPosition()) < 20;
+        return Math.abs(targetRotationPos - rotationMotor.getCurrentPosition()) < 7 /* && rotDeltaFiltered < 4*/;
     }
 }
