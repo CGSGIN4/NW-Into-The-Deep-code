@@ -5,7 +5,7 @@ import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.EX
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.FRONTAL_EXTENSION;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.HIGH_CHAMBER;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.LOW_CHAMBER;
-import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.BACK;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.MANUAL;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.CHAMBER;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.FRONT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.LIFT;
@@ -67,10 +67,8 @@ public class armTest extends LinearOpMode {
 
             if (currentGamepad1.a && !previousGamepad1.a)
             {
-                if (arm.rotationState == LIFT)
-                    arm.setRotation(BACK);
                     //tele.addData("rotation power", arm.setRotation(BACK));
-                else if (arm.rotationState == CHAMBER)
+                if (arm.rotationState == CHAMBER)
                     arm.setRotation(LIFT);
                 else
                     arm.setRotation(CHAMBER);
@@ -108,12 +106,12 @@ public class armTest extends LinearOpMode {
             arm.ROTATION_PIDF.f = f;
 */
 
-            /*
+
             if (Math.abs(gamepad1.right_stick_y) > 0.01)
-                arm.manuallyRotate(-gamepad1.right_stick_y);
-            else
-                arm.rotationMotor.setPower(0);
-            */
+                arm.manuallyExtend(-gamepad1.right_stick_y);
+            else if (arm.extensionState == MANUAL)
+                arm.extensionMotor.setPower(0);
+
 
 
             tele.addData("rotation pos", arm.rotationMotor.getCurrentPosition());

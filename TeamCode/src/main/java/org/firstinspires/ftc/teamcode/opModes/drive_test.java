@@ -42,7 +42,7 @@ public class drive_test extends LinearOpMode {
         waitForStart();
         painter painter = new painter();
 
-        robot.drive.setPoseEstimate(new Pose2d(0, 0, 0));
+        robot.drive.setPoseEstimate(new Pose2d(-48, 48, 0));
         while (opModeIsActive()) {
             dataStorage.updateData();
 

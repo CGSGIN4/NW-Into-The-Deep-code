@@ -25,11 +25,11 @@ public class velocity_calculator {
     double t;
     double CENTRIPETAL_ACCEL_KOEF = 0.75/*0.59*/;
 
-    double P_ROTATION_COEF = 0.2 /*0.1*/;
+    double P_ROTATION_COEF = 0.2 /*0.2*/;
 
     double D_ROTATION_COEF = 0.1 /*0.4*/;
 
-    double I_ROTATION_COEF = 0.44;//3;
+    double I_ROTATION_COEF = 0.06;//3;
     double velocityModule;
 
     double oldTargetHeading;
@@ -52,14 +52,14 @@ public class velocity_calculator {
     double PLINEAR = 0.03;
     double DLINEAR = 0.1;
 
-    double IHeading = 0;
+    public double IHeading = 0;
     Vector2d robotVelocity;
     public Vector2d accel;
     public Vector2d velocity;
     double closest_turn_old;
 
     double p_rotation_coef = 3.;
-    double p_trans_coef = 0.1;
+    double p_trans_coef = 0.108;
     double d_trans_coef = 0.1;
     double i_trans_coef = 0.;
 
@@ -163,13 +163,15 @@ public class velocity_calculator {
     public double getRotationCustomDirection(Vector2d direction){
         double currentTargetHeading = normalizeAngle(direction.angle());
         double errorHeading = normalizeAngle(currentTargetHeading - dataStorage.RobotWorldHeading);
-        double errorOldHeading = dataStorage.OldRobotWorldHeading - this.oldTargetHeading;
+        double errorOldHeading = normalizeAngle(dataStorage.OldRobotWorldHeading - this.oldTargetHeading);
 
+        if (currentTargetHeading != oldTargetHeading)
+            IHeading = 0;
         double DHeading = errorHeading - errorOldHeading;
 
-        if (Math.abs(errorHeading) <= 0.3)
+        if (Math.abs(errorHeading) <= 0.6)
             IHeading += errorHeading;
-        if (errorHeading * errorOldHeading < 0)
+        if (Math.abs(errorHeading) < 0.1)
             IHeading = 0;
 
         this.oldTargetHeading = currentTargetHeading;

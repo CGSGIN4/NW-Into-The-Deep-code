@@ -10,11 +10,14 @@ import com.qualcomm.robotcore.hardware.ServoController;
 public class TakeTest extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        DcMotor servo;
-        servo = hardwareMap.get(DcMotor.class, "motor");
+        DcMotor motor1;
+        DcMotor motor2;
+        motor1 = hardwareMap.get(DcMotor.class, "hangLeft");
+        motor2 = hardwareMap.get(DcMotor.class, "hangRight");
         waitForStart();
         while(opModeIsActive()){
-            servo.setPower(0.5);
+            motor1.setPower(gamepad1.left_stick_y);
+            motor2.setPower(-gamepad1.left_stick_y);
         }
     }
 }

@@ -23,6 +23,7 @@ public class differential {
     public double rTheta;
     public double pitch; /* up/down */
     public double roll; /* rotation */
+    public int clawState = 0; /* 1 - open; 0 - close */
 
     public differential(HardwareMap HM){
         lServo = HM.get(Servo.class, "differential_l");
@@ -30,6 +31,7 @@ public class differential {
         claw = HM.get(Servo.class, "claw");
         pitch = 180;
         roll = 0;
+        closeClaw();
     }
     double posToDeg(double pos){
         return MAX_ANGLE * pos;
@@ -91,11 +93,20 @@ public class differential {
     }
 
     public void openClaw(){
-        claw.setPosition(0.6);
+        clawState = 1;
+        claw.setPosition(0.8);
     }
 
     public void closeClaw(){
-        claw.setPosition(0.32);
+        clawState = 0;
+        claw.setPosition(0.3);
+    }
+
+    public void clawSwitch(){
+        if (clawState == 0)
+            openClaw();
+        else
+            closeClaw();
     }
 
     public void update(){

@@ -5,10 +5,13 @@ import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.EX
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.FRONTAL_EXTENSION;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.HIGH_CHAMBER;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.LOW_CHAMBER;
-import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.BACK;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.MANUAL;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.BACK_HANG1;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.BACK_HANG0;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.CHAMBER;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.FRONT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.LIFT;
+import static java.lang.Math.decrementExact;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
@@ -20,12 +23,14 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareDevice;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.SwitchableLight;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Robot;
@@ -46,12 +51,19 @@ public class tele_main extends LinearOpMode {
     Vector2d gamepad = new Vector2d();
     double turn = 0;
     FtcDashboard dashboard;
+    boolean foldingSequence = false;
+    boolean unfoldingSequence = false;
+    ElapsedTime foldingTimer = new ElapsedTime();
 
     @Override
     public void runOpMode() throws InterruptedException {
         Robot robot = new Robot(hardwareMap);
         differential differential = new differential(hardwareMap);
         arm arm = new arm(hardwareMap);
+        DcMotor motor1;
+        DcMotor motor2;
+        motor1 = hardwareMap.get(DcMotor.class, "hangLeft");
+        motor2 = hardwareMap.get(DcMotor.class, "hangRight");
 
         robot.init();
         dataStorage.init(robot.drive, telemetry, this);
@@ -61,7 +73,7 @@ public class tele_main extends LinearOpMode {
         int rollPos = 0;
         int pitchPos = 1;
         waitForStart();
-        while(opModeIsActive()){
+        while(opModeIsActive()) {
             driverGamepad.update();
             assistGamepad.update();
             dataStorage.updateData();
@@ -74,12 +86,14 @@ public class tele_main extends LinearOpMode {
             else if (rollPos < 2 && assistGamepad.isClicked("dpad_right"))
                 rollPos++;
 
+            dataStorage.telemetry.addData("roll", rollPos);
+            dataStorage.telemetry.addData("pitch", pitchPos);
             if (pitchPos > -1 && assistGamepad.isClicked("dpad_down"))
                 pitchPos--;
             else if (pitchPos < 1 && assistGamepad.isClicked("dpad_up"))
                 pitchPos++;
 
-            switch (rollPos){
+            switch (rollPos) {
                 case -2:
                     differential.rollFullLeft();
                     break;
@@ -95,9 +109,11 @@ public class tele_main extends LinearOpMode {
                 case 2:
                     differential.rollFullRight();
                     break;
+                default:
+                    break;
             }
 
-            switch (pitchPos){
+            switch (pitchPos) {
                 case -1:
                     differential.pitchDown();
                     break;
@@ -107,63 +123,105 @@ public class tele_main extends LinearOpMode {
                 case 1:
                     differential.pitchUp();
                     break;
+                default:
+                    break;
             }
 
             //differential.setPitch(pitch);
             //differential.setRoll(roll);
 
-            if (gamepad2.a)
-                differential.closeClaw();
-            if (gamepad2.b)
-                differential.openClaw();
+            if (assistGamepad.isClicked("x"))
+                differential.clawSwitch();
 
             /* DRIVE SECTION */
-            if (Math.abs(gamepad1.left_stick_x) > 0.01 || Math.abs(gamepad1.left_stick_y) > 0.01 || gamepad1.left_trigger > 0.01 || gamepad1.right_trigger > 0.01)
-            {
+            if (Math.abs(gamepad1.left_stick_x) > 0.01 || Math.abs(gamepad1.left_stick_y) > 0.01 || gamepad1.left_trigger > 0.01 || gamepad1.right_trigger > 0.01) {
                 gamepad = new Vector2d(gamepad1.left_stick_x, -gamepad1.left_stick_y);
                 turn = (gamepad1.left_trigger - gamepad1.right_trigger);
-
+                if (driverGamepad.isPressed("y"))
+                {
+                    turn /= 2;
+                }
                 robot.drivetrain.applyVector(gamepad, turn);
-            }
-            else
+            } else
                 robot.drivetrain.applyVector(new Vector2d(0, 0), 0);
 
 
             /* ARM SECTION */
-            if (assistGamepad.isClicked("a"))
-            {
+            if (assistGamepad.isClicked("a")) {
                 if (arm.rotationState == LIFT)
-                    arm.setRotation(BACK);
-                    //tele.addData("rotation power", arm.setRotation(BACK));
-                else if (arm.rotationState == CHAMBER)
-                    arm.setRotation(LIFT);
+                    arm.setRotation(FRONT);
                 else
-                    arm.setRotation(CHAMBER);
+                    arm.setRotation(LIFT);
                 //tele.addData("rotation power", arm.setRotation(LIFT));
             }
 
-            if (assistGamepad.isClicked("b"))
-            {
-                arm.setRotation(FRONT);
-                //tele.addData("rotation power", arm.setRotation(FRONT));
+            if (assistGamepad.isClicked("right_bumper")) {
+                if (arm.rotationState == LIFT) {
+                    if (arm.extensionMotor.getCurrentPosition() < 100) {
+                        unfoldingSequence = true;
+                    } else {
+                        foldingSequence = true;
+                        foldingTimer.reset();
+                    }
+                } else {
+                    arm.setExtension(CLOSED);
+                    pitchPos = 0;
+                }
             }
 
-            if (assistGamepad.isClicked("dpad_right"))
-                arm.setExtension(LOW_CHAMBER);
-            //tele.addData("extension power", arm.setExtension(LOW_CHAMBER));
-            if (assistGamepad.isClicked("dpad_left"))
-                arm.setExtension(HIGH_CHAMBER);
-            //tele.addData("extension power", arm.setExtension(HIGH_CHAMBER));
-            if (assistGamepad.isClicked("dpad_down"))
-                arm.setExtension(FRONTAL_EXTENSION);
-            //tele.addData("extension power", arm.setExtension(FRONTAL_EXTENSION));
-            if (assistGamepad.isClicked("dpad_up"))
+            if (foldingSequence) {
+                differential.openClaw();
+                if (foldingTimer.milliseconds() > 270) {
+                    differential.pitchDown();
+                    if (foldingTimer.milliseconds() > 500) {
+                        if (arm.extensionMotor.getCurrentPosition() > 100)
+                            arm.setExtension(CLOSED);
+                        else if (arm.rotationMotor.getCurrentPosition() > 100)
+                            arm.setRotation(FRONT);
+                        else {
+                            rollPos = 0;
+                            pitchPos = 0;
+                            foldingSequence = false;
+                        }
+                    }
+                }
+            }
+
+            if (unfoldingSequence) {
+                if (Math.abs(gamepad2.right_stick_y) > 0.01)
+                {
+                    unfoldingSequence = false;
+                }
                 arm.setExtension(EXTENDED);
-            //tele.addData("extension power", arm.setExtension(EXTENDED));
+                if (arm.extensionMotor.getCurrentPosition() > 460) {
+                    differential.setPitch(150);
+                    pitchPos = 2;
+                    unfoldingSequence = false;
+                }
+            }
 
 
-            if (assistGamepad.isClicked("y"))
-                arm.setExtension(CLOSED);
+            if (Math.abs(gamepad2.right_stick_y) > 0.01)
+                arm.manuallyExtend(-gamepad2.right_stick_y);
+            else {
+                if (arm.extensionState == MANUAL)
+                    arm.extensionMotor.setPower(0);
+            }
+
+            if (Math.abs(gamepad2.left_stick_y) > 0.1)
+            {
+                motor1.setPower(gamepad2.left_stick_y);
+                motor2.setPower(-gamepad2.left_stick_y);
+            }
+            else
+            {
+                motor1.setPower(0);
+                motor2.setPower(0);
+            }
+            if (gamepad2.left_trigger > 0.1)
+                arm.setRotation(BACK_HANG1);
+            else if (gamepad2.right_trigger > 0.1)
+                arm.setRotation(BACK_HANG0);
         }
     }
 }

@@ -2,6 +2,12 @@ package org.firstinspires.ftc.teamcode.subsystems.modules;
 
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.CLAW_CLOSE;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.CLAW_OPEN;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_CLOSED;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_LIFT;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_ROTATION_FRONT;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_ROTATION_LIFT;
+
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.data.dataStorage;
 import org.firstinspires.ftc.teamcode.subsystems.modules.test.dummyServo;
@@ -10,37 +16,49 @@ import org.firstinspires.ftc.teamcode.subsystems.modules.test.dummyServo;
 public class module_master {
     /* add actions here following byte flags conception */
     public enum action{;
-        public static final int CLAW_CLOSE = 0b0000001;
-        public static final int CLAW_OPEN = 0b0000010;
+        public static final int CLAW_CLOSE = 1;
+        public static final int CLAW_OPEN = 2;
+        public static final int SET_ROTATION_LIFT = 3;
+        public static final int SET_ROTATION_FRONT = 4;
+        public static final int SET_EXTENSION_LIFT = 5;
+        public static final int SET_EXTENSION_CLOSED = 6;
     }
 
-    static differential differential;
-    static arm arm;
+    public static differential differential;
+    public static arm arm;
 
-    public static void init(){
-
+    public static void init(HardwareMap HM){
+        arm = new arm(HM);
+        differential = new differential(HM);
     }
-    public static boolean doAction(int action){
-        /* continue ifing this as shown */
-        if ((action & CLAW_CLOSE) == CLAW_CLOSE){
-            action -= CLAW_CLOSE;
-            /* call function that closes claw */
-            differential.closeClaw();
+    public static void doAction(int action){
+        switch (action)
+        {
+            case CLAW_CLOSE:
+                differential.closeClaw();
+                break;
+            case CLAW_OPEN:
+                differential.openClaw();
+                break;
+            case SET_ROTATION_LIFT:
+                arm.setRotation(org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.LIFT);
+                break;
+            case SET_ROTATION_FRONT:
+                arm.setRotation(org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.FRONT);
+                break;
+            case SET_EXTENSION_LIFT:
+                arm.setExtension(org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.EXTENDED);
+                break;
+            case SET_EXTENSION_CLOSED:
+                arm.setExtension(org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.CLOSED);
+                break;
+            default:
+                break;
         }
-
-        if ((action & CLAW_OPEN) == CLAW_OPEN){
-            action -= CLAW_OPEN;
-            /* call function that opens claw */
-            differential.openClaw();
-        }
-
-        /* check if all actions are done */
-        return action == 0;
     }
 
-    public void update(){
+    public static void update(){
         arm.update();
         differential.update();
     }
-
 }

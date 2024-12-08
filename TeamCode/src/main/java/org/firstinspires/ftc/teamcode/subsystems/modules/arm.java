@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.subsystems.modules;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.controller.wpilibcontroller.ArmFeedforward;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -12,6 +13,7 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.opencv.core.Mat;
 
 @Config
 public class arm {
@@ -21,13 +23,16 @@ public class arm {
     public AnalogInput rotationBtn;
 
     /* ------------------ CONSTANTS ------------------ */
-    int EXTENSION_FULL = 500; //370
+    int EXTENSION_FULL = 465; //370
     int EXTENSION_FRONT_MAX = 305;
     int EXTENSION_LOW_CHAMBER = 180;
     int EXTENSION_HIGH_CHAMBER = 278;
+    int EXTENSION_YELLOW_1 = 300;
+    int EXTENSION_YELLOW_2 = 278;
     int ROTATION_FRONT = 0;
-    int ROTATION_BACK = 928;
-    int ROTATION_LIFT = 464;
+    int ROTATION_BACK_HANG0 = 560;
+    int ROTATION_BACK_HANG1 = 520;
+    int ROTATION_LIFT = 485;
     int ROTATION_CHAMBER = 300;
 
     /* ------------------ ON-FLY ------------------ */
@@ -89,12 +94,15 @@ public class arm {
         CLOSED,
         LOW_CHAMBER,
         HIGH_CHAMBER,
-        MANUAL
+        MANUAL,
+        YELLOW_1,
+        YELLOW_2
     }
 
     public enum rotation {
         FRONT,
-        BACK,
+        BACK_HANG0,
+        BACK_HANG1,
         CHAMBER,
         LIFT,
         RESET,
@@ -164,6 +172,10 @@ public class arm {
                 return EXTENSION_HIGH_CHAMBER;
             case FRONTAL_EXTENSION:
                 return EXTENSION_FRONT_MAX;
+            case YELLOW_1:
+                return EXTENSION_YELLOW_1;
+            case YELLOW_2:
+                return  EXTENSION_YELLOW_2;
         }
         return -1;
     }
@@ -172,8 +184,10 @@ public class arm {
     {
         switch (target)
         {
-            case BACK:
-                return ROTATION_BACK;
+            case BACK_HANG0:
+                return ROTATION_BACK_HANG0;
+            case BACK_HANG1:
+                return ROTATION_BACK_HANG1;
             case LIFT:
                 return ROTATION_LIFT;
             case CHAMBER:
@@ -214,7 +228,7 @@ public class arm {
         oldExtensionError = error;
 
         if (rotationState == rotation.LIFT && extensionState == extension.CLOSED && Math.abs(error) < 60 && Math.abs(error) > 10) {
-            error /= 20;
+            error /= 2;
         }
 
         return (error * EXTENSION_PIDF.p + delta * EXTENSION_PIDF.d + EXTENSION_PIDF.f * Math.cos(Math.toRadians(rotationAngle)) * ratio);
@@ -268,6 +282,13 @@ public class arm {
             return this.setExtensionMotorPower(pidCalculateExtensionPower(targetExtensionPos));
     }
 
+    public double setExtensionInTicks(int target)
+    {
+        this.extensionState = extension.MANUAL;
+
+        return this.setExtensionMotorPower(pidCalculateExtensionPower(target));
+    }
+
     public double setRotation(rotation target)
     {
         if (rotationState == rotation.RESET)
@@ -275,7 +296,7 @@ public class arm {
             resetRotationEncoders();
         }
 
-        if (extensionState == extension.CLOSED) {
+        if (extensionState == extension.CLOSED || (extensionMotor.getCurrentPosition() < 100 && extensionState == extension.MANUAL)) {
             this.targetRotationPos = rotationPosToTicks(target);
             this.rotationState = target;
         }
@@ -284,8 +305,12 @@ public class arm {
     }
 
     public void manuallyExtend(double speed){
-        this.extensionState = extension.MANUAL;
-        setExtensionMotorPower(speed);
+        if (rotationState == rotation.LIFT || this.extensionMotor.getCurrentPosition() < extensionPosToTicks(extension.FRONTAL_EXTENSION) || speed < 0) {
+            this.extensionState = extension.MANUAL;
+            setExtensionMotorPower(speed);
+        }
+        else
+            setExtension(extension.FRONTAL_EXTENSION);
     }
 
     public void manuallyRotate(double speed){
@@ -326,5 +351,15 @@ public class arm {
             l_4 = 0.135;
 
         return k * pos + b;
+    }
+
+    public boolean extensionReached()
+    {
+        return Math.abs(targetExtensionPos - extensionMotor.getCurrentPosition()) < 20;
+    }
+
+    public boolean rotationReached()
+    {
+        return Math.abs(targetRotationPos - rotationMotor.getCurrentPosition()) < 20;
     }
 }
