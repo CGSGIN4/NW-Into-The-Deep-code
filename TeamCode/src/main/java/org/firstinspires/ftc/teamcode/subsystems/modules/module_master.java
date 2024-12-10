@@ -7,6 +7,7 @@ import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.ac
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_ROTATION_FRONT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_ROTATION_LIFT;
 
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.data.dataStorage;
@@ -57,8 +58,8 @@ public class module_master {
         }
     }
 
-    public static void update(){
-        arm.update();
+    public static void update(MultipleTelemetry telemetry){
+        arm.update(telemetry);
         differential.update();
     }
 }

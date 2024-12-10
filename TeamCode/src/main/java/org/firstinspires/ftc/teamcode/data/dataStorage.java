@@ -110,7 +110,7 @@ public enum dataStorage {;
         poseHistory.clear();
         iter = 0;
         relocation_timer.reset();
-        //module_master.init(linearOpMode.hardwareMap);
+        module_master.init(linearOpMode.hardwareMap);
     }
 
     private static double calculateBrakeAccel(double v){

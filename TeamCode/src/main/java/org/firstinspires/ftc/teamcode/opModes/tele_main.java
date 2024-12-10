@@ -72,6 +72,9 @@ public class tele_main extends LinearOpMode {
         GamepadNW assistGamepad = new GamepadNW(gamepad2);
         int rollPos = 0;
         int pitchPos = 1;
+        differential.pitchUp();
+        differential.rollDefault();
+        differential.update();
         waitForStart();
         while(opModeIsActive()) {
             driverGamepad.update();
@@ -194,8 +197,6 @@ public class tele_main extends LinearOpMode {
                 }
                 arm.setExtension(EXTENDED);
                 if (arm.extensionMotor.getCurrentPosition() > 460) {
-                    differential.setPitch(150);
-                    pitchPos = 2;
                     unfoldingSequence = false;
                 }
             }
