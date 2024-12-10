@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opModes;
+package org.firstinspires.ftc.teamcode.opModes.utils;
 
 import android.os.Environment;
 
@@ -22,7 +22,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-@TeleOp
+@TeleOp(group = "Utils")
 public class traj_builder2 extends LinearOpMode {
     String FILENAME = "ITD_RED_YELLOW";
     private FtcDashboard dashboard;

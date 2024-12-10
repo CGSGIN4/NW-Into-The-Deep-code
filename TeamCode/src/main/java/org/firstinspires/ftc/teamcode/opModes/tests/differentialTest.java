@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opModes.tmp;
+package org.firstinspires.ftc.teamcode.opModes.tests;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -20,7 +20,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.subsystems.modules.differential;
 import org.firstinspires.ftc.teamcode.utils.GamepadNW;
 
-@TeleOp
+@TeleOp(group = "Tests")
 @Config
 public class differentialTest extends LinearOpMode {
     public static double pitch = 180;

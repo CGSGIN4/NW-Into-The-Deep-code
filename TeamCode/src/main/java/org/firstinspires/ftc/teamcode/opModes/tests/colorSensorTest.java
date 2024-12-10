@@ -1,34 +1,26 @@
-package org.firstinspires.ftc.teamcode.opModes.tmp;
+package org.firstinspires.ftc.teamcode.opModes.tests;
 
 import android.graphics.Color;
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
-import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.hardware.SwitchableLight;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-@TeleOp
+@TeleOp(group = "Tests")
 @Config
-public class servoSetZero extends LinearOpMode {
+public class colorSensorTest extends LinearOpMode {
     public static double pos = 0.7;
     NormalizedColorSensor colorSensor;
     @Override
     public void runOpMode() throws InterruptedException {
-        Servo servo;
-        servo = hardwareMap.get(Servo.class, "servo");
         colorSensor = hardwareMap.get(NormalizedColorSensor.class, "sensor_color");
         colorSensor.setGain(2);
         float[] hsvValues = new float[3];
@@ -37,14 +29,6 @@ public class servoSetZero extends LinearOpMode {
         while(opModeIsActive()){
             NormalizedRGBA colors = colorSensor.getNormalizedColors();
             Color.colorToHSV(colors.toColor(), hsvValues);
-            if (gamepad1.a)
-            {
-                if (colorSensor instanceof SwitchableLight) {
-                    SwitchableLight light = (SwitchableLight)colorSensor;
-                    light.enableLight(!light.isLightOn());
-                }
-            }
-            servo.setPosition(pos);
 
             tele.addLine()
                     .addData("Red", "%.3f", colors.red)

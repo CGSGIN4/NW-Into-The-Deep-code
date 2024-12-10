@@ -55,41 +55,61 @@ public class differential {
     public void pitchUp()
     {
         setPitch(180);
+        update();
     }
 
     public void pitchDown()
     {
         setPitch(20);
+        update();
+    }
+
+    public void pitchHalfDown()
+    {
+        setPitch(50);
+        update();
+    }
+
+    public void pitchScoringBasket()
+    {
+        setPitch(150);
+        update();
     }
 
     public void pitchForward()
     {
         setPitch(100);
+        update();
     }
 
     public void rollFullLeft()
     {
         setRoll(-80);
+        update();
     }
 
     public void rollHalfLeft()
     {
         setRoll(-45);
+        update();
     }
 
     public void rollHalfRight()
     {
         setRoll(45);
+        update();
     }
 
     public void rollFullRight()
     {
         setRoll(80);
+        update();
     }
 
     public void rollDefault()
     {
         setRoll(2);
+        update();
     }
 
     public void openClaw(){

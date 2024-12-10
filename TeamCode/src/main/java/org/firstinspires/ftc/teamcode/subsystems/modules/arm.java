@@ -27,7 +27,7 @@ public class arm {
     int EXTENSION_FRONT_MAX = 305;
     int EXTENSION_LOW_CHAMBER = 180;
     int EXTENSION_HIGH_CHAMBER = 278;
-    int EXTENSION_YELLOW_1 = 300;
+    int EXTENSION_YELLOW_1 = 305;
     int EXTENSION_YELLOW_2 = 278;
     int ROTATION_FRONT = 0;
     int ROTATION_BACK_HANG0 = 560;
@@ -355,11 +355,11 @@ public class arm {
 
     public boolean extensionReached()
     {
-        return Math.abs(targetExtensionPos - extensionMotor.getCurrentPosition()) < 20;
+        return Math.abs(targetExtensionPos - extensionMotor.getCurrentPosition()) < 5;
     }
 
     public boolean rotationReached()
     {
-        return Math.abs(targetRotationPos - rotationMotor.getCurrentPosition()) < 20;
+        return Math.abs(targetRotationPos - rotationMotor.getCurrentPosition()) < 7 /* && rotDeltaFiltered < 4*/;
     }
 }

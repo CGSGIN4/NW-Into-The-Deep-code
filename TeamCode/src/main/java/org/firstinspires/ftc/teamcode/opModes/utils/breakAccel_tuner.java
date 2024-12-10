@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opModes;
+package org.firstinspires.ftc.teamcode.opModes.utils;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.data.dataStorage;
 import org.firstinspires.ftc.teamcode.math.calculator;
 import org.firstinspires.ftc.teamcode.utils.painter;
 
-@Autonomous
+@Autonomous(group = "Utils")
 public class breakAccel_tuner extends LinearOpMode {
     Robot robot;
     ElapsedTime timer = new ElapsedTime();

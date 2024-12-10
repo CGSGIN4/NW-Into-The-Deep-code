@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opModes;
+package org.firstinspires.ftc.teamcode.opModes.tests;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.subsystems.path_follower;
 import org.firstinspires.ftc.teamcode.subsystems.velocity_calculator;
 import org.firstinspires.ftc.teamcode.utils.painter;
 
-@TeleOp
+@TeleOp(group = "Tests")
 public class drive_test extends LinearOpMode {
     Robot robot;
     path_follower path_follower;
