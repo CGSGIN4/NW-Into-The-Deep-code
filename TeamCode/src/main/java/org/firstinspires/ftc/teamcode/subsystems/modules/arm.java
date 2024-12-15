@@ -23,7 +23,7 @@ public class arm {
     public AnalogInput rotationBtn;
 
     /* ------------------ CONSTANTS ------------------ */
-    int EXTENSION_FULL = 465; //370
+    int EXTENSION_FULL = 510; //370
     int EXTENSION_FRONT_MAX = 305;
     int EXTENSION_LOW_CHAMBER = 180;
     int EXTENSION_HIGH_CHAMBER = 278;
@@ -31,8 +31,8 @@ public class arm {
     int EXTENSION_YELLOW_2 = 278;
     int ROTATION_FRONT = 0;
     int ROTATION_BACK_HANG0 = 560;
-    int ROTATION_BACK_HANG1 = 520;
-    int ROTATION_LIFT = 485;
+    int ROTATION_BACK_HANG1 = 516;
+    int ROTATION_LIFT = 498; //485
     int ROTATION_CHAMBER = 300;
 
     /* ------------------ ON-FLY ------------------ */
@@ -55,7 +55,7 @@ public class arm {
     /* no load 1:1.17 *///final PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.009, 0, 0.019, 0.028);
     /* load 1:1.17 *///final PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.02, 0, 0.04, 0.052);
     /* load 1:4 */ public PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.0058, 0, 0.0009, -0.006);
-    public PIDFCoefficients EXTENSION_PIDF = new PIDFCoefficients(0.009, 0, 0.02, 0.01);
+    public PIDFCoefficients EXTENSION_PIDF = new PIDFCoefficients(0.011, 0, 0.02, 0.01);
     int oldExtensionError = 0;
     public double oldRotationError = 0;
     double rotDeltaRaw = 0;
@@ -216,6 +216,8 @@ public class arm {
     }
 
     private double pidCalculateExtensionPower(int targetPos){
+        if (extensionState == extension.EXTENDED)
+            return 1;
         int error = targetPos - extensionMotor.getCurrentPosition();
         int delta = error - oldExtensionError;
 
@@ -296,7 +298,7 @@ public class arm {
             resetRotationEncoders();
         }
 
-        if (extensionState == extension.CLOSED || (extensionMotor.getCurrentPosition() < 100 && extensionState == extension.MANUAL)) {
+        if (target == rotation.BACK_HANG1 || rotationState == rotation.BACK_HANG1 || extensionState == extension.CLOSED || (extensionMotor.getCurrentPosition() < 100 && extensionState == extension.MANUAL)) {
             this.targetRotationPos = rotationPosToTicks(target);
             this.rotationState = target;
         }
@@ -355,7 +357,9 @@ public class arm {
 
     public boolean extensionReached()
     {
-        return Math.abs(targetExtensionPos - extensionMotor.getCurrentPosition()) < 5;
+        return (extensionMotor.getCurrentPosition() >= targetExtensionPos && extensionState == extension.EXTENDED) ||
+                ((Math.abs(targetExtensionPos - extensionMotor.getCurrentPosition()) < 21) && extensionState == extension.CLOSED) ||
+                Math.abs(targetExtensionPos - extensionMotor.getCurrentPosition()) < 5;
     }
 
     public boolean rotationReached()

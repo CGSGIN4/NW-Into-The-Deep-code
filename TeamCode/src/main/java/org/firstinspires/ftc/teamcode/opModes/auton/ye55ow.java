@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.util.function.BooleanSupplier;
 
 @Autonomous
-public class auto_red_yellow extends LinearOpMode {
+public class ye55ow extends LinearOpMode {
 
     Robot robot;
     path_follower path_follower;
@@ -72,67 +72,81 @@ public class auto_red_yellow extends LinearOpMode {
 
         while (opModeIsActive()) {
             /* PRELOAD */
-            //prepareToScoreHighBasket();
+            prepareToScoreHighBasket();
             path_follower.followTrajectoryBreak(curves[0], -Math.PI * 3 / 4);
-            //scoreHighBasket();
+            scoreHighBasket();
 
-            /* ---------1ST YELLOW--------- */
-            path_follower.goToPos(dataStorage.RobotWorldX, dataStorage.RobotWorldY, -Math.PI / 2 - Math.toRadians(16));
-            //waitArmRotation();
-
-            //module_master.differential.pitchHalfDown();
-            setExtensionAndWait(arm.extension.YELLOW_1);
-            delay(1000);
-
-            //takeSample();
-
-            setExtensionAndWait(arm.extension.CLOSED);
-            //prepareToScoreHighBasket();
-            path_follower.goToPos(dataStorage.RobotWorldX, dataStorage.RobotWorldY, -Math.PI * 3 / 4);
-            //scoreHighBasket();
-
-            /* ---------2ND YELLOW--------- */
-            path_follower.goToPos(dataStorage.RobotWorldX, dataStorage.RobotWorldY, -Math.PI / 2 + Math.toRadians(12));
-            //waitArmRotation();
-
-            //module_master.differential.pitchHalfDown();
-            setExtensionAndWait(arm.extension.YELLOW_1);
-            delay(1000);
-
-            //takeSample();
-
-            setExtensionAndWait(arm.extension.CLOSED);
-            //prepareToScoreHighBasket();
-            path_follower.goToPos(dataStorage.RobotWorldX, dataStorage.RobotWorldY, -Math.PI * 3 / 4);
-            //scoreHighBasket();
-
-            /* ---------3RD YELLOW--------- */
-            //module_master.differential.rollHalfRight();
-            path_follower.goToPos(58, 49.6, -Math.PI / 2 + Math.toRadians(18));
-            //waitArmRotation();
-
-            setExtensionAndWait(arm.extension.YELLOW_1);
-            delay(1000);
-
-            //takeSample();
-
-            module_master.arm.setExtension(arm.extension.CLOSED);
-            path_follower.goToPos(53.5, 53.5, -Math.PI * 3 / 4);
-            waitArmExtension();
-            //prepareToScoreHighBasket();
-            //scoreHighBasket();
-
-            //waitArmRotation();
-
-            /* 4TH YELLOW */
-            path_follower.followTrajectory(curves[1], Math.PI);
-            path_follower.followTrajectoryBreak(curves[2], Math.PI);
+            /* DOBOR
+            path_follower.followTrajectoryBreak(curves[1], Math.PI);
             module_master.arm.setExtension(arm.extension.YELLOW_1);
             waitArmExtension();
             delay(1000);
             module_master.arm.setExtension(arm.extension.CLOSED);
-            path_follower.followTrajectoryBreak(curves[3], -Math.PI * 3 / 4);
+            path_follower.followTrajectoryBreak(curves[2], -Math.PI * 3 / 4);
             waitArmExtension();
+
+             */
+
+            /* ---------1ST YELLOW--------- */
+            path_follower.goToPos(52.7, 52.7, -Math.PI / 2 - Math.toRadians(11));
+            waitArmExtension();
+
+            module_master.doAction(SET_ROTATION_FRONT);
+            waitArmRotation();
+
+            module_master.differential.pitchHalfDown();
+            setExtensionAndWait(arm.extension.YELLOW_1);
+
+            takeSample();
+
+            module_master.arm.setExtension(arm.extension.CLOSED);
+            path_follower.goToPos(52.7, 52.7, -Math.PI * 3 / 4);
+            waitArmExtension();
+            prepareToScoreHighBasket();
+            scoreHighBasket();
+
+            /* ---------2ND YELLOW--------- */
+            path_follower.goToPos(52.7, 52.7, -Math.PI / 2 + Math.toRadians(14));
+            waitArmExtension();
+
+            module_master.doAction(SET_ROTATION_FRONT);
+            waitArmRotation();
+
+            module_master.differential.pitchHalfDown();
+            setExtensionAndWait(arm.extension.YELLOW_1);
+
+            takeSample();
+
+            module_master.arm.setExtension(arm.extension.CLOSED);
+            path_follower.goToPos(52.7, 52.7, -Math.PI * 3 / 4);
+            waitArmExtension();
+            prepareToScoreHighBasket();
+            scoreHighBasket();
+
+            /* ---------3RD YELLOW--------- */
+            module_master.differential.rollHalfRight();
+            path_follower.goToPos(58, 49.6, -Math.PI / 2 + Math.toRadians(22));
+            waitArmExtension();
+
+            module_master.doAction(SET_ROTATION_FRONT);
+            waitArmRotation();
+
+            setExtensionAndWait(arm.extension.YELLOW_1);
+
+            takeSample();
+
+            module_master.arm.setExtension(arm.extension.CLOSED);
+            module_master.differential.rollDefault();
+            path_follower.goToPos(52.7, 52.7, -Math.PI * 3 / 4);
+            waitArmExtension();
+            prepareToScoreHighBasket();
+            scoreHighBasket();
+            waitArmExtension();
+            module_master.doAction(SET_ROTATION_FRONT);
+
+            path_follower.followTrajectoryBreak(curves[3], Math.PI - Math.toRadians(10));
+            waitArmRotation();
+            setExtensionAndWait(arm.extension.YELLOW_1);
 
             robot.stop();
             module_master.stop(dataStorage.telemetry);
@@ -209,20 +223,22 @@ public class auto_red_yellow extends LinearOpMode {
         module_master.doAction(SET_EXTENSION_LIFT);
         waitArmExtension();
 
+        module_master.arm.setRotation(arm.rotation.BACK_HANG1);
+
         /* SCORE SAMPLE */
         module_master.differential.pitchScoringBasket();
         delay(300);
 
+        waitArmRotation();
         module_master.differential.openClaw();
         delay(300);
+
+        module_master.arm.setRotation(arm.rotation.LIFT);
 
         module_master.differential.pitchHalfDown();
         delay(300);
 
         /* FOLD */
         module_master.doAction(SET_EXTENSION_CLOSED);
-        waitArmExtension();
-
-        module_master.doAction(SET_ROTATION_FRONT);
     }
 }

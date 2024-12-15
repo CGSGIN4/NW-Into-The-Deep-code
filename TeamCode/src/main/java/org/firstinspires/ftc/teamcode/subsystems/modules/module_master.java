@@ -62,4 +62,8 @@ public class module_master {
         arm.update(telemetry);
         differential.update();
     }
+
+    public static void stop(MultipleTelemetry telemetry){
+        arm.stop();
+    }
 }

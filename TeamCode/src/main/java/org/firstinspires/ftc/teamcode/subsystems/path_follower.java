@@ -189,6 +189,7 @@ public class path_follower {
         double y_error = finish.minus(plannedPos).getY();
         double sum_x_error = 0, sum_y_error = 0;
 
+        /*
         dataStorage.DSTelemetry.addData("PID", "1");
 
 
@@ -216,6 +217,8 @@ public class path_follower {
             plannedPos = dataStorage.RobotPose.plus(dataStorage.RobotVelocity.times(dataStorage.RobotVelocity.norm() / 2. / dataStorage.BrakeAccel));
         }
 
+         */
+
         //drivetrain.applyVector(new Vector2d(0, 0), 0);
 
         //while (dataStorage.RobotVelocity.norm() > 1) dataStorage.updateData();
@@ -235,7 +238,7 @@ public class path_follower {
 
         dataStorage.updateData();
         module_master.update(dataStorage.telemetry);
-        while(dataStorage.RobotPose.distTo(finish) > 1 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.08 || dataStorage.RobotVelocity.norm() > 3){
+        while(dataStorage.RobotPose.distTo(finish) > 1 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.05 || dataStorage.RobotVelocity.norm() > 3){
             dataStorage.updateData();
             module_master.update(dataStorage.telemetry);
 

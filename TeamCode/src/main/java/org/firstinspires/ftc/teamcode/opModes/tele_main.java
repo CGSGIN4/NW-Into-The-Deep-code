@@ -38,6 +38,7 @@ import org.firstinspires.ftc.teamcode.data.dataStorage;
 import org.firstinspires.ftc.teamcode.robotMovement.drivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.modules.arm;
 import org.firstinspires.ftc.teamcode.subsystems.modules.differential;
+import org.firstinspires.ftc.teamcode.subsystems.modules.hang;
 import org.firstinspires.ftc.teamcode.utils.GamepadNW;
 
 import java.util.Vector;
@@ -60,10 +61,7 @@ public class tele_main extends LinearOpMode {
         Robot robot = new Robot(hardwareMap);
         differential differential = new differential(hardwareMap);
         arm arm = new arm(hardwareMap);
-        DcMotor motor1;
-        DcMotor motor2;
-        motor1 = hardwareMap.get(DcMotor.class, "hangLeft");
-        motor2 = hardwareMap.get(DcMotor.class, "hangRight");
+        hang hang = new hang(hardwareMap);
 
         robot.init();
         dataStorage.init(robot.drive, telemetry, this);
@@ -81,6 +79,7 @@ public class tele_main extends LinearOpMode {
             assistGamepad.update();
             dataStorage.updateData();
             arm.update();
+            hang.update(dataStorage.telemetry);
             differential.update();
 
             /* DIFFERENTIAL SECTION */
@@ -209,17 +208,19 @@ public class tele_main extends LinearOpMode {
                     arm.extensionMotor.setPower(0);
             }
 
-            if (Math.abs(gamepad2.left_stick_y) > 0.1)
-            {
-                motor1.setPower(gamepad2.left_stick_y);
-                motor2.setPower(-gamepad2.left_stick_y);
+            if (assistGamepad.isClicked("y")) {
+                arm.setRotation(BACK_HANG1);
+                differential.openClaw();
+                differential.pitchUp();
+                if (hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.SLEEPING)
+                    hang.prepare();
+                if (hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.READY || hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.READY3)
+                    hang.fold();
             }
-            else
-            {
-                motor1.setPower(0);
-                motor2.setPower(0);
-            }
+
             if (gamepad2.left_trigger > 0.1)
+                arm.manuallyRotate(-1);
+            else if (arm.rotationState == org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.MANUAL)
                 arm.setRotation(BACK_HANG1);
             else if (gamepad2.right_trigger > 0.1)
                 arm.setRotation(BACK_HANG0);
