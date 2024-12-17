@@ -59,8 +59,8 @@ public class painter {
     //12.677 короткая в дюймах
     public void drawRobot(double x, double y, double rotation, String color){
         canvas.setStroke(color);
-        double len = 15.339;
-        double wid = 12.677;
+        double len = 16.2;
+        double wid = 14.133;
         rotation = Math.PI / 2 - rotation;
         double x1 = x + len / 2 * Math.sin(rotation);
         double y1 = y + len / 2 * Math.cos(rotation);

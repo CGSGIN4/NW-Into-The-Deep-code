@@ -5,6 +5,7 @@ import static java.lang.Math.PI;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
@@ -41,8 +42,9 @@ public enum dataStorage {;
     public static double BrakeAccel = 104; //160
 
     public static Telemetry DSTelemetry;
+    public static Telemetry DashTelemetry;
+    public static MultipleTelemetry telemetry;
 
-    public static TelemetryPacket DashTelemetry;
     public static FtcDashboard dashboard;
     public static painter painter;
 
@@ -87,11 +89,12 @@ public enum dataStorage {;
         poseHistory.add(RobotPose);
 
         timer.reset();
-        DSTelemetry.update();
+        telemetry.addData("heading", RobotWorldHeading);
+        telemetry.update();
         //RobotVelocity = new Vector2d(drive.getPoseVelocity().getX(), drive.getPoseVelocity().getY());
     }
 
-    public static void init(SampleMecanumDrive drive, Telemetry telemetry, LinearOpMode linearOpMode){
+    public static void init(SampleMecanumDrive drive, Telemetry telemetryy, LinearOpMode linearOpMode){
         dataStorage.drive = drive;
         Pose2d pose = drive.getPoseEstimate();
         RobotWorldX = pose.getX();
@@ -99,17 +102,21 @@ public enum dataStorage {;
         RobotWorldHeading = OldRobotWorldHeading = pose.getHeading();
         RobotVelocity = new Vector2d(0, 0);
         BrakeAccel = 0;
-        DSTelemetry = telemetry;
+        DSTelemetry = telemetryy;
+        dashboard = FtcDashboard.getInstance();
+        DashTelemetry = dashboard.getTelemetry();
+        telemetry = new MultipleTelemetry(DSTelemetry, DashTelemetry);
         OpMode = linearOpMode;
         poseHistory.clear();
         iter = 0;
         relocation_timer.reset();
-        module_master.init();
+        module_master.init(linearOpMode.hardwareMap);
     }
 
     private static double calculateBrakeAccel(double v){
         double v2 = v * v;
         double v3 = v2 * v;
-        return 0.0006579582449 * v3 - 0.1265954365481 * v2 + 8.8226496330171 * v - 88.7730817754054;
+        //return 0.0006579582449 * v3 - 0.1265954365481 * v2 + 8.8226496330171 * v - 88.7730817754054;
+        return -0.001485206174316 * v3 + 0.229578434273549 * v2 - 10.423935051483568 * v + 236.497982889413834;
     }
 }

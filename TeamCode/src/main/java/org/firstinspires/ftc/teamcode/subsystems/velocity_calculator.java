@@ -23,13 +23,13 @@ public class velocity_calculator {
     curve trajectory;
     follower_state state = follower_state.STRAIGHT;
     double t;
-    double CENTRIPETAL_ACCEL_KOEF = 0.75/*0.59*/;
+    double CENTRIPETAL_ACCEL_KOEF = 0.65/*0.59*/;
 
-    double P_ROTATION_COEF = 0.2 /*0.1*/;
+    double P_ROTATION_COEF = 0.34 /*0.2*/;
 
-    double D_ROTATION_COEF = 0.1 /*0.4*/;
+    double D_ROTATION_COEF = 0.11 /*0.4*/;
 
-    double I_ROTATION_COEF = 0.44;//3;
+    double I_ROTATION_COEF = 0.15;//3;
     double velocityModule;
 
     double oldTargetHeading;
@@ -45,23 +45,23 @@ public class velocity_calculator {
     double speedError;
     double speedErrorOld = 0;
 
-    double PPERPENDICULAR = /*0.33, 0.38*/ 0.38;
+    double PPERPENDICULAR = /*0.33, 0.38*/ 0.3;
     double DPERPENDICULAR = -0.18;
     double IPERPENDICULAR = 0;
 
     double PLINEAR = 0.03;
     double DLINEAR = 0.1;
 
-    double IHeading = 0;
+    public double IHeading = 0;
     Vector2d robotVelocity;
     public Vector2d accel;
     public Vector2d velocity;
     double closest_turn_old;
 
     double p_rotation_coef = 3.;
-    double p_trans_coef = 0.1;
-    double d_trans_coef = 0.1;
-    double i_trans_coef = 0.;
+    double p_trans_coef = 0.047;
+    double d_trans_coef = 0.43;
+    double i_trans_coef = 0.01;
 
     double x_error = 0;
     double y_error = 0;
@@ -163,13 +163,15 @@ public class velocity_calculator {
     public double getRotationCustomDirection(Vector2d direction){
         double currentTargetHeading = normalizeAngle(direction.angle());
         double errorHeading = normalizeAngle(currentTargetHeading - dataStorage.RobotWorldHeading);
-        double errorOldHeading = dataStorage.OldRobotWorldHeading - this.oldTargetHeading;
+        double errorOldHeading = normalizeAngle(dataStorage.OldRobotWorldHeading - this.oldTargetHeading);
 
+        if (currentTargetHeading != oldTargetHeading)
+            IHeading = 0;
         double DHeading = errorHeading - errorOldHeading;
 
-        if (Math.abs(errorHeading) <= 0.3)
+        if (Math.abs(errorHeading) <= 0.45)
             IHeading += errorHeading;
-        if (errorHeading * errorOldHeading < 0)
+        if (Math.abs(errorHeading) < 0.05)
             IHeading = 0;
 
         this.oldTargetHeading = currentTargetHeading;

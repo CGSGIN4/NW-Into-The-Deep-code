@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opModes;
+package org.firstinspires.ftc.teamcode.opModes.utils;
 
 import android.os.Environment;
 
@@ -22,7 +22,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-@TeleOp
+@TeleOp(group = "Utils")
 public class traj_builder2 extends LinearOpMode {
     String FILENAME = "ITD_RED_YELLOW";
     private FtcDashboard dashboard;
@@ -45,15 +45,15 @@ public class traj_builder2 extends LinearOpMode {
 
         Gamepad currentGamepad1 = new Gamepad();
         Gamepad currentGamepad2 = new Gamepad();
-        Gamepad PreviousGamepad1 = new Gamepad();
-        Gamepad PreviousGamepad2 = new Gamepad();
+        Gamepad previousGamepad1 = new Gamepad();
+        Gamepad previousGamepad2 = new Gamepad();
 
         waitForStart();
         drive.update();
 
         while (opModeIsActive()) {
-            PreviousGamepad1.copy(currentGamepad1);
-            PreviousGamepad2.copy(currentGamepad2);
+            previousGamepad1.copy(currentGamepad1);
+            previousGamepad2.copy(currentGamepad2);
             currentGamepad1.copy(gamepad1);
             currentGamepad2.copy(gamepad2);
 
@@ -62,7 +62,7 @@ public class traj_builder2 extends LinearOpMode {
 
             painter.prepare(packet, fieldOverlay);
 
-            if (currentGamepad1.a && !PreviousGamepad1.a){
+            if (currentGamepad1.a && !previousGamepad1.a){
                 activePointControl += 1;
                 if (activePointControl == 4){
                     if (activeCurveControl < numCurves - 1) {
@@ -76,7 +76,7 @@ public class traj_builder2 extends LinearOpMode {
                 }
             }
 
-            else if (currentGamepad1.b && !PreviousGamepad1.b) {
+            else if (currentGamepad1.b && !previousGamepad1.b) {
                 activePointControl -= 1;
                 if (activePointControl == -1){
                     if (activeCurveControl == 0) {
@@ -89,13 +89,13 @@ public class traj_builder2 extends LinearOpMode {
                     }
                 }
             }
-            else if (currentGamepad1.x && !PreviousGamepad1.x) {
+            else if (currentGamepad1.x && !previousGamepad1.x) {
                 curves[numCurves - 1] = null;
                 if (activeCurveControl == numCurves - 1)
                     activeCurveControl--;
                 numCurves--;
             }
-            else if (currentGamepad1.dpad_up && !PreviousGamepad1.dpad_up) {
+            else if (currentGamepad1.dpad_up && !previousGamepad1.dpad_up) {
                 t += 0.02;
                 if (t >= 1.) {
                     if (activeCurveControl < numCurves - 1)
@@ -106,7 +106,7 @@ public class traj_builder2 extends LinearOpMode {
                 }
                 t = (double)Math.round(t * 100) / 100;
             }
-            else if (currentGamepad1.dpad_down && !PreviousGamepad1.dpad_down) {
+            else if (currentGamepad1.dpad_down && !previousGamepad1.dpad_down) {
                 t -= 0.02;
                 if (t <= 0.) {
                     if (activeCurveControl > 0)
@@ -117,19 +117,19 @@ public class traj_builder2 extends LinearOpMode {
                 }
                 t = (double)Math.round(t * 100) / 100;
             }
-            else if (currentGamepad1.dpad_right && !PreviousGamepad1.dpad_right) {
+            else if (currentGamepad1.dpad_right && !previousGamepad1.dpad_right) {
                 if (!curves[activeCurveControl].turn_starts.contains(t))
                     curves[activeCurveControl].turn_starts.add(t);
                 else
                     curves[activeCurveControl].turn_starts.remove(t);
             }
-            else if (currentGamepad1.dpad_left && !PreviousGamepad1.dpad_left) {
+            else if (currentGamepad1.dpad_left && !previousGamepad1.dpad_left) {
                 if (!curves[activeCurveControl].turn_ends.contains(t))
                     curves[activeCurveControl].turn_ends.add(t);
                 else
                     curves[activeCurveControl].turn_ends.remove(t);
             }
-            else if (currentGamepad1.y && !PreviousGamepad1.y) {
+            else if (currentGamepad1.y && !previousGamepad1.y) {
                 if (numCurves != 0) {
                     try {
                         curves[numCurves] = new curve(new Vector2d[]{curves[numCurves - 1].nodes[3], new Vector2d(0, 10), new Vector2d(0, 20), new Vector2d(0, 30)}, 50);
@@ -233,7 +233,7 @@ public class traj_builder2 extends LinearOpMode {
 
             dashboard.sendTelemetryPacket(packet);
 
-            if (currentGamepad1.right_bumper && !PreviousGamepad1.right_bumper){
+            if (currentGamepad1.right_bumper && !previousGamepad1.right_bumper){
                 try {
                     File directory = new File(String.format("%s/FIRST/points", Environment.getExternalStorageDirectory().getPath()));
                     directory.mkdir();

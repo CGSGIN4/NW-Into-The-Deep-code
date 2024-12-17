@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opModes;
+package org.firstinspires.ftc.teamcode.opModes.tests;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.subsystems.path_follower;
 import org.firstinspires.ftc.teamcode.subsystems.velocity_calculator;
 import org.firstinspires.ftc.teamcode.utils.painter;
 
-@TeleOp
+@TeleOp(group = "Tests")
 public class drive_test extends LinearOpMode {
     Robot robot;
     path_follower path_follower;
@@ -42,7 +42,7 @@ public class drive_test extends LinearOpMode {
         waitForStart();
         painter painter = new painter();
 
-        robot.drive.setPoseEstimate(new Pose2d(0, 0, 0));
+        robot.drive.setPoseEstimate(new Pose2d(-48, 48, 0));
         while (opModeIsActive()) {
             dataStorage.updateData();
 

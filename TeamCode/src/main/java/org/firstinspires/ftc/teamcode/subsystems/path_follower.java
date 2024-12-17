@@ -24,7 +24,7 @@ public class path_follower {
     double p_rotation_coef = 3.;
     double p_trans_coef = 0.1;
     double d_trans_coef = 0.1;
-    double i_trans_coef = 0.;
+    double i_trans_coef = 0.005;
 
     public path_follower(drivetrain drivetrain){
         this.drivetrain = drivetrain;
@@ -40,6 +40,7 @@ public class path_follower {
 
         while (t < 0.94 && dataStorage.OpMode.opModeIsActive()){
             dataStorage.updateData();
+            module_master.update(dataStorage.telemetry);
             t = velocity_calculator.getCurrentT(dataStorage.RobotPose);
             Vector2d transV = velocity_calculator.getTranslationalV(t, dataStorage.RobotPose, dataStorage.DSTelemetry);
             logData(Traj, t);
@@ -60,12 +61,12 @@ public class path_follower {
 
         while (t < 0.94 && dataStorage.OpMode.opModeIsActive()){
             dataStorage.updateData();
+            module_master.update(dataStorage.telemetry);
             t = velocity_calculator.getCurrentT(dataStorage.RobotPose);
             if (tIndex < ts.length && t >= ts[tIndex])
             {
-                boolean action = module_master.doAction(actions[tIndex]);
+                module_master.doAction(actions[tIndex]);
                 tIndex++;
-                dataStorage.DSTelemetry.addData("all actions done", action);
             }
             Vector2d transV = velocity_calculator.getTranslationalV(t, dataStorage.RobotPose, dataStorage.DSTelemetry);
             double rotation = velocity_calculator.getRotationCustomDirection(angle);
@@ -90,6 +91,7 @@ public class path_follower {
         //dataStorage.DSTelemetry.addData("PID", "off");
         while ((!nearToFinal || t < 0.4) && t < 0.9){
             dataStorage.updateData();
+            module_master.update(dataStorage.telemetry);
             t = velocity_calculator.getCurrentT(dataStorage.RobotPose);
             Vector2d transV = velocity_calculator.getTranslationalV(t, dataStorage.RobotPose, dataStorage.DSTelemetry);
             double rotation = velocity_calculator.getRotation();
@@ -108,6 +110,7 @@ public class path_follower {
 
         while (plannedPos.distTo(finish) > 1){
             dataStorage.updateData();
+            module_master.update(dataStorage.telemetry);
             t = velocity_calculator.getCurrentT(dataStorage.RobotPose);
             logData(Traj, t);
             double old_x_error = x_error;
@@ -131,7 +134,11 @@ public class path_follower {
 
         drivetrain.applyVector(new Vector2d(0, 0), 0);
 
-        while (dataStorage.RobotVelocity.norm() > 1) dataStorage.updateData();
+        while (dataStorage.RobotVelocity.norm() > 1)
+        {
+            dataStorage.updateData();
+            module_master.update(dataStorage.telemetry);
+        }
 
         //dataStorage.DSTelemetry.addData("PID", "2");
 
@@ -162,12 +169,12 @@ public class path_follower {
 
         while ((!nearToFinal || t < 0.4) && t < 0.9){
             dataStorage.updateData();
+            module_master.update(dataStorage.telemetry);
             t = velocity_calculator.getCurrentT(dataStorage.RobotPose);
             if (tIndex < ts.length && t >= ts[tIndex])
             {
-                boolean action = module_master.doAction(actions[tIndex]);
+                module_master.doAction(actions[tIndex]);
                 tIndex++;
-                dataStorage.DSTelemetry.addData("all actions done", action);
             }
             Vector2d transV = velocity_calculator.getTranslationalV(t, dataStorage.RobotPose, dataStorage.DSTelemetry);
             double rotation = velocity_calculator.getRotationCustomDirection(angle);
@@ -182,10 +189,13 @@ public class path_follower {
         double y_error = finish.minus(plannedPos).getY();
         double sum_x_error = 0, sum_y_error = 0;
 
+        /*
         dataStorage.DSTelemetry.addData("PID", "1");
+
 
         while (plannedPos.distTo(finish) > 1){
             dataStorage.updateData();
+            module_master.update(dataStorage.telemetry);
             t = velocity_calculator.getCurrentT(dataStorage.RobotPose);
             logData(Traj, t);
             double old_x_error = x_error;
@@ -207,9 +217,11 @@ public class path_follower {
             plannedPos = dataStorage.RobotPose.plus(dataStorage.RobotVelocity.times(dataStorage.RobotVelocity.norm() / 2. / dataStorage.BrakeAccel));
         }
 
-        drivetrain.applyVector(new Vector2d(0, 0), 0);
+         */
 
-        while (dataStorage.RobotVelocity.norm() > 1) dataStorage.updateData();
+        //drivetrain.applyVector(new Vector2d(0, 0), 0);
+
+        //while (dataStorage.RobotVelocity.norm() > 1) dataStorage.updateData();
 
         //dataStorage.DSTelemetry.addData("PID", "2");
 
@@ -225,10 +237,13 @@ public class path_follower {
         Vector2d finish = new Vector2d(X, Y);
 
         dataStorage.updateData();
-        while(dataStorage.RobotPose.distTo(finish) > 1 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.1/*0.2*/ || dataStorage.RobotVelocity.norm() > 3){
+        module_master.update(dataStorage.telemetry);
+        while(dataStorage.RobotPose.distTo(finish) > 1 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.05 || dataStorage.RobotVelocity.norm() > 3){
             dataStorage.updateData();
+            module_master.update(dataStorage.telemetry);
 
             pid = velocity_calculator.getPIDpower(finish, Heading);
+            dataStorage.telemetry.addData("HeadingBuffer", velocity_calculator.IHeading);
 
             drivetrain.applyVectorFieldCentric(pid.vec().rotated(Math.toRadians(90)), pid.getHeading());
         }
