@@ -25,6 +25,7 @@ public class arm {
     /* ------------------ CONSTANTS ------------------ */
     int EXTENSION_FULL = 510; //370
     int EXTENSION_FRONT_MAX = 305;
+    int EXTENSION_LOW_BASKET = 180;
     int EXTENSION_LOW_CHAMBER = 180;
     int EXTENSION_HIGH_CHAMBER = 278;
     int EXTENSION_YELLOW_1 = 305;
@@ -90,6 +91,7 @@ public class arm {
 
     public enum extension {
         EXTENDED,
+        LOW_BASKET,
         FRONTAL_EXTENSION,
         CLOSED,
         LOW_CHAMBER,
@@ -164,6 +166,8 @@ public class arm {
         {
             case EXTENDED:
                 return EXTENSION_FULL;
+            case LOW_BASKET:
+                return EXTENSION_LOW_BASKET;
             case CLOSED:
                 return (int)(-(17.0 / 928) * rotationMotor.getCurrentPosition());
             case LOW_CHAMBER:
@@ -175,7 +179,7 @@ public class arm {
             case YELLOW_1:
                 return EXTENSION_YELLOW_1;
             case YELLOW_2:
-                return  EXTENSION_YELLOW_2;
+                return EXTENSION_YELLOW_2;
         }
         return -1;
     }
@@ -309,7 +313,11 @@ public class arm {
     public void manuallyExtend(double speed){
         if (rotationState == rotation.LIFT || this.extensionMotor.getCurrentPosition() < extensionPosToTicks(extension.FRONTAL_EXTENSION) || speed < 0) {
             this.extensionState = extension.MANUAL;
-            setExtensionMotorPower(speed);
+
+            if (rotationState == rotation.RESET)
+                setExtensionMotorPower(speed / 2);
+            else
+                setExtensionMotorPower(speed);
         }
         else
             setExtension(extension.FRONTAL_EXTENSION);

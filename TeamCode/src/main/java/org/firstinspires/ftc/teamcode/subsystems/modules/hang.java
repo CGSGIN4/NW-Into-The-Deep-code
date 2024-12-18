@@ -104,7 +104,7 @@ public class hang {
                     fold();
                 break;
             case ASCEND2COMPLETE:
-                prepare3();
+                //prepare3();
                 break;
             case PREPARE3:
                 if (Math.abs(left.getCurrentPosition() - target_3_extended) < 20 && Math.abs(right.getCurrentPosition() - target_3_extended) < 20)
