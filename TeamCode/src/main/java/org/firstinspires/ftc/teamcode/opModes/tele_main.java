@@ -127,7 +127,6 @@ public class tele_main extends LinearOpMode {
                 }
                 //tele.addData("rotation power", arm.setRotation(LIFT));
             }
-
             if (assistGamepad.isClicked("right_bumper")) {
                 if (arm.rotationState == LIFT) {
                     if (arm.extensionMotor.getCurrentPosition() < 100) {

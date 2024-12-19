@@ -56,7 +56,7 @@ public class arm {
     /* no load 1:1.17 *///final PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.009, 0, 0.019, 0.028);
     /* load 1:1.17 *///final PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.02, 0, 0.04, 0.052);
     /* load 1:4 */ public PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.0058, 0, 0.0009, -0.006);
-    public PIDFCoefficients EXTENSION_PIDF = new PIDFCoefficients(0.011, 0, 0.02, 0.01);
+    public PIDFCoefficients EXTENSION_PIDF = new PIDFCoefficients(0.006, 0, 0.02, 0.01);
     int oldExtensionError = 0;
     public double oldRotationError = 0;
     double rotDeltaRaw = 0;
@@ -65,25 +65,25 @@ public class arm {
 
     /* ------------------ PHYSICAL MODEL ------------------ */
     //public final double m_1 = 0.05;
-    public final double m_1 = 0.527672;
+    public final double m_1 = 0.531;
     public final double m_2 = 0.126;
     public final double m_3 = 0.126;
     public final double m_4 = 0.126;
     public final double m_5 = 0.4554;
     //public double l_1 = 0.135;
-    public double l_1 = 0.180;
+    public double l_1 = 0.214232;
     public double l_2 = 0.135;
     public double l_3 = 0.135;
     public double l_4 = 0.135;
     public double l_5 = 0.041;
     //public final double h_1 = 0.068;
-    public final double h_1 = 0.07448;
+    public final double h_1 = 0.093806;
     public final double h_2 = 0.0605;
     public final double h_3 = 0.0465;
     public final double h_4 = 0.0325;
     public final double h_5 = 0.0107;
 
-    final double COG_MAX = 0.50;
+    final double COG_MAX = 0.53;
     double cog = 0.12;
     double ratio = 0.3;
 
@@ -135,6 +135,10 @@ public class arm {
     }
 
     public void update(Telemetry telemetry) {
+        telemetry.addData("extension", extensionMotor.getCurrentPosition());
+        telemetry.addData("extension reached", extensionReached());
+        telemetry.addData("target ext", targetExtensionPos);
+        telemetry.addData("ext state", extensionState);
         cycleTime = cycleTimer.milliseconds();
         cycleTimer.reset();
 
@@ -146,9 +150,9 @@ public class arm {
         telemetry.addData("ext pos", extensionMotor.getCurrentPosition());
 
         if (!extensionState.equals(extension.MANUAL))
-            telemetry.addData("extension power", setExtension(extensionState));
+            telemetry.addData("ext pwr", setExtension(extensionState));
         if (!rotationState.equals(rotation.MANUAL))
-            telemetry.addData("rotation power", setRotation(rotationState));
+            setRotation(rotationState);
 
         if (rotationBtn.getVoltage() < 0.4 && rotationState == rotation.FRONT) /* pressed */ {
             resetRotationEncoders();
@@ -260,13 +264,6 @@ public class arm {
             if (Math.abs(error) > Math.abs(oldRotationError) && Math.abs(rotationAngle) > 2) /* error increased => wrong direction */
                 delta *= 3;
 
-                /*
-            if (Math.abs(rotDeltaFiltered) > 13)
-            {
-                setExtension(extension.HIGH_CHAMBER);
-            }
-
-                 */
             if (Math.abs(error) < 40)
                 delta *= 17;
             else if (Math.abs(error) < 80)
