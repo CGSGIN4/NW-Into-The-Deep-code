@@ -2,59 +2,40 @@ package org.firstinspires.ftc.teamcode.opModes;
 
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.CLOSED;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.EXTENDED;
-import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.FRONTAL_EXTENSION;
-import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.HIGH_CHAMBER;
-import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.LOW_CHAMBER;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.LOW_BASKET;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.MANUAL;
-import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.BACK_HANG1;
-import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.BACK_HANG0;
-import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.CHAMBER;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.FRONT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.LIFT;
-import static java.lang.Math.decrementExact;
-import static java.lang.Math.max;
-import static java.lang.Math.min;
-
-import android.graphics.Color;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.RESET;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
-import com.qualcomm.robotcore.hardware.HardwareDevice;
-import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
-import com.qualcomm.robotcore.hardware.NormalizedRGBA;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.SwitchableLight;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.data.dataStorage;
-import org.firstinspires.ftc.teamcode.robotMovement.drivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.modules.arm;
 import org.firstinspires.ftc.teamcode.subsystems.modules.differential;
 import org.firstinspires.ftc.teamcode.subsystems.modules.hang;
 import org.firstinspires.ftc.teamcode.utils.GamepadNW;
-
-import java.util.Vector;
 
 @TeleOp
 @Config
 public class tele_main extends LinearOpMode {
     public static double pitch = 180;
     public static double roll = 0;
-
     Vector2d gamepad = new Vector2d();
     double turn = 0;
     FtcDashboard dashboard;
     boolean foldingSequence = false;
     boolean unfoldingSequence = false;
+    boolean unfoldingSequenceLowBasket = false;
+    boolean intakingSequence = false;
     ElapsedTime foldingTimer = new ElapsedTime();
+    ElapsedTime intakingTimer = new ElapsedTime();
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -68,8 +49,7 @@ public class tele_main extends LinearOpMode {
 
         GamepadNW driverGamepad = new GamepadNW(gamepad1);
         GamepadNW assistGamepad = new GamepadNW(gamepad2);
-        int rollPos = 0;
-        int pitchPos = 1;
+
         differential.pitchUp();
         differential.rollDefault();
         differential.update();
@@ -83,54 +63,43 @@ public class tele_main extends LinearOpMode {
             differential.update();
 
             /* DIFFERENTIAL SECTION */
-            if (rollPos > -2 && assistGamepad.isClicked("dpad_left"))
-                rollPos--;
-            else if (rollPos < 2 && assistGamepad.isClicked("dpad_right"))
-                rollPos++;
+            if (assistGamepad.isClicked("dpad_down"))
+                if (pitch > 100)
+                    pitch = 100;
+                else
+                    pitch = 20;
+            if (assistGamepad.isClicked("dpad_up"))
+                if (pitch < 100)
+                    pitch = 100;
+                else
+                    pitch = 180;
 
-            dataStorage.telemetry.addData("roll", rollPos);
-            dataStorage.telemetry.addData("pitch", pitchPos);
-            if (pitchPos > -1 && assistGamepad.isClicked("dpad_down"))
-                pitchPos--;
-            else if (pitchPos < 1 && assistGamepad.isClicked("dpad_up"))
-                pitchPos++;
+            if (assistGamepad.isClicked("dpad_left"))
+                if (roll >= -80 && roll <= -45)
+                    roll = -80;
+                else if (roll > -45 && roll <= 0)
+                    roll = -45;
+                else if (roll > 0 && roll <= 45)
+                    roll = 0;
+                else
+                    roll = 45;
+            if (assistGamepad.isClicked("dpad_right"))
+                if (roll <= 80 && roll >= 45)
+                    roll = 80;
+                else if (roll >= 0 && roll < 45)
+                    roll = 45;
+                else if (roll >= -45 && roll < 0)
+                    roll = 0;
+                else
+                    roll = -45;
 
-            switch (rollPos) {
-                case -2:
-                    differential.rollFullLeft();
-                    break;
-                case -1:
-                    differential.rollHalfLeft();
-                    break;
-                case 0:
-                    differential.rollDefault();
-                    break;
-                case 1:
-                    differential.rollHalfRight();
-                    break;
-                case 2:
-                    differential.rollFullRight();
-                    break;
-                default:
-                    break;
-            }
+            if (gamepad2.left_trigger > 0.05 && roll > -80)
+                roll -= gamepad2.left_trigger * 4;
+            if (gamepad2.right_trigger > 0.05 && roll < 80)
+                roll += gamepad2.right_trigger * 4;
 
-            switch (pitchPos) {
-                case -1:
-                    differential.pitchDown();
-                    break;
-                case 0:
-                    differential.pitchForward();
-                    break;
-                case 1:
-                    differential.pitchUp();
-                    break;
-                default:
-                    break;
-            }
-
-            //differential.setPitch(pitch);
-            //differential.setRoll(roll);
+            differential.setRoll(roll);
+            differential.setPitch(pitch);
 
             if (assistGamepad.isClicked("x"))
                 differential.clawSwitch();
@@ -140,9 +109,7 @@ public class tele_main extends LinearOpMode {
                 gamepad = new Vector2d(gamepad1.left_stick_x, -gamepad1.left_stick_y);
                 turn = (gamepad1.left_trigger - gamepad1.right_trigger);
                 if (driverGamepad.isPressed("y"))
-                {
                     turn /= 2;
-                }
                 robot.drivetrain.applyVector(gamepad, turn);
             } else
                 robot.drivetrain.applyVector(new Vector2d(0, 0), 0);
@@ -152,64 +119,102 @@ public class tele_main extends LinearOpMode {
             if (assistGamepad.isClicked("a")) {
                 if (arm.rotationState == LIFT)
                     arm.setRotation(FRONT);
-                else
+                else {
                     arm.setRotation(LIFT);
+                    pitch = 20;
+                    roll = 0;
+                }
                 //tele.addData("rotation power", arm.setRotation(LIFT));
             }
-
             if (assistGamepad.isClicked("right_bumper")) {
                 if (arm.rotationState == LIFT) {
                     if (arm.extensionMotor.getCurrentPosition() < 100) {
+                        unfoldingSequenceLowBasket = false;
                         unfoldingSequence = true;
                     } else {
+                        pitch = 145;
                         foldingSequence = true;
                         foldingTimer.reset();
                     }
                 } else {
-                    arm.setExtension(CLOSED);
-                    pitchPos = 0;
+                    intakingSequence = true;
+                    intakingTimer.reset();
                 }
             }
 
+            if (assistGamepad.isClicked("left_bumper") && arm.rotationState == LIFT) {
+                unfoldingSequenceLowBasket = true;
+                unfoldingSequence = false;
+            }
+
+            /* TELEOP AUTOMATIONS SECTION */
             if (foldingSequence) {
-                differential.openClaw();
-                if (foldingTimer.milliseconds() > 270) {
-                    differential.pitchDown();
-                    if (foldingTimer.milliseconds() > 500) {
-                        if (arm.extensionMotor.getCurrentPosition() > 100)
-                            arm.setExtension(CLOSED);
-                        else if (arm.rotationMotor.getCurrentPosition() > 100)
-                            arm.setRotation(FRONT);
-                        else {
-                            rollPos = 0;
-                            pitchPos = 0;
-                            foldingSequence = false;
-                        }
+                unfoldingSequenceLowBasket = false;
+                unfoldingSequence = false;
+                if (foldingTimer.milliseconds() > 300 && foldingTimer.milliseconds() < 500) /* perekid */
+                    differential.openClaw();
+                else if (foldingTimer.milliseconds() > 500 && foldingTimer.milliseconds() < 800)
+                    pitch = 20;
+                else
+                if (foldingTimer.milliseconds() > 800) {
+                    if (arm.extensionMotor.getCurrentPosition() > 100)
+                        arm.setExtension(CLOSED);
+                    else if (arm.rotationMotor.getCurrentPosition() > 100)
+                        arm.setRotation(FRONT);
+                    else {
+                        roll = 0;
+                        pitch = 100;
+                        foldingSequence = false;
                     }
                 }
             }
 
             if (unfoldingSequence) {
+                unfoldingSequenceLowBasket = false;
                 if (Math.abs(gamepad2.right_stick_y) > 0.01)
-                {
                     unfoldingSequence = false;
-                }
+
+                pitch = 20;
                 arm.setExtension(EXTENDED);
                 if (arm.extensionMotor.getCurrentPosition() > 460) {
                     unfoldingSequence = false;
                 }
             }
 
+            if (unfoldingSequenceLowBasket) {
+                unfoldingSequence = false;
+                if (Math.abs(gamepad2.right_stick_y) > 0.01)
+                    unfoldingSequenceLowBasket = false;
 
-            if (Math.abs(gamepad2.right_stick_y) > 0.01)
+                pitch = 20;
+                arm.setExtension(LOW_BASKET);
+                if (arm.extensionMotor.getCurrentPosition() > 180)
+                    unfoldingSequenceLowBasket = false;
+            }
+
+            if (intakingSequence) {
+                if (intakingTimer.milliseconds() < 200)
+                    differential.closeClaw();
+                else {
+                    arm.setExtension(CLOSED);
+                    pitch = 100;
+                    intakingSequence = false;
+                }
+            }
+
+            if (Math.abs(gamepad2.right_stick_y) > 0.01) {
                 arm.manuallyExtend(-gamepad2.right_stick_y);
+                if (gamepad2.right_stick_y < 0 && arm.rotationState == RESET)
+                    differential.openClaw();
+            }
             else {
                 if (arm.extensionState == MANUAL)
                     arm.extensionMotor.setPower(0);
             }
 
             if (assistGamepad.isClicked("y")) {
-                arm.setRotation(BACK_HANG1);
+                //arm.setRotation(BACK_HANG1);
+                arm.setExtension(CLOSED);
                 differential.openClaw();
                 differential.pitchUp();
                 if (hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.SLEEPING)
@@ -217,13 +222,6 @@ public class tele_main extends LinearOpMode {
                 if (hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.READY || hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.READY3)
                     hang.fold();
             }
-
-            if (gamepad2.left_trigger > 0.1)
-                arm.manuallyRotate(-1);
-            else if (arm.rotationState == org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.MANUAL)
-                arm.setRotation(BACK_HANG1);
-            else if (gamepad2.right_trigger > 0.1)
-                arm.setRotation(BACK_HANG0);
         }
     }
 }

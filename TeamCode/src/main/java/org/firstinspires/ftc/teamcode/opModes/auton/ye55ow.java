@@ -91,7 +91,7 @@ public class ye55ow extends LinearOpMode {
             path_follower.goToPos(52.7, 52.7, -Math.PI / 2 - Math.toRadians(11));
             waitArmExtension();
 
-            module_master.doAction(SET_ROTATION_FRONT);
+            module_master.arm.setRotation(arm.rotation.FRONT);
             waitArmRotation();
 
             module_master.differential.pitchHalfDown();
@@ -109,7 +109,7 @@ public class ye55ow extends LinearOpMode {
             path_follower.goToPos(52.7, 52.7, -Math.PI / 2 + Math.toRadians(14));
             waitArmExtension();
 
-            module_master.doAction(SET_ROTATION_FRONT);
+            module_master.arm.setRotation(arm.rotation.FRONT);
             waitArmRotation();
 
             module_master.differential.pitchHalfDown();
@@ -128,7 +128,7 @@ public class ye55ow extends LinearOpMode {
             path_follower.goToPos(58, 49.6, -Math.PI / 2 + Math.toRadians(22));
             waitArmExtension();
 
-            module_master.doAction(SET_ROTATION_FRONT);
+            module_master.arm.setRotation(arm.rotation.FRONT);
             waitArmRotation();
 
             setExtensionAndWait(arm.extension.YELLOW_1);
@@ -142,7 +142,7 @@ public class ye55ow extends LinearOpMode {
             prepareToScoreHighBasket();
             scoreHighBasket();
             waitArmExtension();
-            module_master.doAction(SET_ROTATION_FRONT);
+            module_master.arm.setRotation(arm.rotation.FRONT);
 
             path_follower.followTrajectoryBreak(curves[3], Math.PI - Math.toRadians(10));
             waitArmRotation();
@@ -206,7 +206,7 @@ public class ye55ow extends LinearOpMode {
 
     /** SET DIFFY PITCH DOWN AND ARM ROTATED TO LIFT **/
     private void prepareToScoreHighBasket(){
-        module_master.doAction(SET_ROTATION_LIFT);
+        module_master.arm.setRotation(arm.rotation.LIFT);
         module_master.differential.pitchDown();
     }
 
@@ -220,8 +220,7 @@ public class ye55ow extends LinearOpMode {
         waitArmRotation();
 
         /* RAISE ELEVATOR */
-        module_master.doAction(SET_EXTENSION_LIFT);
-        waitArmExtension();
+        setExtensionAndWait(arm.extension.EXTENDED);
 
         module_master.arm.setRotation(arm.rotation.BACK_HANG1);
 
@@ -229,7 +228,6 @@ public class ye55ow extends LinearOpMode {
         module_master.differential.pitchScoringBasket();
         delay(300);
 
-        waitArmRotation();
         module_master.differential.openClaw();
         delay(300);
 
@@ -239,6 +237,6 @@ public class ye55ow extends LinearOpMode {
         delay(300);
 
         /* FOLD */
-        module_master.doAction(SET_EXTENSION_CLOSED);
+        module_master.arm.setExtension(arm.extension.CLOSED);
     }
 }

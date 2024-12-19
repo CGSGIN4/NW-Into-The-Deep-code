@@ -59,9 +59,9 @@ public class velocity_calculator {
     double closest_turn_old;
 
     double p_rotation_coef = 3.;
-    double p_trans_coef = 0.047;
+    double p_trans_coef = 0.027;
     double d_trans_coef = 0.43;
-    double i_trans_coef = 0.01;
+    double i_trans_coef = 0.007;
 
     double x_error = 0;
     double y_error = 0;

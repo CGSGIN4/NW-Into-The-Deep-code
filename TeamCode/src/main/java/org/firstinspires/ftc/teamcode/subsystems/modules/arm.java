@@ -23,15 +23,16 @@ public class arm {
     public AnalogInput rotationBtn;
 
     /* ------------------ CONSTANTS ------------------ */
-    int EXTENSION_FULL = 510; //370
+    int EXTENSION_FULL = 480; //370
     int EXTENSION_FRONT_MAX = 305;
+    int EXTENSION_LOW_BASKET = 180;
     int EXTENSION_LOW_CHAMBER = 180;
     int EXTENSION_HIGH_CHAMBER = 278;
     int EXTENSION_YELLOW_1 = 305;
     int EXTENSION_YELLOW_2 = 278;
     int ROTATION_FRONT = 0;
     int ROTATION_BACK_HANG0 = 560;
-    int ROTATION_BACK_HANG1 = 516;
+    int ROTATION_BACK_HANG1 = 508;
     int ROTATION_LIFT = 498; //485
     int ROTATION_CHAMBER = 300;
 
@@ -55,7 +56,7 @@ public class arm {
     /* no load 1:1.17 *///final PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.009, 0, 0.019, 0.028);
     /* load 1:1.17 *///final PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.02, 0, 0.04, 0.052);
     /* load 1:4 */ public PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.0058, 0, 0.0009, -0.006);
-    public PIDFCoefficients EXTENSION_PIDF = new PIDFCoefficients(0.011, 0, 0.02, 0.01);
+    public PIDFCoefficients EXTENSION_PIDF = new PIDFCoefficients(0.006, 0, 0.02, 0.01);
     int oldExtensionError = 0;
     public double oldRotationError = 0;
     double rotDeltaRaw = 0;
@@ -64,25 +65,25 @@ public class arm {
 
     /* ------------------ PHYSICAL MODEL ------------------ */
     //public final double m_1 = 0.05;
-    public final double m_1 = 0.527672;
+    public final double m_1 = 0.531;
     public final double m_2 = 0.126;
     public final double m_3 = 0.126;
     public final double m_4 = 0.126;
     public final double m_5 = 0.4554;
     //public double l_1 = 0.135;
-    public double l_1 = 0.180;
+    public double l_1 = 0.214232;
     public double l_2 = 0.135;
     public double l_3 = 0.135;
     public double l_4 = 0.135;
     public double l_5 = 0.041;
     //public final double h_1 = 0.068;
-    public final double h_1 = 0.07448;
+    public final double h_1 = 0.093806;
     public final double h_2 = 0.0605;
     public final double h_3 = 0.0465;
     public final double h_4 = 0.0325;
     public final double h_5 = 0.0107;
 
-    final double COG_MAX = 0.50;
+    final double COG_MAX = 0.53;
     double cog = 0.12;
     double ratio = 0.3;
 
@@ -90,6 +91,7 @@ public class arm {
 
     public enum extension {
         EXTENDED,
+        LOW_BASKET,
         FRONTAL_EXTENSION,
         CLOSED,
         LOW_CHAMBER,
@@ -133,6 +135,10 @@ public class arm {
     }
 
     public void update(Telemetry telemetry) {
+        telemetry.addData("extension", extensionMotor.getCurrentPosition());
+        telemetry.addData("extension reached", extensionReached());
+        telemetry.addData("target ext", targetExtensionPos);
+        telemetry.addData("ext state", extensionState);
         cycleTime = cycleTimer.milliseconds();
         cycleTimer.reset();
 
@@ -143,15 +149,16 @@ public class arm {
         ratio = cog / COG_MAX;
 
         if (!extensionState.equals(extension.MANUAL))
-            telemetry.addData("extension power", setExtension(extensionState));
+            telemetry.addData("ext pwr", setExtension(extensionState));
         if (!rotationState.equals(rotation.MANUAL))
-            telemetry.addData("rotation power", setRotation(rotationState));
+            setRotation(rotationState);
 
         if (rotationBtn.getVoltage() < 0.4 && rotationState == rotation.FRONT) /* pressed */ {
             resetRotationEncoders();
             rotationState = rotation.RESET;
             setRotationMotorPower(0);
         }
+        telemetry.update();
     }
 
     public void update() {
@@ -164,6 +171,8 @@ public class arm {
         {
             case EXTENDED:
                 return EXTENSION_FULL;
+            case LOW_BASKET:
+                return EXTENSION_LOW_BASKET;
             case CLOSED:
                 return (int)(-(17.0 / 928) * rotationMotor.getCurrentPosition());
             case LOW_CHAMBER:
@@ -175,7 +184,7 @@ public class arm {
             case YELLOW_1:
                 return EXTENSION_YELLOW_1;
             case YELLOW_2:
-                return  EXTENSION_YELLOW_2;
+                return EXTENSION_YELLOW_2;
         }
         return -1;
     }
@@ -254,10 +263,12 @@ public class arm {
             if (Math.abs(error) > Math.abs(oldRotationError) && Math.abs(rotationAngle) > 2) /* error increased => wrong direction */
                 delta *= 3;
 
+            /*
             if (Math.abs(rotDeltaFiltered) > 13)
             {
                 setExtension(extension.HIGH_CHAMBER);
             }
+            */
             if (Math.abs(error) < 40)
                 delta *= 17;
             else if (Math.abs(error) < 80)
@@ -309,7 +320,11 @@ public class arm {
     public void manuallyExtend(double speed){
         if (rotationState == rotation.LIFT || this.extensionMotor.getCurrentPosition() < extensionPosToTicks(extension.FRONTAL_EXTENSION) || speed < 0) {
             this.extensionState = extension.MANUAL;
-            setExtensionMotorPower(speed);
+
+            if (rotationState == rotation.RESET)
+                setExtensionMotorPower(speed / 2);
+            else
+                setExtensionMotorPower(speed);
         }
         else
             setExtension(extension.FRONTAL_EXTENSION);
