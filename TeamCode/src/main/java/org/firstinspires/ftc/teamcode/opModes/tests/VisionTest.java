@@ -36,7 +36,7 @@ public class VisionTest extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-            Sample nearestSample = sampleDetection.getTempNearestSample();
+            Sample nearestSample = sampleDetection.getNearestSample();
             boolean nice = Math.abs(nearestSample.getCenter().x) < 47 && nearestSample.getColor() != Sample.SampleColor.UNDETECTED;
 
             telemetry.addData("angle", nearestSample.getAngle());
