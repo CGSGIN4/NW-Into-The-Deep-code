@@ -72,143 +72,64 @@ public class su4ka extends LinearOpMode {
         module_master.differential.update();
 
         while (opModeIsActive()) {
-            module_master.arm.setRotation(arm.rotation.LIFT);
-            module_master.differential.pitchDown();
+            /* score preload */
+            prepareToScore();
             path_follower.followTrajectoryBreak(curves[0], -Math.PI * 3 / 4);
             waitArmRotation();
+            scoreHighBasket();
 
-            setExtensionAndWait(arm.extension.EXTENDED);
-            module_master.arm.setRotation(arm.rotation.BACK_HANG1);
-            module_master.differential.pitchScoringBasket();
-            delay(500);
-
-            module_master.differential.openClaw();
-            delay(500);
-            module_master.arm.setRotation(arm.rotation.LIFT);
-
-            module_master.differential.pitchHalfDown();
-            delay(300);
-
-            setExtensionAndWait(arm.extension.CLOSED);
-
-            module_master.arm.setRotation(arm.rotation.FRONT);
-            module_master.differential.pitchForward();
-            path_follower.goToPos(52.7, 52.7, -Math.PI / 2 - Math.toRadians(11.5)); /* sample 1 */
+            /* take 1st */
+            path_follower.goToPos(52.7, 52.7, -Math.PI / 2 - Math.toRadians(11.5));
             waitArmRotation();
-
             setExtensionAndWait(arm.extension.YELLOW_1);
             takeSample();
             setExtensionAndWait(arm.extension.CLOSED);
 
-            module_master.arm.setRotation(arm.rotation.LIFT);
-            module_master.differential.pitchDown();
+            /* score 1st */
+            prepareToScore();
             path_follower.goToPos(52.7, 52.7, -Math.PI * 3 / 4);
-
-            /* start rotating for scoring yellow 1 */
             waitArmRotation();
+            scoreHighBasket();
 
-            setExtensionAndWait(arm.extension.EXTENDED);
-            module_master.arm.setRotation(arm.rotation.BACK_HANG1);
-            module_master.differential.pitchScoringBasket();
-            delay(500);
-
-            module_master.differential.openClaw();
-            delay(500);
-            module_master.arm.setRotation(arm.rotation.LIFT);
-
-            module_master.differential.pitchHalfDown();
-            delay(300);
-
-            setExtensionAndWait(arm.extension.CLOSED);
-
-            module_master.arm.setRotation(arm.rotation.FRONT);
-            module_master.differential.pitchForward();
-            path_follower.goToPos(58.8, 51.4, -Math.PI / 2); /* sample 2 */
+            /* take 2nd */
+            path_follower.goToPos(58.8, 51.4, -Math.PI / 2);
             waitArmRotation();
-
             setExtensionAndWait(arm.extension.YELLOW_1);
             takeSample();
             setExtensionAndWait(arm.extension.CLOSED);
 
-            module_master.arm.setRotation(arm.rotation.LIFT);
-            module_master.differential.pitchDown();
+            /* score 2nd */
+            prepareToScore();
             path_follower.goToPos(52.7, 52.7, -Math.PI * 3 / 4);
-
-            /* start rotating for scoring yellow 2 */
             waitArmRotation();
+            scoreHighBasket();
 
-            setExtensionAndWait(arm.extension.EXTENDED);
-            module_master.arm.setRotation(arm.rotation.BACK_HANG1);
-            module_master.differential.pitchScoringBasket();
-            delay(500);
-
-            module_master.differential.openClaw();
-            delay(500);
-            module_master.arm.setRotation(arm.rotation.LIFT);
-
-            module_master.differential.pitchHalfDown();
-            delay(300);
-
-            setExtensionAndWait(arm.extension.CLOSED);
-
-            module_master.arm.setRotation(arm.rotation.FRONT);
-            module_master.differential.pitchForward();
+            /* take 3rd */
             path_follower.goToPos(59, 47, -Math.PI / 2 + Math.toRadians(19.5));
             waitArmRotation();
-
-            /* intaking yellow 3 */
+            module_master.differential.rollHalfRight();
             setExtensionAndWait(arm.extension.YELLOW_2);
             takeSample();
             setExtensionAndWait(arm.extension.CLOSED);
 
-            module_master.arm.setRotation(arm.rotation.LIFT);
-            module_master.differential.pitchDown();
+            /* score 3rd */
+            prepareToScore();
             path_follower.goToPos(52.7, 52.7, -Math.PI * 3 / 4);
-
-            /* start rotating for scoring yellow 3 */
             waitArmRotation();
+            scoreHighBasket();
 
-            setExtensionAndWait(arm.extension.EXTENDED);
-            module_master.arm.setRotation(arm.rotation.BACK_HANG1);
-            module_master.differential.pitchScoringBasket();
-            delay(500);
-
-            module_master.differential.openClaw();
-            delay(500);
-            module_master.arm.setRotation(arm.rotation.LIFT);
-
-            module_master.differential.pitchHalfDown();
-            delay(300);
-
-            setExtensionAndWait(arm.extension.CLOSED);
-            module_master.arm.setRotation(arm.rotation.FRONT);
+            /* safety */
             waitArmRotation();
             setExtensionAndWait(arm.extension.CLOSED);
 
             robot.stop();
             module_master.stop(dataStorage.telemetry);
-            transfer.armExtensionPos = module_master.arm.extensionMotor.getCurrentPosition();
-            transfer.armRotationPos = module_master.arm.rotationMotor.getCurrentPosition();
-
-            packet = new TelemetryPacket();
-            fieldOverlay = packet.fieldOverlay();
-            path_follower.painter.prepare(packet, fieldOverlay);
-
-            for (curve traj : curves) {
-                if (traj != null)
-                    path_follower.painter.drawPolyLine(traj.points, "green");
-
-                path_follower.painter.drawPolyLine(dataStorage.poseHistory.toArray(new Vector2d[0]), "blue");
-            }
-
-            path_follower.dashboard.sendTelemetryPacket(packet);
-
-            //timer.reset();
-            //while(timer.seconds() < 2 && opModeIsActive());
-
-            timer.reset();
-            while (timer.seconds() < 200 && opModeIsActive()) ;
         }
+    }
+
+    private void prepareToScore() {
+        module_master.arm.setRotation(arm.rotation.LIFT);
+        module_master.differential.pitchDown();
     }
 
     private void waitForCondition(BooleanSupplier condition) {
@@ -244,41 +165,27 @@ public class su4ka extends LinearOpMode {
         module_master.differential.pitchForward();
     }
 
-    /** SET DIFFY PITCH DOWN AND ARM ROTATED TO LIFT **/
-    private void prepareToScoreHighBasket(){
-        module_master.doAction(SET_ROTATION_LIFT);
-        module_master.differential.pitchDown();
-    }
-
     private void setExtensionAndWait(arm.extension extension){
         module_master.arm.setExtension(extension);
         waitArmExtension();
     }
-
-    /** RAISE ELEVATOR, SCORE SAMPLE, FOLD EXTENSION **/
+    
     private void scoreHighBasket(){
-        waitArmRotation();
-
-        /* RAISE ELEVATOR */
-        module_master.doAction(SET_EXTENSION_LIFT);
-        waitArmExtension();
-
+        setExtensionAndWait(arm.extension.EXTENDED);
         module_master.arm.setRotation(arm.rotation.BACK_HANG1);
-
-        /* SCORE SAMPLE */
         module_master.differential.pitchScoringBasket();
-        delay(300);
+        delay(500);
 
-        //waitArmRotation();
         module_master.differential.openClaw();
-        delay(300);
-
+        delay(500);
         module_master.arm.setRotation(arm.rotation.LIFT);
 
         module_master.differential.pitchHalfDown();
         delay(300);
 
-        /* FOLD */
-        module_master.doAction(SET_EXTENSION_CLOSED);
+        setExtensionAndWait(arm.extension.CLOSED);
+
+        module_master.arm.setRotation(arm.rotation.FRONT);
+        module_master.differential.pitchForward();
     }
 }
