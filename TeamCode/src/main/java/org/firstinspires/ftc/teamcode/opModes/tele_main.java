@@ -108,9 +108,10 @@ public class tele_main extends LinearOpMode {
             if (Math.abs(gamepad1.left_stick_x) > 0.01 || Math.abs(gamepad1.left_stick_y) > 0.01 || gamepad1.left_trigger > 0.01 || gamepad1.right_trigger > 0.01) {
                 gamepad = new Vector2d(gamepad1.left_stick_x, -gamepad1.left_stick_y);
                 turn = (gamepad1.left_trigger - gamepad1.right_trigger);
-                if (driverGamepad.isPressed("y"))
-                    turn /= 2;
-                robot.drivetrain.applyVector(gamepad, turn);
+                if (Math.abs(gamepad1.right_stick_y) > 0.05 || Math.abs(gamepad1.right_stick_x) > 0.05)
+                    robot.drivetrain.applyVector(gamepad.div(2), turn / 2);
+                else
+                    robot.drivetrain.applyVector(gamepad, turn);
             } else
                 robot.drivetrain.applyVector(new Vector2d(0, 0), 0);
 

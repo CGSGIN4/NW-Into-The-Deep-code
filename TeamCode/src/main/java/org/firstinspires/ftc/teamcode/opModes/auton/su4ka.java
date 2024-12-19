@@ -6,6 +6,7 @@ import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.ac
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_LIFT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_ROTATION_FRONT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_ROTATION_LIFT;
+import org.firstinspires.ftc.teamcode.data.transfer;
 
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -28,7 +29,7 @@ import java.io.IOException;
 import java.util.function.BooleanSupplier;
 
 @Autonomous
-public class ye55ow extends LinearOpMode {
+public class su4ka extends LinearOpMode {
 
     Robot robot;
     path_follower path_follower;
@@ -71,85 +72,123 @@ public class ye55ow extends LinearOpMode {
         module_master.differential.update();
 
         while (opModeIsActive()) {
-            /* PRELOAD */
-            prepareToScoreHighBasket();
+            module_master.arm.setRotation(arm.rotation.LIFT);
+            module_master.differential.pitchDown();
             path_follower.followTrajectoryBreak(curves[0], -Math.PI * 3 / 4);
-            scoreHighBasket();
-
-            /* DOBOR
-            path_follower.followTrajectoryBreak(curves[1], Math.PI);
-            module_master.arm.setExtension(arm.extension.YELLOW_1);
-            waitArmExtension();
-            delay(1000);
-            module_master.arm.setExtension(arm.extension.CLOSED);
-            path_follower.followTrajectoryBreak(curves[2], -Math.PI * 3 / 4);
-            waitArmExtension();
-
-             */
-
-            /* ---------1ST YELLOW--------- */
-            path_follower.goToPos(52.7, 52.7, -Math.PI / 2 - Math.toRadians(11));
-            waitArmExtension();
-
-            module_master.doAction(SET_ROTATION_FRONT);
             waitArmRotation();
+
+            setExtensionAndWait(arm.extension.EXTENDED);
+            module_master.arm.setRotation(arm.rotation.BACK_HANG1);
+            module_master.differential.pitchScoringBasket();
+            delay(500);
+
+            module_master.differential.openClaw();
+            delay(500);
+            module_master.arm.setRotation(arm.rotation.LIFT);
 
             module_master.differential.pitchHalfDown();
-            setExtensionAndWait(arm.extension.YELLOW_1);
+            delay(300);
 
-            takeSample();
+            setExtensionAndWait(arm.extension.CLOSED);
 
-            module_master.arm.setExtension(arm.extension.CLOSED);
-            path_follower.goToPos(52.7, 52.7, -Math.PI * 3 / 4);
-            waitArmExtension();
-            prepareToScoreHighBasket();
-            scoreHighBasket();
-
-            /* ---------2ND YELLOW--------- */
-            path_follower.goToPos(52.7, 52.7, -Math.PI / 2 + Math.toRadians(14));
-            waitArmExtension();
-
-            module_master.doAction(SET_ROTATION_FRONT);
+            module_master.arm.setRotation(arm.rotation.FRONT);
+            module_master.differential.pitchForward();
+            path_follower.goToPos(52.7, 52.7, -Math.PI / 2 - Math.toRadians(11.5)); /* sample 1 */
             waitArmRotation();
-            delay(30000);
+
+            setExtensionAndWait(arm.extension.YELLOW_1);
+            takeSample();
+            setExtensionAndWait(arm.extension.CLOSED);
+
+            module_master.arm.setRotation(arm.rotation.LIFT);
+            module_master.differential.pitchDown();
+            path_follower.goToPos(52.7, 52.7, -Math.PI * 3 / 4);
+
+            /* start rotating for scoring yellow 1 */
+            waitArmRotation();
+
+            setExtensionAndWait(arm.extension.EXTENDED);
+            module_master.arm.setRotation(arm.rotation.BACK_HANG1);
+            module_master.differential.pitchScoringBasket();
+            delay(500);
+
+            module_master.differential.openClaw();
+            delay(500);
+            module_master.arm.setRotation(arm.rotation.LIFT);
+
             module_master.differential.pitchHalfDown();
-            setExtensionAndWait(arm.extension.YELLOW_1);
+            delay(300);
 
-            takeSample();
+            setExtensionAndWait(arm.extension.CLOSED);
 
-            module_master.arm.setExtension(arm.extension.CLOSED);
-            path_follower.goToPos(52.7, 52.7, -Math.PI * 3 / 4);
-            waitArmExtension();
-            prepareToScoreHighBasket();
-            scoreHighBasket();
-
-            /* ---------3RD YELLOW--------- */
-            module_master.differential.rollHalfRight();
-            path_follower.goToPos(58, 49.6, -Math.PI / 2 + Math.toRadians(22));
-            waitArmExtension();
-
-            module_master.doAction(SET_ROTATION_FRONT);
+            module_master.arm.setRotation(arm.rotation.FRONT);
+            module_master.differential.pitchForward();
+            path_follower.goToPos(58.8, 51.4, -Math.PI / 2); /* sample 2 */
             waitArmRotation();
 
             setExtensionAndWait(arm.extension.YELLOW_1);
-
             takeSample();
+            setExtensionAndWait(arm.extension.CLOSED);
 
-            module_master.arm.setExtension(arm.extension.CLOSED);
-            module_master.differential.rollDefault();
+            module_master.arm.setRotation(arm.rotation.LIFT);
+            module_master.differential.pitchDown();
             path_follower.goToPos(52.7, 52.7, -Math.PI * 3 / 4);
-            waitArmExtension();
-            prepareToScoreHighBasket();
-            scoreHighBasket();
-            waitArmExtension();
-            module_master.doAction(SET_ROTATION_FRONT);
 
-            path_follower.followTrajectoryBreak(curves[3], Math.PI - Math.toRadians(10));
+            /* start rotating for scoring yellow 2 */
             waitArmRotation();
-            setExtensionAndWait(arm.extension.YELLOW_1);
+
+            setExtensionAndWait(arm.extension.EXTENDED);
+            module_master.arm.setRotation(arm.rotation.BACK_HANG1);
+            module_master.differential.pitchScoringBasket();
+            delay(500);
+
+            module_master.differential.openClaw();
+            delay(500);
+            module_master.arm.setRotation(arm.rotation.LIFT);
+
+            module_master.differential.pitchHalfDown();
+            delay(300);
+
+            setExtensionAndWait(arm.extension.CLOSED);
+
+            module_master.arm.setRotation(arm.rotation.FRONT);
+            module_master.differential.pitchForward();
+            path_follower.goToPos(59, 47, -Math.PI / 2 + Math.toRadians(19.5));
+            waitArmRotation();
+
+            /* intaking yellow 3 */
+            setExtensionAndWait(arm.extension.YELLOW_2);
+            takeSample();
+            setExtensionAndWait(arm.extension.CLOSED);
+
+            module_master.arm.setRotation(arm.rotation.LIFT);
+            module_master.differential.pitchDown();
+            path_follower.goToPos(52.7, 52.7, -Math.PI * 3 / 4);
+
+            /* start rotating for scoring yellow 3 */
+            waitArmRotation();
+
+            setExtensionAndWait(arm.extension.EXTENDED);
+            module_master.arm.setRotation(arm.rotation.BACK_HANG1);
+            module_master.differential.pitchScoringBasket();
+            delay(500);
+
+            module_master.differential.openClaw();
+            delay(500);
+            module_master.arm.setRotation(arm.rotation.LIFT);
+
+            module_master.differential.pitchHalfDown();
+            delay(300);
+
+            setExtensionAndWait(arm.extension.CLOSED);
+            module_master.arm.setRotation(arm.rotation.FRONT);
+            waitArmRotation();
+            setExtensionAndWait(arm.extension.CLOSED);
 
             robot.stop();
             module_master.stop(dataStorage.telemetry);
+            transfer.armExtensionPos = module_master.arm.extensionMotor.getCurrentPosition();
+            transfer.armRotationPos = module_master.arm.rotationMotor.getCurrentPosition();
 
             packet = new TelemetryPacket();
             fieldOverlay = packet.fieldOverlay();
@@ -195,6 +234,7 @@ public class ye55ow extends LinearOpMode {
 
     /** PITCH DOWN, CLOSE CLAW, PITCH FORWARD **/
     private void takeSample(){
+        delay(300);
         module_master.differential.pitchDown();
         delay(200);
 

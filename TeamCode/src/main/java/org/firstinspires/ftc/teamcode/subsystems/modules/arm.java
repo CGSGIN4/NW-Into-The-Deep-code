@@ -23,16 +23,16 @@ public class arm {
     public AnalogInput rotationBtn;
 
     /* ------------------ CONSTANTS ------------------ */
-    int EXTENSION_FULL = 510; //370
+    int EXTENSION_FULL = 480; //370
     int EXTENSION_FRONT_MAX = 305;
     int EXTENSION_LOW_BASKET = 180;
     int EXTENSION_LOW_CHAMBER = 180;
     int EXTENSION_HIGH_CHAMBER = 278;
     int EXTENSION_YELLOW_1 = 305;
-    int EXTENSION_YELLOW_2 = 278;
+    int EXTENSION_YELLOW_2 = 280;
     int ROTATION_FRONT = 0;
     int ROTATION_BACK_HANG0 = 560;
-    int ROTATION_BACK_HANG1 = 516;
+    int ROTATION_BACK_HANG1 = 508;
     int ROTATION_LIFT = 498; //485
     int ROTATION_CHAMBER = 300;
 
@@ -143,6 +143,7 @@ public class arm {
 
         cog = (m_1 * Math.sqrt(l_1 * l_1 + h_1 * h_1) + m_2 * Math.sqrt(l_2 * l_2 + h_2 * h_2) + m_3 * Math.sqrt(l_3 * l_3 + h_3 * h_3) + m_4 * Math.sqrt(l_4 * l_4 + h_4 * h_4) + m_5 * Math.sqrt(l_5 * l_5 + h_5 * h_5)) / (m_1 + m_2 + m_3 + m_4 + m_5);
         ratio = cog / COG_MAX;
+        telemetry.addData("ext pos", extensionMotor.getCurrentPosition());
 
         if (!extensionState.equals(extension.MANUAL))
             telemetry.addData("extension power", setExtension(extensionState));
@@ -154,6 +155,7 @@ public class arm {
             rotationState = rotation.RESET;
             setRotationMotorPower(0);
         }
+        telemetry.update();
     }
 
     public void update() {
@@ -220,7 +222,7 @@ public class arm {
     }
 
     private double pidCalculateExtensionPower(int targetPos){
-        if (extensionState == extension.EXTENDED)
+        if (extensionState == extension.EXTENDED && extensionMotor.getCurrentPosition() < EXTENSION_FULL)
             return 1;
         int error = targetPos - extensionMotor.getCurrentPosition();
         int delta = error - oldExtensionError;
@@ -258,10 +260,13 @@ public class arm {
             if (Math.abs(error) > Math.abs(oldRotationError) && Math.abs(rotationAngle) > 2) /* error increased => wrong direction */
                 delta *= 3;
 
+                /*
             if (Math.abs(rotDeltaFiltered) > 13)
             {
                 setExtension(extension.HIGH_CHAMBER);
             }
+
+                 */
             if (Math.abs(error) < 40)
                 delta *= 17;
             else if (Math.abs(error) < 80)
