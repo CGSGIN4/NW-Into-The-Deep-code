@@ -38,7 +38,7 @@ public class armTest extends LinearOpMode {
 
     Vector2d gamepad;
     arm arm;
-    public static double p = 0, i = 0, d = 0, f = 0;
+    public static double p = 0.006, i = 0, d = 0.02, f = 0.01;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -99,12 +99,10 @@ public class armTest extends LinearOpMode {
                 arm.setExtension(CLOSED);
                 //tele.addData("extension power", arm.setExtension(CLOSED));
 
-            /*
-            arm.ROTATION_PIDF.p = p;
-            arm.ROTATION_PIDF.i = i;
-            arm.ROTATION_PIDF.d = d;
-            arm.ROTATION_PIDF.f = f;
-*/
+            arm.EXTENSION_PIDF.p = p;
+            arm.EXTENSION_PIDF.i = i;
+            arm.EXTENSION_PIDF.d = d;
+            arm.EXTENSION_PIDF.f = f;
 
 
             if (Math.abs(gamepad1.right_stick_y) > 0.01)
