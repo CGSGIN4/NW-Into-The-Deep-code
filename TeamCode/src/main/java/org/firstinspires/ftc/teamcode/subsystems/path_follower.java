@@ -18,13 +18,13 @@ import java.util.HashMap;
 public class path_follower {
 
     drivetrain drivetrain;
-    velocity_calculator velocity_calculator;
+    public velocity_calculator velocity_calculator;
     public FtcDashboard dashboard;
     public painter painter = new painter();
     double p_rotation_coef = 3.;
-    double p_trans_coef = 0.1;
+    double p_trans_coef = 0.15;
     double d_trans_coef = 0.1;
-    double i_trans_coef = 0.005;
+    double i_trans_coef = 0.013;
 
     public path_follower(drivetrain drivetrain){
         this.drivetrain = drivetrain;
@@ -238,7 +238,25 @@ public class path_follower {
 
         dataStorage.updateData();
         module_master.update(dataStorage.telemetry);
-        while(dataStorage.RobotPose.distTo(finish) > 1 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.05 || dataStorage.RobotVelocity.norm() > 3){
+        while(dataStorage.RobotPose.distTo(finish) > 1 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.027 || dataStorage.RobotVelocity.norm() > 3){
+            dataStorage.updateData();
+            module_master.update(dataStorage.telemetry);
+
+            pid = velocity_calculator.getPIDpower(finish, Heading);
+            dataStorage.telemetry.addData("HeadingBuffer", velocity_calculator.IHeading);
+
+            drivetrain.applyVectorFieldCentric(pid.vec().rotated(Math.toRadians(90)), pid.getHeading());
+        }
+        drivetrain.applyVector(new Vector2d(0, 0), 0);
+    }
+
+    public void goToPosUnsafe(double X, double Y, double Heading){
+        Pose2d pid;
+        Vector2d finish = new Vector2d(X, Y);
+
+        dataStorage.updateData();
+        module_master.update(dataStorage.telemetry);
+        while(dataStorage.RobotPose.distTo(finish) > 1 || /*Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.07 ||*/ dataStorage.RobotVelocity.norm() > 3){
             dataStorage.updateData();
             module_master.update(dataStorage.telemetry);
 

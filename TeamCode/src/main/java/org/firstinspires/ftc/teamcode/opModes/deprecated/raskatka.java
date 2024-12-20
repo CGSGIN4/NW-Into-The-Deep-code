@@ -1,12 +1,14 @@
 package org.firstinspires.ftc.teamcode.opModes.deprecated;
 
 import com.acmerobotics.dashboard.canvas.Canvas;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Robot;
@@ -16,13 +18,15 @@ import org.firstinspires.ftc.teamcode.subsystems.path_follower;
 import org.firstinspires.ftc.teamcode.utils.parser;
 
 import java.io.IOException;
-@Disabled
+@Config
 @TeleOp(group = "Deprecated")
 public class raskatka extends LinearOpMode {
 
     Robot robot;
     org.firstinspires.ftc.teamcode.subsystems.path_follower path_follower;
     ElapsedTime timer = new ElapsedTime(), main_timer = new ElapsedTime();
+    public static PIDCoefficients trans = new PIDCoefficients(0.057, 0.028, 0.33);
+    public static PIDCoefficients rot = new PIDCoefficients(0.34, 0.18, 0.11);
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -31,7 +35,7 @@ public class raskatka extends LinearOpMode {
         parser parser = new parser();
         dataStorage.init(robot.drive, telemetry, this);
         path_follower = new path_follower(robot.drivetrain);
-        robot.drive.setPoseEstimate(new Pose2d(-0.374, -0.479   , 0));
+        robot.drive.setPoseEstimate(new Pose2d(-0.374, -0.479, 0));
 
         curve[] curves;
         try {
@@ -64,24 +68,46 @@ public class raskatka extends LinearOpMode {
          */
 
         while (opModeIsActive()) {
+            path_follower.velocity_calculator.p_trans_coef = trans.p;
+            path_follower.velocity_calculator.d_trans_coef = trans.d;
+            path_follower.velocity_calculator.i_trans_coef = trans.i;
+            path_follower.velocity_calculator.I_ROTATION_COEF = rot.i;
+            path_follower.velocity_calculator.D_ROTATION_COEF = rot.d;
+            path_follower.velocity_calculator.P_ROTATION_COEF = rot.p;
+            path_follower.goToPosUnsafe(24, 24, 0);
             timer.reset();
-
-            path_follower.followTrajectory(curves[0]);
-            path_follower.followTrajectory(curves[1]);
-            path_follower.followTrajectory(curves[2]);
-            path_follower.followTrajectory(curves[3]);
-            path_follower.followTrajectory(curves[4]);
-            path_follower.followTrajectory(curves[5]);
-            path_follower.followTrajectory(curves[6]);
-            path_follower.followTrajectoryBreak(curves[7]);
-            if (gamepad1.a) break;
-            packet = new TelemetryPacket();
-            packet.put("full_time", main_timer.seconds());
-            path_follower.dashboard.sendTelemetryPacket(packet);
-            dataStorage.DSTelemetry.addData("time", timer.milliseconds());
-            dataStorage.DSTelemetry.update();
+            while (timer.milliseconds() < 1000 && opModeIsActive());
+            /*
+            path_follower.velocity_calculator.p_trans_coef = trans.p;
+            path_follower.velocity_calculator.d_trans_coef = trans.d;
+            path_follower.velocity_calculator.i_trans_coef = trans.i;
+            path_follower.velocity_calculator.I_ROTATION_COEF = rot.i;
+            path_follower.velocity_calculator.D_ROTATION_COEF = rot.d;
+            path_follower.velocity_calculator.P_ROTATION_COEF = rot.p;
+            path_follower.goToPos(-24, -24, Math.PI);
             timer.reset();
-            while(timer.seconds() < 2 && opModeIsActive());
+            while (timer.milliseconds() < 1000 && opModeIsActive());
+             */
+            path_follower.velocity_calculator.p_trans_coef = trans.p;
+            path_follower.velocity_calculator.d_trans_coef = trans.d;
+            path_follower.velocity_calculator.i_trans_coef = trans.i;
+            path_follower.velocity_calculator.I_ROTATION_COEF = rot.i;
+            path_follower.velocity_calculator.D_ROTATION_COEF = rot.d;
+            path_follower.velocity_calculator.P_ROTATION_COEF = rot.p;
+            path_follower.goToPosUnsafe(-24, -24, 0);
+            timer.reset();
+            while (timer.milliseconds() < 1000 && opModeIsActive());
+            /*
+            path_follower.velocity_calculator.p_trans_coef = trans.p;
+            path_follower.velocity_calculator.d_trans_coef = trans.d;
+            path_follower.velocity_calculator.i_trans_coef = trans.i;
+            path_follower.velocity_calculator.I_ROTATION_COEF = rot.i;
+            path_follower.velocity_calculator.D_ROTATION_COEF = rot.d;
+            path_follower.velocity_calculator.P_ROTATION_COEF = rot.p;
+            path_follower.goToPos(24, 24, -Math.PI / 2);
+            timer.reset();
+            while (timer.milliseconds() < 1000 && opModeIsActive());
+             */
         }
 
             //_______________________________________

@@ -74,7 +74,7 @@ public class su4ka extends LinearOpMode {
         while (opModeIsActive()) {
             module_master.arm.setRotation(arm.rotation.LIFT);
             module_master.differential.pitchDown();
-            path_follower.goToPos(51.4, 51.4, -Math.PI * 3 / 4);
+            path_follower.followTrajectoryBreak(curves[0], -Math.PI * 3 / 4);
             waitArmRotation();
 
             setExtensionAndWait(arm.extension.EXTENDED);
@@ -83,7 +83,7 @@ public class su4ka extends LinearOpMode {
             delay(500);
 
             module_master.differential.openClaw();
-            delay(500);
+            delay(200);
             module_master.arm.setRotation(arm.rotation.LIFT);
 
             module_master.differential.pitchHalfDown();
@@ -93,16 +93,16 @@ public class su4ka extends LinearOpMode {
 
             module_master.arm.setRotation(arm.rotation.FRONT);
             module_master.differential.pitchForward();
-            path_follower.goToPos(51.4, 51.4, -Math.PI / 2 - Math.toRadians(11.5)); /* sample 1 */
+            path_follower.goToPos(48.3, 51, -Math.PI / 2);
+            //path_follower.goToPosUnsafe(51.4, 51.4, -Math.PI / 2 - Math.toRadians(11.5)); /* sample 1 */
             waitArmRotation();
-
             setExtensionAndWait(arm.extension.YELLOW_1);
-            takeSample();
+            takeSample(false);
             setExtensionAndWait(arm.extension.CLOSED);
 
             module_master.arm.setRotation(arm.rotation.LIFT);
             module_master.differential.pitchDown();
-            path_follower.goToPos(51.4, 51.4, -Math.PI * 3 / 4);
+            path_follower.goToPosUnsafe(51.4, 51.4, -Math.PI * 3 / 4);
 
             /* start rotating for scoring yellow 1 */
             waitArmRotation();
@@ -113,7 +113,7 @@ public class su4ka extends LinearOpMode {
             delay(500);
 
             module_master.differential.openClaw();
-            delay(500);
+            delay(200);
             module_master.arm.setRotation(arm.rotation.LIFT);
 
             module_master.differential.pitchHalfDown();
@@ -123,16 +123,17 @@ public class su4ka extends LinearOpMode {
 
             module_master.arm.setRotation(arm.rotation.FRONT);
             module_master.differential.pitchForward();
-            path_follower.goToPos(58.8, 51.4, -Math.PI / 2); /* sample 2 */
+            path_follower.goToPos(59, 51.4, -Math.PI / 2); /* sample 2 */
             waitArmRotation();
+            module_master.arm.setExtension(arm.extension.YELLOW_2);
+            waitArmExtension();
 
-            setExtensionAndWait(arm.extension.YELLOW_1);
-            takeSample();
+            takeSample(false);
             setExtensionAndWait(arm.extension.CLOSED);
 
             module_master.arm.setRotation(arm.rotation.LIFT);
             module_master.differential.pitchDown();
-            path_follower.goToPos(51.4, 51.4, -Math.PI * 3 / 4);
+            path_follower.goToPosUnsafe(51.4, 51.4, -Math.PI * 3 / 4);
 
             /* start rotating for scoring yellow 2 */
             waitArmRotation();
@@ -143,7 +144,7 @@ public class su4ka extends LinearOpMode {
             delay(500);
 
             module_master.differential.openClaw();
-            delay(500);
+            delay(200);
             module_master.arm.setRotation(arm.rotation.LIFT);
 
             module_master.differential.pitchHalfDown();
@@ -153,19 +154,20 @@ public class su4ka extends LinearOpMode {
 
             module_master.arm.setRotation(arm.rotation.FRONT);
             module_master.differential.pitchForward();
-            path_follower.goToPos(59, 47, -Math.PI / 2 + Math.toRadians(20.7));
+            path_follower.goToPos(59, 47, -Math.PI / 2 + Math.toRadians(23.3));
             waitArmRotation();
 
             /* intaking yellow 3 */
-            module_master.differential.rollHalfRight();
-            setExtensionAndWait(arm.extension.YELLOW_2);
-            takeSample();
+            module_master.differential.setRoll(23);
+            module_master.differential.update();
+            setExtensionAndWait(arm.extension.YELLOW_3);
+            takeSample(true);
             setExtensionAndWait(arm.extension.CLOSED);
             module_master.differential.rollDefault();
 
             module_master.arm.setRotation(arm.rotation.LIFT);
             module_master.differential.pitchDown();
-            path_follower.goToPos(51.4, 51.4, -Math.PI * 3 / 4);
+            path_follower.goToPosUnsafe(51.4, 51.4, -Math.PI * 3 / 4);
 
             /* start rotating for scoring yellow 3 */
             waitArmRotation();
@@ -176,7 +178,7 @@ public class su4ka extends LinearOpMode {
             delay(500);
 
             module_master.differential.openClaw();
-            delay(500);
+            delay(200);
             module_master.arm.setRotation(arm.rotation.LIFT);
 
             module_master.differential.pitchHalfDown();
@@ -235,9 +237,16 @@ public class su4ka extends LinearOpMode {
     }
 
     /** PITCH DOWN, CLOSE CLAW, PITCH FORWARD **/
-    private void takeSample(){
+    private void takeSample(boolean third){
         delay(300);
-        module_master.differential.pitchDown();
+        if (!third) {
+            module_master.differential.setPitch(37);
+            module_master.differential.update();
+        }
+        else {
+            module_master.differential.setPitch(35);
+            module_master.differential.update();
+        }
         delay(200);
 
         module_master.differential.closeClaw();

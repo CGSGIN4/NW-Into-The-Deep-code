@@ -49,8 +49,15 @@ public class hang {
 
         int lDelta = lError - oldErrLeft;
         int rDelta = rError - oldErrRight;
-        left.setPower(lError * pid.p + lDelta * pid.d);
-        right.setPower(rError * pid.p + rDelta * pid.d);
+        if (state == states.FOLDING3)
+        {
+            left.setPower(-0.7);
+            right.setPower(-0.7);
+        }
+        else {
+            left.setPower(lError * pid.p + lDelta * pid.d);
+            right.setPower(rError * pid.p + rDelta * pid.d);
+        }
         oldErrLeft = lError;
         oldErrRight = rError;
     }
@@ -68,6 +75,13 @@ public class hang {
     public void fold(){
         state = states.FOLDING;
         goTo(target_2_hang);
+    }
+
+    public void pushDown(){
+        goTo(target_2_hang);
+    }
+    public void pushUp(){
+        goTo(target_3_extended);
     }
 
     public void fold3(){
@@ -104,7 +118,8 @@ public class hang {
                     fold();
                 break;
             case ASCEND2COMPLETE:
-               // prepare3();
+                pushDown();
+                //prepare3();
                 break;
             case PREPARE3:
                 if (Math.abs(left.getCurrentPosition() - target_3_extended) < 20 && Math.abs(right.getCurrentPosition() - target_3_extended) < 20)
@@ -113,7 +128,8 @@ public class hang {
                     prepare3();
                 break;
             case READY3:
-                fold3();
+                //fold3();
+                pushUp();
                 break;
             case FOLDING3:
                 if (Math.abs(left.getCurrentPosition() - target_2_hang) < 20 && Math.abs(right.getCurrentPosition() - target_2_hang) < 20)
@@ -122,7 +138,7 @@ public class hang {
                     fold3();
                 break;
             case ASCEND3COMPLETE:
-                chill();
+                pushDown();
                 break;
         }
     }

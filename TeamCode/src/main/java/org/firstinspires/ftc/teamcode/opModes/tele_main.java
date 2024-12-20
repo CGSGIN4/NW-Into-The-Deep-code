@@ -4,6 +4,7 @@ import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.CL
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.EXTENDED;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.LOW_BASKET;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.MANUAL;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.BACK_HANG1;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.FRONT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.LIFT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.RESET;
@@ -50,9 +51,6 @@ public class tele_main extends LinearOpMode {
         GamepadNW driverGamepad = new GamepadNW(gamepad1);
         GamepadNW assistGamepad = new GamepadNW(gamepad2);
 
-        differential.pitchUp();
-        differential.rollDefault();
-        differential.update();
         waitForStart();
         while(opModeIsActive()) {
             driverGamepad.update();
@@ -214,15 +212,24 @@ public class tele_main extends LinearOpMode {
             }
 
             if (assistGamepad.isClicked("y")) {
-                //arm.setRotation(BACK_HANG1);
+                arm.setRotation(BACK_HANG1);
                 arm.setExtension(CLOSED);
                 differential.openClaw();
                 differential.pitchUp();
                 if (hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.SLEEPING)
                     hang.prepare();
-                if (hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.READY || hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.READY3)
-                    hang.fold();
+                else if (hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.ASCEND2COMPLETE)
+                    hang.prepare3();
+                else if (hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.READY3)
+                    hang.fold3();
             }
+
+            if (assistGamepad.isClicked("start"))
+                arm.resetExtensionEncoders();
+            if (assistGamepad.isClicked("back"))
+                arm.resetRotationEncoders();
+            if (assistGamepad.isPressed("left_stick_button"))
+                arm.manuallyRotate(-0.5);
         }
     }
 }

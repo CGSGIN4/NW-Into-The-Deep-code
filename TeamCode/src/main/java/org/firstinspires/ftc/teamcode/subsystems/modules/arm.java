@@ -28,8 +28,9 @@ public class arm {
     int EXTENSION_LOW_BASKET = 180;
     int EXTENSION_LOW_CHAMBER = 180;
     int EXTENSION_HIGH_CHAMBER = 278;
-    int EXTENSION_YELLOW_1 = 305;
-    int EXTENSION_YELLOW_2 = 275;
+    int EXTENSION_YELLOW_1 = 248;
+    int EXTENSION_YELLOW_2 = 264;
+    int EXTENSION_YELLOW_3 = 255;
     int ROTATION_FRONT = 0;
     int ROTATION_BACK_HANG0 = 560;
     int ROTATION_BACK_HANG1 = 508;
@@ -98,7 +99,8 @@ public class arm {
         HIGH_CHAMBER,
         MANUAL,
         YELLOW_1,
-        YELLOW_2
+        YELLOW_2,
+        YELLOW_3
     }
 
     public enum rotation {
@@ -124,12 +126,12 @@ public class arm {
         rotationBtn = HM.get(AnalogInput.class, "rotationBtn");
     }
 
-    private void resetRotationEncoders() {
+    public void resetRotationEncoders() {
         rotationMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rotationMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
-    private void resetExtensionEncoders() {
+    public void resetExtensionEncoders() {
         extensionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         extensionMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
@@ -186,6 +188,8 @@ public class arm {
                 return EXTENSION_YELLOW_1;
             case YELLOW_2:
                 return EXTENSION_YELLOW_2;
+            case YELLOW_3:
+                return EXTENSION_YELLOW_3;
         }
         return -1;
     }
