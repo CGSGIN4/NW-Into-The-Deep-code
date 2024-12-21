@@ -52,6 +52,7 @@ public class tele_main extends LinearOpMode {
         GamepadNW assistGamepad = new GamepadNW(gamepad2);
 
         waitForStart();
+        differential.closeClaw();
         while(opModeIsActive()) {
             driverGamepad.update();
             assistGamepad.update();
@@ -196,14 +197,14 @@ public class tele_main extends LinearOpMode {
                     differential.closeClaw();
                 else {
                     arm.setExtension(CLOSED);
-                    pitch = 100;
+                    pitch = 180;
                     intakingSequence = false;
                 }
             }
 
             if (Math.abs(gamepad2.right_stick_y) > 0.01) {
                 arm.manuallyExtend(-gamepad2.right_stick_y);
-                if (gamepad2.right_stick_y < 0 && arm.rotationState == RESET)
+                if (gamepad2.right_stick_y < -0.1 && arm.rotationState == RESET)
                     differential.openClaw();
             }
             else {
@@ -220,8 +221,14 @@ public class tele_main extends LinearOpMode {
                     hang.prepare();
                 else if (hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.ASCEND2COMPLETE)
                     hang.prepare3();
-                else if (hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.READY3)
+                else if (hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.PREPARE3)
+                    hang.standby3();
+                else if (hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.STANDBY3)
                     hang.fold3();
+            }
+            if (assistGamepad.isClicked("b")) {
+                hang.chill();
+                hang.state = org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.SLEEPING;
             }
 
             if (assistGamepad.isClicked("start"))

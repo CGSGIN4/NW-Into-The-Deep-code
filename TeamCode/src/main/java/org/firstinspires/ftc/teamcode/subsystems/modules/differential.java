@@ -31,7 +31,6 @@ public class differential {
         claw = HM.get(Servo.class, "claw");
         pitch = 180;
         roll = 0;
-        closeClaw();
     }
     double posToDeg(double pos){
         return MAX_ANGLE * pos;
@@ -119,7 +118,7 @@ public class differential {
 
     public void closeClaw(){
         clawState = 0;
-        claw.setPosition(0.3);
+        claw.setPosition(0.28);
     }
 
     public void clawSwitch(){

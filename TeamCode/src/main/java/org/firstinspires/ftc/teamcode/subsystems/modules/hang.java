@@ -22,11 +22,12 @@ public class hang {
         PREPARE3,
         READY,
         ASCEND2COMPLETE,
-        READY3, FOLDING, ASCEND3COMPLETE, FOLDING3
+        READY3, FOLDING, ASCEND3COMPLETE, FOLDING3,
+        STANDBY3
     }
     PIDCoefficients pid = new PIDCoefficients(0.007, 0, 0.001);
-    int target_2_extended = 2000;
-    int target_3_extended = 2890;
+    int target_2_extended = 1850;
+    int target_3_extended = 2915;
     int target_2_hang = 0;
     int oldErrLeft = 0;
     int oldErrRight = 0;
@@ -93,6 +94,10 @@ public class hang {
         left.setPower(0);
         right.setPower(0);
     }
+    public void standby3(){
+        state = states.STANDBY3;
+        goTo(2700);
+    }
 
     public void update(MultipleTelemetry telemetry){
         telemetry.addData("hang state", state.toString());
@@ -122,14 +127,19 @@ public class hang {
                 //prepare3();
                 break;
             case PREPARE3:
+                /*
                 if (Math.abs(left.getCurrentPosition() - target_3_extended) < 20 && Math.abs(right.getCurrentPosition() - target_3_extended) < 20)
                     state = states.READY3;
                 else
-                    prepare3();
+                 */
+                    pushUp();
                 break;
             case READY3:
                 //fold3();
                 pushUp();
+                break;
+            case STANDBY3:
+                standby3();
                 break;
             case FOLDING3:
                 if (Math.abs(left.getCurrentPosition() - target_2_hang) < 20 && Math.abs(right.getCurrentPosition() - target_2_hang) < 20)

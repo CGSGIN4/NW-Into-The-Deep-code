@@ -50,6 +50,10 @@ public class su4ka extends LinearOpMode {
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
+        module_master.differential.pitchUp();
+        module_master.differential.rollDefault();
+        module_master.differential.closeClaw();
+        module_master.differential.update();
 
         waitForStart();
 
@@ -65,11 +69,6 @@ public class su4ka extends LinearOpMode {
         path_follower.dashboard.sendTelemetryPacket(packet);
 
         /* INIT */
-
-        module_master.differential.pitchUp();
-        module_master.differential.rollDefault();
-        module_master.differential.closeClaw();
-        module_master.differential.update();
 
         while (opModeIsActive()) {
             module_master.arm.setRotation(arm.rotation.LIFT);
@@ -213,10 +212,13 @@ public class su4ka extends LinearOpMode {
             timer.reset();
             while (timer.seconds() < 200 && opModeIsActive()) ;
         }
+        robot.stop();
+        module_master.stop(dataStorage.telemetry);
     }
 
     private void waitForCondition(BooleanSupplier condition) {
-        while (!condition.getAsBoolean() && opModeIsActive()) {
+        timer.reset();
+        while (!condition.getAsBoolean() && opModeIsActive() && timer.milliseconds() < 5000) {
             module_master.update(dataStorage.telemetry);
         }
     }
