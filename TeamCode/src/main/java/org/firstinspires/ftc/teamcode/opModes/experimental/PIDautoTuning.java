@@ -118,6 +118,8 @@ public class PIDautoTuning extends LinearOpMode {
     private void tunePIDCoefficients(double moveError, double turnError) {
         double deltaTime = timer.seconds();
 
+        // Настройка коэффициентов движения
+
         // Уменьшаем kI, если ошибка колеблется вокруг цели
         if (Math.abs(moveError) < ERROR_THRESHOLD && Math.abs(previousErrorMove - moveError) < 0.01) {
             kI_move = Math.max(0.0, kI_move - 0.001);
@@ -138,10 +140,32 @@ public class PIDautoTuning extends LinearOpMode {
             kD_move = Math.max(0.0, kD_move - 0.01);
         }
 
-        // Ограничиваем коэффициенты
+        // Ограничиваем коэффициенты движения
         kP_move = Math.min(KP_MAX, kP_move);
         kI_move = Math.min(KI_MAX, kI_move);
         kD_move = Math.min(KD_MAX, kD_move);
+
+        // Настройка коэффициентов поворота
+
+        // Уменьшаем kI, если ошибка поворота стабильно мала
+        if (Math.abs(turnError) < ANGLE_ERROR_THRESHOLD && Math.abs(previousErrorTurn - turnError) < 0.01) {
+            kI_turn = Math.max(0.0, kI_turn - 0.001);
+        }
+
+        // Уменьшаем kD, если наблюдаются колебания поворота
+        if (Math.abs(previousErrorTurn - turnError) > OVERSHOOT_THRESHOLD) {
+            kD_turn = Math.max(0.0, kD_turn - 0.01);
+        }
+
+        // Уменьшаем kD, если поворот слишком медленный при маленькой ошибке
+        if (Math.abs(turnError) > 0.1 && Math.abs(previousErrorTurn - turnError) / deltaTime < 0.01) {
+            kD_turn = Math.max(0.0, kD_turn - 0.01);
+        }
+
+        // Ограничиваем коэффициенты поворота
+        kP_turn = Math.min(KP_MAX, kP_turn);
+        kI_turn = Math.min(KI_MAX, kI_turn);
+        kD_turn = Math.min(KD_MAX, kD_turn);
     }
 
     private double normalizeAngle(double angle) {
