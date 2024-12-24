@@ -25,11 +25,11 @@ public class velocity_calculator {
     double t;
     double CENTRIPETAL_ACCEL_KOEF = 0.65/*0.59*/;
 
-    public double P_ROTATION_COEF = 0.34 /*0.2*/;
+    public double P_ROTATION_COEF = 0.7 /*0.2*/;
 
-    public double D_ROTATION_COEF = 0.11 /*0.4*/;
+    public double D_ROTATION_COEF = 1 /*0.4*/;
 
-    public double I_ROTATION_COEF = 0.18;//3;
+    public double I_ROTATION_COEF = 0.2;//3;
     double velocityModule;
 
     double oldTargetHeading;
@@ -59,9 +59,9 @@ public class velocity_calculator {
     double closest_turn_old;
 
     double p_rotation_coef = 3.;
-    public double p_trans_coef = 0.057;
-    public double d_trans_coef = 0.33;
-    public double i_trans_coef = 0.01;
+    public double p_trans_coef = 0.15;
+    public double d_trans_coef = 0.35;
+    public double i_trans_coef = 0.005;
 
     double x_error = 0;
     double y_error = 0;
@@ -163,17 +163,20 @@ public class velocity_calculator {
     public double getRotationCustomDirection(Vector2d direction){
         double currentTargetHeading = normalizeAngle(direction.angle());
         double errorHeading = normalizeAngle(currentTargetHeading - dataStorage.RobotWorldHeading);
-        double errorOldHeading = normalizeAngle(dataStorage.OldRobotWorldHeading - this.oldTargetHeading);
+        double errorOldHeading = normalizeAngle(this.oldTargetHeading - dataStorage.OldRobotWorldHeading);
 
         if (currentTargetHeading != oldTargetHeading)
             IHeading = 0;
         double DHeading = errorHeading - errorOldHeading;
 
-        if (Math.abs(errorHeading) <= 0.2)
+        if (Math.abs(errorHeading) <= 0.3)
             IHeading += errorHeading;
-        if (Math.abs(errorHeading) < 0.02)
+        if (errorHeading * IHeading < 0)
             IHeading = 0;
 
+        dataStorage.telemetry.addData("err", errorHeading);
+        dataStorage.telemetry.addData("integral_rot", IHeading);
+        dataStorage.telemetry.addData("p_rot", P_ROTATION_COEF);
         this.oldTargetHeading = currentTargetHeading;
         return errorHeading * P_ROTATION_COEF + DHeading * D_ROTATION_COEF + this.IHeading * I_ROTATION_COEF;
     }
@@ -181,13 +184,13 @@ public class velocity_calculator {
     public double getRotationCustomDirection(double angle){
         double currentTargetHeading = normalizeAngle(angle);
         double errorHeading = normalizeAngle(currentTargetHeading - dataStorage.RobotWorldHeading);
-        double errorOldHeading = dataStorage.OldRobotWorldHeading - this.oldTargetHeading;
+        double errorOldHeading = normalizeAngle(this.oldTargetHeading - dataStorage.OldRobotWorldHeading);
 
         double DHeading = errorHeading - errorOldHeading;
 
         if (Math.abs(errorHeading) <= 0.3)
             IHeading += errorHeading;
-        if (errorHeading * errorOldHeading < 0)
+        if (errorHeading * IHeading < 0)
             IHeading = 0;
 
         this.oldTargetHeading = currentTargetHeading;
@@ -311,17 +314,17 @@ public class velocity_calculator {
         x_error = finish.minus(dataStorage.RobotPose).getX();
         y_error = finish.minus(dataStorage.RobotPose).getY();
 
-        dataStorage.DSTelemetry.addData("xerr", x_error);
-        dataStorage.DSTelemetry.addData("yerr", y_error);
+        dataStorage.telemetry.addData("xerr", x_error);
+        dataStorage.telemetry.addData("yerr", y_error);
         dataStorage.telemetry.addData("integralx", sum_x_error);
         dataStorage.telemetry.addData("integraly", sum_y_error);
-        dataStorage.telemetry.addData("err", Math.sqrt(x_error * x_error + y_error * y_error));
-        dataStorage.DSTelemetry.update();
+        //dataStorage.telemetry.addData("err", Math.sqrt(x_error * x_error + y_error * y_error));
+        dataStorage.telemetry.update();
 
-        if (x_error < 5)
+        if (Math.abs(x_error) < 5)
             sum_x_error += x_error;
 
-        if (y_error < 5)
+        if (Math.abs(y_error) < 5)
             sum_y_error += y_error;
 
         if (x_error * old_x_error < 0)

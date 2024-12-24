@@ -25,8 +25,8 @@ public class raskatka extends LinearOpMode {
     Robot robot;
     org.firstinspires.ftc.teamcode.subsystems.path_follower path_follower;
     ElapsedTime timer = new ElapsedTime(), main_timer = new ElapsedTime();
-    public static PIDCoefficients trans = new PIDCoefficients(0.057, 0.028, 0.33);
-    public static PIDCoefficients rot = new PIDCoefficients(0.34, 0.18, 0.11);
+    public static PIDCoefficients trans = new PIDCoefficients(0.15, 0.001, 0.35);
+    public static PIDCoefficients rot = new PIDCoefficients(0.7, 0.2, 1);
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -35,7 +35,7 @@ public class raskatka extends LinearOpMode {
         parser parser = new parser();
         dataStorage.init(robot.drive, telemetry, this);
         path_follower = new path_follower(robot.drivetrain);
-        robot.drive.setPoseEstimate(new Pose2d(-0.374, -0.479, 0));
+        robot.drive.setPoseEstimate(new Pose2d(24, 24, 0));
 
         curve[] curves;
         try {
@@ -74,7 +74,7 @@ public class raskatka extends LinearOpMode {
             path_follower.velocity_calculator.I_ROTATION_COEF = rot.i;
             path_follower.velocity_calculator.D_ROTATION_COEF = rot.d;
             path_follower.velocity_calculator.P_ROTATION_COEF = rot.p;
-            path_follower.goToPosUnsafe(24, 24, 0);
+            path_follower.goToPos(24, 24, 0);
             timer.reset();
             while (timer.milliseconds() < 1000 && opModeIsActive());
             /*
@@ -94,20 +94,18 @@ public class raskatka extends LinearOpMode {
             path_follower.velocity_calculator.I_ROTATION_COEF = rot.i;
             path_follower.velocity_calculator.D_ROTATION_COEF = rot.d;
             path_follower.velocity_calculator.P_ROTATION_COEF = rot.p;
-            path_follower.goToPosUnsafe(-24, -24, 0);
+            path_follower.goToPos(24, 24, Math.PI / 4);
             timer.reset();
             while (timer.milliseconds() < 1000 && opModeIsActive());
-            /*
             path_follower.velocity_calculator.p_trans_coef = trans.p;
             path_follower.velocity_calculator.d_trans_coef = trans.d;
             path_follower.velocity_calculator.i_trans_coef = trans.i;
             path_follower.velocity_calculator.I_ROTATION_COEF = rot.i;
             path_follower.velocity_calculator.D_ROTATION_COEF = rot.d;
             path_follower.velocity_calculator.P_ROTATION_COEF = rot.p;
-            path_follower.goToPos(24, 24, -Math.PI / 2);
+            path_follower.goToPos(24, -24, -Math.PI / 2);
             timer.reset();
             while (timer.milliseconds() < 1000 && opModeIsActive());
-             */
         }
 
             //_______________________________________

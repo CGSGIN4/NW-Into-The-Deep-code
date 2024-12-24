@@ -15,9 +15,9 @@ import org.firstinspires.ftc.teamcode.data.dataStorage;
 public class PIDautoTuning extends LinearOpMode {
 
     // Коэффициенты PID для движения
-    public static double kP_move = 0.1;
-    public static double kI_move = 0.0;
-    public static double kD_move = 0.0;
+    public static double kP_move = 0.005;
+    public static double kI_move = 0;
+    public static double kD_move = 0.004;
 
     // Коэффициенты PID для поворота
     public static double kP_turn = 0.1;
@@ -34,8 +34,8 @@ public class PIDautoTuning extends LinearOpMode {
     public static final double OVERSHOOT_THRESHOLD = 0.1; // Порог переезда
     public static final double ANGLE_ERROR_THRESHOLD = 0.1; // Допустимая ошибка поворота (в радианах)
 
-    private double previousErrorMove = 0.0;
-    private double integralSumMove = 0.0;
+    private Vector2d previousErrorMove = new Vector2d();
+    private Vector2d integralSumMove = new Vector2d();
 
     private double previousErrorTurn = 0.0;
     private double integralSumTurn = 0.0;
@@ -49,19 +49,18 @@ public class PIDautoTuning extends LinearOpMode {
         robot = new Robot(hardwareMap);
         robot.init();
         dataStorage.init(robot.drive, telemetry, this);
+        robot.drive.setPoseEstimate(new Pose2d(-24, 24, Math.PI));
 
         waitForStart();
 
-        Pose2d position1 = new Pose2d(24, 24, Math.PI);
+        Pose2d position1 = new Pose2d(-24, 24, Math.PI);
         Pose2d position2 = new Pose2d(-24, -24, -Math.PI);
         Pose2d currentTarget = position1;
 
         while (opModeIsActive()) {
             boolean reachedTarget = moveToTargetWithRotation(currentTarget.vec(), currentTarget.getHeading()); // Угол поворота = 0
 
-            if (reachedTarget) {
-                currentTarget = (currentTarget.equals(position1)) ? position2 : position1;
-            }
+            currentTarget = (currentTarget.equals(position1)) ? position2 : position1;
 
             telemetry.addData("Current Target", currentTarget);
             telemetry.addData("kP_move", kP_move);
@@ -75,14 +74,14 @@ public class PIDautoTuning extends LinearOpMode {
     }
 
     private boolean moveToTargetWithRotation(Vector2d targetPosition, double targetAngle) {
-        previousErrorMove = 0.0;
-        integralSumMove = 0.0;
+        previousErrorMove = new Vector2d();
+        integralSumMove = new Vector2d();
 
         previousErrorTurn = 0.0;
         integralSumTurn = 0.0;
 
         timer.reset();
-        while (opModeIsActive() && timer.seconds() < 5.0) {
+        while (opModeIsActive() && timer.seconds() < 3.0) {
             Vector2d currentPosition = getRobotPosition();
             double currentAngle = getRobotAngle();
 
@@ -94,7 +93,7 @@ public class PIDautoTuning extends LinearOpMode {
                 return true;
             }
 
-            Vector2d controlVector = calculatePIDMove(errorMagnitude);
+            Vector2d controlVector = calculatePIDMove(errorVector);
             double controlRotation = calculatePIDTurn(angleError);
 
             controlVector = limitVector(controlVector, 1.0);
@@ -102,7 +101,7 @@ public class PIDautoTuning extends LinearOpMode {
 
             applyVectorFieldCentric(controlVector, controlRotation);
 
-            previousErrorMove = errorMagnitude;
+            previousErrorMove = errorVector;
             previousErrorTurn = angleError;
 
             tunePIDCoefficients(errorMagnitude, angleError);
@@ -121,22 +120,22 @@ public class PIDautoTuning extends LinearOpMode {
         // Настройка коэффициентов движения
 
         // Уменьшаем kI, если ошибка колеблется вокруг цели
-        if (Math.abs(moveError) < ERROR_THRESHOLD && Math.abs(previousErrorMove - moveError) < 0.01) {
+        if (Math.abs(moveError) < ERROR_THRESHOLD && Math.abs(previousErrorMove.norm() - moveError) < 0.01) {
             kI_move = Math.max(0.0, kI_move - 0.001);
         }
 
         // Уменьшаем kD, если наблюдаются колебания
-        if (Math.abs(previousErrorMove - moveError) > OVERSHOOT_THRESHOLD) {
+        if (Math.abs(previousErrorMove.norm() - moveError) > OVERSHOOT_THRESHOLD) {
             kD_move = Math.max(0.0, kD_move - 0.01);
         }
 
         // Уменьшаем kD, если при маленькой ошибке робот неустойчив
-        if (Math.abs(moveError) < ERROR_THRESHOLD && Math.abs(previousErrorMove - moveError) > 0.01) {
+        if (Math.abs(moveError) < ERROR_THRESHOLD && Math.abs(previousErrorMove.norm() - moveError) > 0.01) {
             kD_move = Math.max(0.0, kD_move - 0.01);
         }
 
         // Уменьшаем kD, если ошибка уменьшается линейно, но процесс слишком медленный
-        if (Math.abs(moveError) > 0.1 && Math.abs(previousErrorMove - moveError) / deltaTime < 0.01) {
+        if (Math.abs(moveError) > 0.1 && Math.abs(previousErrorMove.norm() - moveError) / deltaTime < 0.01) {
             kD_move = Math.max(0.0, kD_move - 0.01);
         }
 
@@ -181,15 +180,15 @@ public class PIDautoTuning extends LinearOpMode {
         return vector;
     }
 
-    private Vector2d calculatePIDMove(double error) {
+    private Vector2d calculatePIDMove(Vector2d error) {
         double deltaTime = timer.seconds();
         timer.reset();
 
-        integralSumMove += error * deltaTime;
-        double derivative = (error - previousErrorMove) / deltaTime;
+        integralSumMove = integralSumMove.plus(error.times(deltaTime));
+        Vector2d derivative = (error.minus(previousErrorMove)).div(deltaTime);
 
-        double output = kP_move * error + kI_move * integralSumMove + kD_move * derivative;
-        return new Vector2d(output, output);
+        Vector2d output = error.times(-kP_move).plus(integralSumMove.times(kI_move)).plus(derivative.times(kD_move));
+        return output;
     }
 
     private double calculatePIDTurn(double error) {
@@ -211,6 +210,7 @@ public class PIDautoTuning extends LinearOpMode {
     }
 
     private void applyVectorFieldCentric(Vector2d vector, double rotation) {
+        robot.drivetrain.applyVectorFieldCentric(vector, rotation);
         telemetry.addData("Vector applied", vector);
         telemetry.addData("Rotation applied", rotation);
     }

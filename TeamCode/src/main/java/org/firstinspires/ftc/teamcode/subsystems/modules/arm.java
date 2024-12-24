@@ -28,8 +28,8 @@ public class arm {
     int EXTENSION_LOW_BASKET = 180;
     int EXTENSION_LOW_CHAMBER = 180;
     int EXTENSION_HIGH_CHAMBER = 278;
-    int EXTENSION_YELLOW_1 = 260;
-    int EXTENSION_YELLOW_2 = 275;
+    int EXTENSION_YELLOW_1 = 270;
+    int EXTENSION_YELLOW_2 = 295;
     int EXTENSION_YELLOW_3 = 255;
     int ROTATION_FRONT = 0;
     int ROTATION_BACK_HANG0 = 560;
@@ -137,10 +137,10 @@ public class arm {
     }
 
     public void update(Telemetry telemetry) {
-        telemetry.addData("extension", extensionMotor.getCurrentPosition());
-        telemetry.addData("extension reached", extensionReached());
-        telemetry.addData("target ext", targetExtensionPos);
-        telemetry.addData("ext state", extensionState);
+        //telemetry.addData("extension", extensionMotor.getCurrentPosition());
+        //telemetry.addData("extension reached", extensionReached());
+        //telemetry.addData("target ext", targetExtensionPos);
+        //telemetry.addData("ext state", extensionState);
         cycleTime = cycleTimer.milliseconds();
         cycleTimer.reset();
 
@@ -149,10 +149,10 @@ public class arm {
 
         cog = (m_1 * Math.sqrt(l_1 * l_1 + h_1 * h_1) + m_2 * Math.sqrt(l_2 * l_2 + h_2 * h_2) + m_3 * Math.sqrt(l_3 * l_3 + h_3 * h_3) + m_4 * Math.sqrt(l_4 * l_4 + h_4 * h_4) + m_5 * Math.sqrt(l_5 * l_5 + h_5 * h_5)) / (m_1 + m_2 + m_3 + m_4 + m_5);
         ratio = cog / COG_MAX;
-        telemetry.addData("ext pos", extensionMotor.getCurrentPosition());
+        //telemetry.addData("ext pos", extensionMotor.getCurrentPosition());
 
         if (!extensionState.equals(extension.MANUAL))
-            telemetry.addData("ext pwr", setExtension(extensionState));
+            setExtension(extensionState);
         if (!rotationState.equals(rotation.MANUAL))
             setRotation(rotationState);
 

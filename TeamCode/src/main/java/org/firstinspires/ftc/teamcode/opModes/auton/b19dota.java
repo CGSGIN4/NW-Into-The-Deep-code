@@ -1,12 +1,10 @@
 package org.firstinspires.ftc.teamcode.opModes.auton;
 
-import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.CLAW_CLOSE;
-import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.CLAW_OPEN;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.PITCH_DOWN;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_CLOSED;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_LIFT;
-import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_ROTATION_FRONT;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_LIMIT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_ROTATION_LIFT;
-import org.firstinspires.ftc.teamcode.data.transfer;
 
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -18,9 +16,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.data.dataStorage;
+import org.firstinspires.ftc.teamcode.data.transfer;
 import org.firstinspires.ftc.teamcode.math.curve;
 import org.firstinspires.ftc.teamcode.subsystems.modules.arm;
-import org.firstinspires.ftc.teamcode.subsystems.modules.differential;
 import org.firstinspires.ftc.teamcode.subsystems.modules.module_master;
 import org.firstinspires.ftc.teamcode.subsystems.path_follower;
 import org.firstinspires.ftc.teamcode.utils.parser;
@@ -29,7 +27,7 @@ import java.io.IOException;
 import java.util.function.BooleanSupplier;
 
 @Autonomous
-public class su4ka extends LinearOpMode {
+public class b19dota extends LinearOpMode {
 
     Robot robot;
     path_follower path_follower;
@@ -39,7 +37,7 @@ public class su4ka extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         robot = new Robot(hardwareMap);
         robot.init();
-        parser parser = new parser("ITD_RED_YELLOW");
+        parser parser = new parser("b19dota");
         dataStorage.init(robot.drive, telemetry, this);
         path_follower = new path_follower(robot.drivetrain);
         robot.drive.setPoseEstimate(new Pose2d(39.9, 64.93, Math.PI));
@@ -92,7 +90,33 @@ public class su4ka extends LinearOpMode {
 
             module_master.arm.setRotation(arm.rotation.FRONT);
             module_master.differential.pitchForward();
-            path_follower.goToPos(48.3, 51, -Math.PI / 2); /* sample 1 */
+
+            path_follower.followTrajectory(curves[1], Math.PI - Math.toRadians(5.1), new double[]{0.4}, new int[]{SET_EXTENSION_LIMIT});
+            path_follower.goToPos(-14.3, 61.7, Math.PI - Math.toRadians(5.1));
+            waitArmExtension();
+            takeSample(false);
+            module_master.arm.setExtension(arm.extension.CLOSED);
+
+            path_follower.followTrajectoryBreak(curves[2], -Math.PI * 3 / 4, new double[]{0.6, 0.6}, new int[]{SET_ROTATION_LIFT, PITCH_DOWN});
+            waitArmRotation();
+
+            setExtensionAndWait(arm.extension.EXTENDED);
+            module_master.arm.setRotation(arm.rotation.BACK_HANG1);
+            module_master.differential.pitchScoringBasket();
+            delay(300);
+
+            module_master.differential.openClaw();
+            delay(200);
+            module_master.arm.setRotation(arm.rotation.LIFT);
+
+            module_master.differential.pitchHalfDown();
+            delay(300);
+
+            setExtensionAndWait(arm.extension.CLOSED);
+            module_master.arm.setRotation(arm.rotation.FRONT);
+            module_master.differential.pitchForward();
+
+            path_follower.goToPos(48.3, 49.5, -Math.PI / 2); /* sample 1 */
             //path_follower.goToPosUnsafe(51.4, 51.4, -Math.PI / 2 - Math.toRadians(11.5)); /* sample 1 */
             waitArmRotation();
             setExtensionAndWait(arm.extension.YELLOW_1);
@@ -153,7 +177,7 @@ public class su4ka extends LinearOpMode {
 
             module_master.arm.setRotation(arm.rotation.FRONT);
             module_master.differential.pitchForward();
-            path_follower.goToPos(59, 47, -Math.PI / 2 + Math.toRadians(23.3));
+            path_follower.goToPos(59, 45.3, -Math.PI / 2 + Math.toRadians(24));
             waitArmRotation();
 
             /* intaking yellow 3 */
@@ -165,7 +189,7 @@ public class su4ka extends LinearOpMode {
 
             module_master.arm.setRotation(arm.rotation.LIFT);
             module_master.differential.pitchDown();
-            path_follower.goToPosUnsafe(53.4, 53.4, -Math.PI * 3 / 4);
+            path_follower.goToPosUnsafe(52.4, 52.4, -Math.PI * 3 / 4);
 
             /* start rotating for scoring yellow 3 */
             waitArmRotation();

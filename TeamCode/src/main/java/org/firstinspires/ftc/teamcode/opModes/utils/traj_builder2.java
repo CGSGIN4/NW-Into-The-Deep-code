@@ -24,10 +24,10 @@ import java.io.IOException;
 
 @TeleOp(group = "Utils")
 public class traj_builder2 extends LinearOpMode {
-    String FILENAME = "ITD_RED_YELLOW";
+    String FILENAME = "b19dota";
     private FtcDashboard dashboard;
     int MAX_CURVES = 30;
-    parser parser = new parser();
+    parser parser = new parser(FILENAME);
     double curve_index = 0;
     double t = 0;
     int numCurves = 0;

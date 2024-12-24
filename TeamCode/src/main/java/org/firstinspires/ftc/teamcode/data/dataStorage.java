@@ -89,7 +89,7 @@ public enum dataStorage {;
         poseHistory.add(RobotPose);
 
         timer.reset();
-        telemetry.addData("heading", RobotWorldHeading);
+        //telemetry.addData("heading", RobotWorldHeading);
         telemetry.update();
         //RobotVelocity = new Vector2d(drive.getPoseVelocity().getX(), drive.getPoseVelocity().getY());
     }

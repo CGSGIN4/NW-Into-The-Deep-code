@@ -243,7 +243,7 @@ public class path_follower {
             module_master.update(dataStorage.telemetry);
 
             pid = velocity_calculator.getPIDpower(finish, Heading);
-            dataStorage.telemetry.addData("HeadingBuffer", velocity_calculator.IHeading);
+            //dataStorage.telemetry.addData("HeadingBuffer", velocity_calculator.IHeading);
 
             drivetrain.applyVectorFieldCentric(pid.vec().rotated(Math.toRadians(90)), pid.getHeading());
         }
@@ -261,7 +261,7 @@ public class path_follower {
             module_master.update(dataStorage.telemetry);
 
             pid = velocity_calculator.getPIDpower(finish, Heading);
-            dataStorage.telemetry.addData("HeadingBuffer", velocity_calculator.IHeading);
+            //dataStorage.telemetry.addData("HeadingBuffer", velocity_calculator.IHeading);
 
             drivetrain.applyVectorFieldCentric(pid.vec().rotated(Math.toRadians(90)), pid.getHeading());
         }
