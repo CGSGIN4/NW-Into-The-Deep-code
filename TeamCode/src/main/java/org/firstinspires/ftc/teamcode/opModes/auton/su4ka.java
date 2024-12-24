@@ -92,7 +92,7 @@ public class su4ka extends LinearOpMode {
 
             module_master.arm.setRotation(arm.rotation.FRONT);
             module_master.differential.pitchForward();
-            path_follower.goToPos(48.3, 51, -Math.PI / 2);
+            path_follower.goToPos(48.3, 51, -Math.PI / 2); /* sample 1 */
             //path_follower.goToPosUnsafe(51.4, 51.4, -Math.PI / 2 - Math.toRadians(11.5)); /* sample 1 */
             waitArmRotation();
             setExtensionAndWait(arm.extension.YELLOW_1);
@@ -122,7 +122,7 @@ public class su4ka extends LinearOpMode {
 
             module_master.arm.setRotation(arm.rotation.FRONT);
             module_master.differential.pitchForward();
-            path_follower.goToPos(59, 51.4, -Math.PI / 2); /* sample 2 */
+            path_follower.goToPos(58, 51.4, -Math.PI / 2); /* sample 2 */
             waitArmRotation();
             module_master.arm.setExtension(arm.extension.YELLOW_2);
             waitArmExtension();

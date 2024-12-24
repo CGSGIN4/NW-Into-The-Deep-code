@@ -25,12 +25,15 @@ import org.firstinspires.ftc.teamcode.utils.GamepadNW;
 public class differentialTest extends LinearOpMode {
     public static double pitch = 180;
     public static double roll = 0;
+    public static double clawPos = 0.32;
+    Servo claw;
 
     @Override
     public void runOpMode() throws InterruptedException {
         differential differential = new differential(hardwareMap);
         GamepadNW driverGamepad = new GamepadNW(gamepad1);
         GamepadNW assistGamepad = new GamepadNW(gamepad2);
+        claw = hardwareMap.get(Servo.class, "claw");
         int rollPos = 0;
         int pitchPos = 1;
         waitForStart();
@@ -44,6 +47,7 @@ public class differentialTest extends LinearOpMode {
             roll += gamepad1.left_stick_x * 10;
             roll = max(-80, min(80, roll));
 
+            /*
             if (rollPos > -2 && driverGamepad.isClicked("dpad_left"))
                 rollPos--;
             else if (rollPos < 2 && driverGamepad.isClicked("dpad_right"))
@@ -84,15 +88,19 @@ public class differentialTest extends LinearOpMode {
                     break;
             }
 
-            //differential.setPitch(pitch);
-            //differential.setRoll(roll);
+             */
+
+            differential.setPitch(pitch);
+            differential.setRoll(roll);
             differential.update();
 
+            /*
             if (gamepad1.a)
                 differential.closeClaw();
             if (gamepad1.b)
                 differential.openClaw();
-
+            */
+            claw.setPosition(clawPos);
             tele.addData("lTheta", differential.lTheta);
             tele.addData("rTheta", differential.rTheta);
             tele.addData("pitch", differential.pitch);

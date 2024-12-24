@@ -28,13 +28,13 @@ public class arm {
     int EXTENSION_LOW_BASKET = 180;
     int EXTENSION_LOW_CHAMBER = 180;
     int EXTENSION_HIGH_CHAMBER = 278;
-    int EXTENSION_YELLOW_1 = 248;
-    int EXTENSION_YELLOW_2 = 264;
+    int EXTENSION_YELLOW_1 = 260;
+    int EXTENSION_YELLOW_2 = 275;
     int EXTENSION_YELLOW_3 = 255;
     int ROTATION_FRONT = 0;
     int ROTATION_BACK_HANG0 = 560;
-    int ROTATION_BACK_HANG1 = 508;
-    int ROTATION_LIFT = 498; //485
+    int ROTATION_BACK_HANG1 = 475; //508
+    int ROTATION_LIFT = 475; //498
     int ROTATION_CHAMBER = 300;
 
     /* ------------------ ON-FLY ------------------ */

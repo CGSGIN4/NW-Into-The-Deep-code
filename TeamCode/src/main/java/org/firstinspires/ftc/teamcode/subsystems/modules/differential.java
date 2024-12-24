@@ -48,7 +48,7 @@ public class differential {
 
     public void setRoll(double angle)
     {
-        roll = max(-80, (min(angle, 80)));
+        roll = max(-80, (min(angle, 75)));
     }
 
     public void pitchUp()
@@ -59,7 +59,7 @@ public class differential {
 
     public void pitchDown()
     {
-        setPitch(20);
+        setPitch(25);
         update();
     }
 
@@ -101,24 +101,24 @@ public class differential {
 
     public void rollFullRight()
     {
-        setRoll(80);
+        setRoll(75);
         update();
     }
 
     public void rollDefault()
     {
-        setRoll(2);
+        setRoll(-8);
         update();
     }
 
     public void openClaw(){
         clawState = 1;
-        claw.setPosition(0.8);
+        claw.setPosition(0.86);
     }
 
     public void closeClaw(){
         clawState = 0;
-        claw.setPosition(0.28);
+        claw.setPosition(0.43);
     }
 
     public void clawSwitch(){

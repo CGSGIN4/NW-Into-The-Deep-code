@@ -26,7 +26,7 @@ public class hang {
         STANDBY3
     }
     PIDCoefficients pid = new PIDCoefficients(0.007, 0, 0.001);
-    int target_2_extended = 1850;
+    int target_2_extended = 1900;
     int target_3_extended = 2915;
     int target_2_hang = 0;
     int oldErrLeft = 0;
@@ -97,6 +97,10 @@ public class hang {
     public void standby3(){
         state = states.STANDBY3;
         goTo(2700);
+    }
+    public void setPower(double power){
+        left.setPower(power);
+        right.setPower(power);
     }
 
     public void update(MultipleTelemetry telemetry){

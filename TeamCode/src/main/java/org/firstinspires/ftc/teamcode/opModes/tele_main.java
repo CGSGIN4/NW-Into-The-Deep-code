@@ -27,7 +27,7 @@ import org.firstinspires.ftc.teamcode.utils.GamepadNW;
 @Config
 public class tele_main extends LinearOpMode {
     public static double pitch = 180;
-    public static double roll = 0;
+    public static double roll = -8;
     Vector2d gamepad = new Vector2d();
     double turn = 0;
     FtcDashboard dashboard;
@@ -66,7 +66,7 @@ public class tele_main extends LinearOpMode {
                 if (pitch > 100)
                     pitch = 100;
                 else
-                    pitch = 20;
+                    pitch = 25;
             if (assistGamepad.isClicked("dpad_up"))
                 if (pitch < 100)
                     pitch = 100;
@@ -76,25 +76,25 @@ public class tele_main extends LinearOpMode {
             if (assistGamepad.isClicked("dpad_left"))
                 if (roll >= -80 && roll <= -45)
                     roll = -80;
-                else if (roll > -45 && roll <= 0)
+                else if (roll > -45 && roll <= -8)
                     roll = -45;
-                else if (roll > 0 && roll <= 45)
-                    roll = 0;
+                else if (roll > -8 && roll <= 45)
+                    roll = -8;
                 else
                     roll = 45;
             if (assistGamepad.isClicked("dpad_right"))
-                if (roll <= 80 && roll >= 45)
-                    roll = 80;
-                else if (roll >= 0 && roll < 45)
+                if (roll <= 75 && roll >= 45)
+                    roll = 75;
+                else if (roll >= -8 && roll < 45)
                     roll = 45;
-                else if (roll >= -45 && roll < 0)
-                    roll = 0;
+                else if (roll >= -45 && roll < -8)
+                    roll = -8;
                 else
                     roll = -45;
 
             if (gamepad2.left_trigger > 0.05 && roll > -80)
                 roll -= gamepad2.left_trigger * 4;
-            if (gamepad2.right_trigger > 0.05 && roll < 80)
+            if (gamepad2.right_trigger > 0.05 && roll < 75)
                 roll += gamepad2.right_trigger * 4;
 
             differential.setRoll(roll);
@@ -121,8 +121,8 @@ public class tele_main extends LinearOpMode {
                     arm.setRotation(FRONT);
                 else {
                     arm.setRotation(LIFT);
-                    pitch = 20;
-                    roll = 0;
+                    pitch = 25;
+                    roll = -8;
                 }
                 //tele.addData("rotation power", arm.setRotation(LIFT));
             }
@@ -151,18 +151,18 @@ public class tele_main extends LinearOpMode {
             if (foldingSequence) {
                 unfoldingSequenceLowBasket = false;
                 unfoldingSequence = false;
-                if (foldingTimer.milliseconds() > 300 && foldingTimer.milliseconds() < 500) /* perekid */
+                if (foldingTimer.milliseconds() > 700 && foldingTimer.milliseconds() < 900) /* perekid */
                     differential.openClaw();
-                else if (foldingTimer.milliseconds() > 500 && foldingTimer.milliseconds() < 800)
-                    pitch = 20;
+                else if (foldingTimer.milliseconds() > 900 && foldingTimer.milliseconds() < 1200)
+                    pitch = 25;
                 else
-                if (foldingTimer.milliseconds() > 800) {
+                if (foldingTimer.milliseconds() > 1200) {
                     if (arm.extensionMotor.getCurrentPosition() > 100)
                         arm.setExtension(CLOSED);
                     else if (arm.rotationMotor.getCurrentPosition() > 100)
                         arm.setRotation(FRONT);
                     else {
-                        roll = 0;
+                        roll = -8;
                         pitch = 100;
                         foldingSequence = false;
                     }
@@ -174,7 +174,7 @@ public class tele_main extends LinearOpMode {
                 if (Math.abs(gamepad2.right_stick_y) > 0.01)
                     unfoldingSequence = false;
 
-                pitch = 20;
+                pitch = 25;
                 arm.setExtension(EXTENDED);
                 if (arm.extensionMotor.getCurrentPosition() > 460) {
                     unfoldingSequence = false;
@@ -186,7 +186,7 @@ public class tele_main extends LinearOpMode {
                 if (Math.abs(gamepad2.right_stick_y) > 0.01)
                     unfoldingSequenceLowBasket = false;
 
-                pitch = 20;
+                pitch = 25;
                 arm.setExtension(LOW_BASKET);
                 if (arm.extensionMotor.getCurrentPosition() > 180)
                     unfoldingSequenceLowBasket = false;
@@ -230,6 +230,16 @@ public class tele_main extends LinearOpMode {
                 hang.chill();
                 hang.state = org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.SLEEPING;
             }
+
+            if (hang.state != org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.SLEEPING)
+                differential.pitchUp();
+
+            if (Math.abs(gamepad2.left_stick_y) > 0.05) {
+                hang.setPower(-gamepad2.left_stick_y);
+                hang.state = org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.SLEEPING;
+            }
+            else if (hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.SLEEPING)
+                hang.setPower(0);
 
             if (assistGamepad.isClicked("start"))
                 arm.resetExtensionEncoders();
