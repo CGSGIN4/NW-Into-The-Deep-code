@@ -13,8 +13,9 @@ import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.ac
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.data.dataStorage;
-import org.firstinspires.ftc.teamcode.subsystems.modules.test.dummyServo;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Queue;
 
 /* contains sample action could be done in auto. Dalshe ebites sami */
 public class module_master {
@@ -31,12 +32,25 @@ public class module_master {
         public static final int PITCH_FRONT = 9;
     }
 
+    enum cmdType{
+        EXTENSION,
+        ROTATION
+    }
+
+    static cmdType lastCmdType = null;
     public static differential differential;
     public static arm arm;
+    static Queue<Integer> commandQueue = new LinkedList<Integer>();
+    static Integer[] rotationActions = {3, 4};
+    static Integer[] extensionActions = {5, 6, 7};
 
     public static void init(HardwareMap HM){
         arm = new arm(HM);
         differential = new differential(HM);
+    }
+
+    public static void schedule(int action){
+        commandQueue.add(action);
     }
     public static void doAction(int action){
         switch (action)
@@ -75,7 +89,19 @@ public class module_master {
 
     public static void update(MultipleTelemetry telemetry){
         arm.update(telemetry);
-        //differential.update();
+        telemetry.addData("current cmd type", lastCmdType == null ? "null" : lastCmdType.toString());
+
+        if (lastCmdType == null || !commandQueue.isEmpty() && lastCmdType == cmdType.EXTENSION && arm.extensionReached()) {
+            int action = commandQueue.poll();
+            doAction(action);
+            lastCmdType = (Arrays.asList(rotationActions).contains(action) ? cmdType.ROTATION : cmdType.EXTENSION);
+        }
+        else
+            if (lastCmdType == null || !commandQueue.isEmpty() && lastCmdType == cmdType.ROTATION && arm.rotationReached()) {
+                int action = commandQueue.poll();
+                doAction(action);
+                lastCmdType = (Arrays.asList(rotationActions).contains(action) ? cmdType.ROTATION : cmdType.EXTENSION);
+            }
     }
 
     public static void stop(MultipleTelemetry telemetry){
