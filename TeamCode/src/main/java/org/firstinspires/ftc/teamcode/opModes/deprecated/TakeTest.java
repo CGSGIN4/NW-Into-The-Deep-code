@@ -5,20 +5,27 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.ServoController;
-@Disabled
+
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+
 @TeleOp(group = "Deprecated")
 public class TakeTest extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        DcMotor motor1;
-        DcMotor motor2;
-        motor1 = hardwareMap.get(DcMotor.class, "hangLeft");
-        motor2 = hardwareMap.get(DcMotor.class, "hangRight");
+        DcMotorEx motor1;
+        motor1 = hardwareMap.get(DcMotorEx.class, "armExtensionMotor");
         waitForStart();
         while(opModeIsActive()){
-            motor1.setPower(gamepad1.left_stick_y);
-            motor2.setPower(-gamepad1.left_stick_y);
+            telemetry.addData("voltage", motor1.getCurrent(CurrentUnit.AMPS));
+            telemetry.update();
+            if (gamepad1.a)
+                motor1.setPower(1);
+            else if (gamepad1.b)
+                motor1.setPower(-1);
+            else
+                motor1.setPower(0);
         }
     }
 }

@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.opModes.auton;
 
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.PITCH_DOWN;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.PITCH_FRONT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_CLOSED;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_LIFT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_LIMIT;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_ROTATION_FRONT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_ROTATION_LIFT;
 
 import com.acmerobotics.dashboard.canvas.Canvas;
@@ -86,18 +88,18 @@ public class b19dota extends LinearOpMode {
             module_master.differential.pitchHalfDown();
             delay(300);
 
-            setExtensionAndWait(arm.extension.CLOSED);
-
-            module_master.arm.setRotation(arm.rotation.FRONT);
+            module_master.arm.setExtension(arm.extension.CLOSED);
             module_master.differential.pitchForward();
 
-            path_follower.followTrajectory(curves[1], Math.PI - Math.toRadians(5.1), new double[]{0.4}, new int[]{SET_EXTENSION_LIMIT});
-            path_follower.goToPos(-14.3, 61.7, Math.PI - Math.toRadians(5.1));
+            path_follower.followTrajectory(curves[1], Math.PI - Math.toRadians(5.1), new double[]{0.3, 0.7}, new int[]{SET_ROTATION_FRONT, SET_EXTENSION_LIMIT});
+            path_follower.goToPos(-13.6, 61.7, Math.PI - Math.toRadians(4.8));
+            module_master.differential.setPitch(52);
+            module_master.differential.update();
             waitArmExtension();
-            takeSample(false);
+            takeSample(false); /* dobor */
             module_master.arm.setExtension(arm.extension.CLOSED);
 
-            path_follower.followTrajectoryBreak(curves[2], -Math.PI * 3 / 4, new double[]{0.6, 0.6}, new int[]{SET_ROTATION_LIFT, PITCH_DOWN});
+            path_follower.followTrajectoryBreak(curves[2], -Math.PI * 3 / 4, new double[]{0.4, 0.4}, new int[]{SET_ROTATION_LIFT, PITCH_DOWN});
             waitArmRotation();
 
             setExtensionAndWait(arm.extension.EXTENDED);
@@ -119,6 +121,8 @@ public class b19dota extends LinearOpMode {
             path_follower.goToPos(48.3, 49.5, -Math.PI / 2); /* sample 1 */
             //path_follower.goToPosUnsafe(51.4, 51.4, -Math.PI / 2 - Math.toRadians(11.5)); /* sample 1 */
             waitArmRotation();
+            module_master.differential.setPitch(52);
+            module_master.differential.update();
             setExtensionAndWait(arm.extension.YELLOW_1);
             takeSample(false);
             setExtensionAndWait(arm.extension.CLOSED);
@@ -143,11 +147,13 @@ public class b19dota extends LinearOpMode {
             delay(300);
 
             setExtensionAndWait(arm.extension.CLOSED);
-
+//lil peni$
             module_master.arm.setRotation(arm.rotation.FRONT);
             module_master.differential.pitchForward();
             path_follower.goToPos(58, 51.4, -Math.PI / 2); /* sample 2 */
             waitArmRotation();
+            module_master.differential.setPitch(52);
+            module_master.differential.update();
             module_master.arm.setExtension(arm.extension.YELLOW_2);
             waitArmExtension();
 
@@ -156,7 +162,7 @@ public class b19dota extends LinearOpMode {
 
             module_master.arm.setRotation(arm.rotation.LIFT);
             module_master.differential.pitchDown();
-            path_follower.goToPosUnsafe(53.4, 53.4, -Math.PI * 3 / 4);
+            path_follower.goToPosUnsafe(52.6, 52.6, -Math.PI * 3 / 4);
 
             /* start rotating for scoring yellow 2 */
             waitArmRotation();
@@ -177,7 +183,7 @@ public class b19dota extends LinearOpMode {
 
             module_master.arm.setRotation(arm.rotation.FRONT);
             module_master.differential.pitchForward();
-            path_follower.goToPos(59, 45.3, -Math.PI / 2 + Math.toRadians(24));
+            path_follower.goToPos(59, 45.3, -Math.PI / 2 + Math.toRadians(21.4));
             waitArmRotation();
 
             /* intaking yellow 3 */
@@ -189,7 +195,7 @@ public class b19dota extends LinearOpMode {
 
             module_master.arm.setRotation(arm.rotation.LIFT);
             module_master.differential.pitchDown();
-            path_follower.goToPosUnsafe(52.4, 52.4, -Math.PI * 3 / 4);
+            path_follower.goToPosUnsafe(51.7, 51.7, -Math.PI * 3 / 4);
 
             /* start rotating for scoring yellow 3 */
             waitArmRotation();
@@ -206,15 +212,13 @@ public class b19dota extends LinearOpMode {
             module_master.differential.pitchHalfDown();
             delay(300);
 
-            setExtensionAndWait(arm.extension.CLOSED);
+            module_master.arm.setExtension(arm.extension.CLOSED);
+            path_follower.followTrajectoryBreak(curves[3], -Math.PI, new double[]{0.2, 0.2}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT});
             module_master.arm.setRotation(arm.rotation.FRONT);
-            waitArmRotation();
-            setExtensionAndWait(arm.extension.CLOSED);
+            //waitArmRotation();
 
             robot.stop();
             module_master.stop(dataStorage.telemetry);
-            transfer.armExtensionPos = module_master.arm.extensionMotor.getCurrentPosition();
-            transfer.armRotationPos = module_master.arm.rotationMotor.getCurrentPosition();
 
             packet = new TelemetryPacket();
             fieldOverlay = packet.fieldOverlay();
@@ -231,9 +235,7 @@ public class b19dota extends LinearOpMode {
 
             //timer.reset();
             //while(timer.seconds() < 2 && opModeIsActive());
-
-            timer.reset();
-            while (timer.seconds() < 200 && opModeIsActive()) ;
+            break;
         }
         robot.stop();
         module_master.stop(dataStorage.telemetry);
@@ -271,8 +273,8 @@ public class b19dota extends LinearOpMode {
             module_master.differential.setPitch(35);
             module_master.differential.setRoll(23);
             module_master.differential.update();
+            delay(200);
         }
-        delay(200);
 
         module_master.differential.closeClaw();
         delay(200);

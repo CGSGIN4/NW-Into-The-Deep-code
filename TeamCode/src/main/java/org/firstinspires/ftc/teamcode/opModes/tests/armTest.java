@@ -38,7 +38,7 @@ public class armTest extends LinearOpMode {
 
     Vector2d gamepad;
     arm arm;
-    public static double p = 0.006, i = 0, d = 0.02, f = 0.01;
+    public static double p = 0.0034, i = 0, d = 0.0034, f = 0.004;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -109,7 +109,6 @@ public class armTest extends LinearOpMode {
                 arm.manuallyExtend(-gamepad1.right_stick_y);
             else if (arm.extensionState == MANUAL)
                 arm.extensionMotor.setPower(0);
-
 
 
             tele.addData("rotation pos", arm.rotationMotor.getCurrentPosition());

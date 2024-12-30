@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.subsystems.modules;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.CLAW_CLOSE;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.CLAW_OPEN;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.PITCH_DOWN;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.PITCH_FRONT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_CLOSED;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_LIFT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_LIMIT;
@@ -27,6 +28,7 @@ public class module_master {
         public static final int SET_EXTENSION_CLOSED = 6;
         public static final int SET_EXTENSION_LIMIT = 7;
         public static final int PITCH_DOWN = 8;
+        public static final int PITCH_FRONT = 9;
     }
 
     public static differential differential;
@@ -62,6 +64,9 @@ public class module_master {
                 break;
             case PITCH_DOWN:
                 differential.pitchDown();
+                break;
+            case PITCH_FRONT:
+                differential.pitchForward();
                 break;
             default:
                 break;

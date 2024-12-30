@@ -3,17 +3,19 @@ package org.firstinspires.ftc.teamcode.subsystems.modules;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.RR.util.Encoder;
 
 public class hang {
     public hang.states state = states.SLEEPING;
-    DcMotor left;
-    DcMotor right;
+    DcMotorEx left;
+    DcMotorEx right;
     ElapsedTime timer = new ElapsedTime();
 
     public enum states{
@@ -33,12 +35,12 @@ public class hang {
     int oldErrRight = 0;
 
     public hang(HardwareMap HM){
-        left = HM.get(DcMotor.class, "hangLeft");
+        left = HM.get(DcMotorEx.class, "hangLeft");
         left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         left.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         left.setDirection(DcMotor.Direction.REVERSE);
 
-        right = HM.get(DcMotor.class, "hangRight");
+        right = HM.get(DcMotorEx.class, "hangRight");
         right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         right.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
@@ -96,7 +98,7 @@ public class hang {
     }
     public void standby3(){
         state = states.STANDBY3;
-        goTo(2700);
+        goTo(2640);
     }
     public void setPower(double power){
         left.setPower(power);
@@ -107,6 +109,8 @@ public class hang {
         telemetry.addData("hang state", state.toString());
         telemetry.addData("left pos", left.getCurrentPosition());
         telemetry.addData("right pos", right.getCurrentPosition());
+        telemetry.addData("left voltage", left.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("right voltage", right.getCurrent(CurrentUnit.AMPS));
         switch (state)
         {
             case PREPARE:

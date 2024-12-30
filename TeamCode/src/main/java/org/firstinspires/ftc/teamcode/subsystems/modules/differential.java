@@ -113,7 +113,7 @@ public class differential {
 
     public void openClaw(){
         clawState = 1;
-        claw.setPosition(0.86);
+        claw.setPosition(0.89);
     }
 
     public void closeClaw(){
