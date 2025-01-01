@@ -31,7 +31,7 @@ import java.io.IOException;
 import java.util.function.BooleanSupplier;
 
 @Autonomous
-public class auto_0plus5 extends LinearOpMode {
+public class auto_0plus5_afkbot extends LinearOpMode {
     Robot robot;
     path_follower path_follower;
     ElapsedTime timer = new ElapsedTime();
@@ -76,20 +76,24 @@ public class auto_0plus5 extends LinearOpMode {
             path_follower.followTrajectoryBreak(curves[0], -Math.PI * 3 / 4);
             scoreHighBasket();
 
-            path_follower.followTrajectory(curves[1], Math.PI - Math.toRadians(5.1), new double[]{0.3, 0.7}, new int[]{SET_ROTATION_FRONT, SET_EXTENSION_LIMIT});
-            module_master.differential.pitchForward();
-            path_follower.goToPos(-13.6, 61.7, Math.PI - Math.toRadians(5.3));
-
+            path_follower.goToPos(39.9, 61.7, Math.PI - Math.toRadians(7.3));
+            waitArmRotation();
+            module_master.differential.openClaw();
+            module_master.arm.setExtension(arm.extension.YELLOW_AFKBOT);
             waitArmExtension();
-            module_master.differential.setPitch(52);
-            module_master.differential.update();
+            module_master.differential.pitchDown();
             delay(300);
-            takeSample(false); /* dobor */
+            module_master.differential.closeClaw();
+            delay(200);
+            module_master.differential.pitchHalfDown();
 
             module_master.arm.setExtension(arm.extension.CLOSED);
             module_master.arm.setRotation(arm.rotation.LIFT);
 
-            path_follower.followTrajectoryBreak(curves[2], -Math.PI * 3 / 4, new double[]{0.4, 0.4}, new int[]{PITCH_DOWN, SET_EXTENSION_LIFT});
+            path_follower.followTrajectoryBreak(curves[2], -Math.PI * 3 / 4, new double[]{0.4}, new int[]{PITCH_DOWN});
+            waitArmExtension();
+            waitArmRotation();
+            module_master.arm.setExtension(arm.extension.EXTENDED);
             waitArmExtension();
             scoreHighBasket(); /* score dobor */
 

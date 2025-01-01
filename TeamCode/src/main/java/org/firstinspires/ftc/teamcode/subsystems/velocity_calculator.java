@@ -30,6 +30,7 @@ public class velocity_calculator {
     public double D_ROTATION_COEF = 1 /*0.4*/;
 
     public double I_ROTATION_COEF = 0.2;//3;
+    double MIN_ROT_POWER = 0.023;
     double velocityModule;
 
     double oldTargetHeading;
@@ -156,6 +157,11 @@ public class velocity_calculator {
         if (errorHeading * errorOldHeading < 0)
             IHeading = 0;
 
+        if (IHeading > 0 && IHeading < MIN_ROT_POWER / I_ROTATION_COEF)
+            IHeading = MIN_ROT_POWER / I_ROTATION_COEF;
+        else if (IHeading < 0 && IHeading > -MIN_ROT_POWER / I_ROTATION_COEF)
+            IHeading = -MIN_ROT_POWER / I_ROTATION_COEF;
+
         this.oldTargetHeading = currentTargetHeading;
         return errorHeading * P_ROTATION_COEF + DHeading * D_ROTATION_COEF + this.IHeading * I_ROTATION_COEF;
     }
@@ -174,9 +180,14 @@ public class velocity_calculator {
         if (errorHeading * IHeading < 0)
             IHeading = 0;
 
-        dataStorage.telemetry.addData("err", errorHeading);
-        dataStorage.telemetry.addData("integral_rot", IHeading);
-        dataStorage.telemetry.addData("p_rot", P_ROTATION_COEF);
+        if (IHeading > 0 && IHeading < MIN_ROT_POWER / I_ROTATION_COEF)
+            IHeading = MIN_ROT_POWER / I_ROTATION_COEF;
+        else if (IHeading < 0 && IHeading > -MIN_ROT_POWER / I_ROTATION_COEF)
+            IHeading = -MIN_ROT_POWER / I_ROTATION_COEF;
+
+        //dataStorage.telemetry.addData("err", errorHeading);
+        //dataStorage.telemetry.addData("integral_rot", IHeading);
+        //dataStorage.telemetry.addData("p_rot", P_ROTATION_COEF);
         this.oldTargetHeading = currentTargetHeading;
         return errorHeading * P_ROTATION_COEF + DHeading * D_ROTATION_COEF + this.IHeading * I_ROTATION_COEF;
     }
@@ -192,6 +203,11 @@ public class velocity_calculator {
             IHeading += errorHeading;
         if (errorHeading * IHeading < 0)
             IHeading = 0;
+
+        if (IHeading > 0 && IHeading < MIN_ROT_POWER / I_ROTATION_COEF)
+            IHeading = MIN_ROT_POWER / I_ROTATION_COEF;
+        else if (IHeading < 0 && IHeading > -MIN_ROT_POWER / I_ROTATION_COEF)
+            IHeading = -MIN_ROT_POWER / I_ROTATION_COEF;
 
         this.oldTargetHeading = currentTargetHeading;
         return errorHeading * P_ROTATION_COEF + DHeading * D_ROTATION_COEF + this.IHeading * I_ROTATION_COEF;
@@ -319,7 +335,7 @@ public class velocity_calculator {
         dataStorage.telemetry.addData("integralx", sum_x_error);
         dataStorage.telemetry.addData("integraly", sum_y_error);
         //dataStorage.telemetry.addData("err", Math.sqrt(x_error * x_error + y_error * y_error));
-        dataStorage.telemetry.update();
+        //dataStorage.telemetry.update();
 
         if (Math.abs(x_error) < 5)
             sum_x_error += x_error;

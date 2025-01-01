@@ -25,19 +25,20 @@ public class arm {
     public AnalogInput rotationBtn;
 
     /* ------------------ CONSTANTS ------------------ */
-    int EXTENSION_FULL = 1320; //370
+    int EXTENSION_FULL = 1340; //370
     int EXTENSION_FRONT_MAX = 806;
     int EXTENSION_LOW_BASKET = 475;
     int EXTENSION_LOW_CHAMBER = 180;
-    int EXTENSION_HIGH_CHAMBER = 278;
+    int EXTENSION_HIGH_CHAMBER = 524;
     int EXTENSION_YELLOW_1 = 700;
     int EXTENSION_YELLOW_2 = 778;
     int EXTENSION_YELLOW_3 = 673;
+    int EXTENSION_YELLOW_AFKBOT = 485;
     int EXTENSION_SUPPORT = 158;
     int ROTATION_FRONT = 0;
     int ROTATION_BACK_HANG1 = 487; //508
     int ROTATION_LIFT = 487; //498 //was 467 before stopper
-    int ROTATION_CHAMBER = 300;
+    int ROTATION_CHAMBER = 208;
 
     /* ------------------ ON-FLY ------------------ */
     public int targetRotationPos;
@@ -59,7 +60,7 @@ public class arm {
     /* no load 1:4 */ //public PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.0069, 0, 0.0003, -0.0064);
     /* no load 1:1.17 *///final PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.009, 0, 0.019, 0.028);
     /* load 1:1.17 *///final PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.02, 0, 0.04, 0.052);
-    /* load 1:4 */ public PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.0026, 0, 0.0019, -0.006);
+    /* load 1:4 */ public PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.0026, 0, 0.0019, -0.003);
     public PIDFCoefficients EXTENSION_PIDF = new PIDFCoefficients(0.0034, 0, 0.0034, 0.004);/*0.017*/
     int oldExtensionError = 0;
     public double oldRotationError = 0;
@@ -105,6 +106,7 @@ public class arm {
         YELLOW_1,
         YELLOW_2,
         YELLOW_3,
+        YELLOW_AFKBOT,
         SUPPORT,
         PID_MANUAL
     }
@@ -169,7 +171,6 @@ public class arm {
             pidExtend(targetExtensionPos);
 
         if (rotationBtn.getVoltage() < 0.4 && (rotationState == rotation.FRONT || rotationState == rotation.MANUAL)) /* pressed */ {
-            resetRotationEncoders();
             rotationState = rotation.RESET;
             setRotationMotorPower(0);
         }
@@ -202,6 +203,8 @@ public class arm {
                 return EXTENSION_YELLOW_2;
             case YELLOW_3:
                 return EXTENSION_YELLOW_3;
+            case YELLOW_AFKBOT:
+                return EXTENSION_YELLOW_AFKBOT;
             case SUPPORT:
                 return EXTENSION_SUPPORT;
         }
@@ -299,7 +302,7 @@ public class arm {
 
         if (Math.abs(rotationPosToTicks(rotationState) - rotationMotor.getCurrentPosition()) > 120 && targetExtensionPos != EXTENSION_SUPPORT)
             return this.setExtensionMotorPower(-0.3);
-        else if (rotationState != rotation.LIFT || rotationReached())
+        else if (rotationState != rotation.LIFT || rotationReached()/* || target == extension.CLOSED*/)
             return this.setExtensionMotorPower(pidCalculateExtensionPower(targetExtensionPos));
         else
             return 0;
@@ -316,12 +319,12 @@ public class arm {
     public double setRotation(rotation target)
     {
         wantedRotation = target;
-        if (rotationState == rotation.RESET)
+        if (rotationState == rotation.RESET && rotationBtn.getVoltage() < 0.4)
         {
             resetRotationEncoders();
         }
 
-        if (target == rotation.BACK_HANG1 || rotationState == rotation.BACK_HANG1 || (extensionState == extension.CLOSED && extensionMotor.getCurrentPosition() < 250) || (extensionMotor.getCurrentPosition() < 250 && extensionState == extension.MANUAL) || (extensionState == extension.SUPPORT && extensionMotor.getCurrentPosition() < 250)) {
+        if (target == rotation.CHAMBER || target == rotation.BACK_HANG1 || rotationState == rotation.BACK_HANG1 || (extensionState == extension.CLOSED && extensionMotor.getCurrentPosition() < 250) || (extensionMotor.getCurrentPosition() < 250 && extensionState == extension.MANUAL) || (extensionState == extension.SUPPORT && extensionMotor.getCurrentPosition() < 250)) {
             rotationState = wantedRotation;
             this.targetRotationPos = rotationPosToTicks(target);
         }
@@ -371,7 +374,7 @@ public class arm {
 
     public double getExtensionLength(){
         double pos = extensionMotor.getCurrentPosition();
-        double k = 0.715 / 1320;
+        double k = 0.715 / 1340;
         double b = 0.3;
 
         l_1 = 0.180 + k * pos;
@@ -395,12 +398,12 @@ public class arm {
     public boolean extensionReached()
     {
         return Math.abs(extDelta) <= 5 && ((extensionMotor.getCurrentPosition() >= EXTENSION_FULL - 25 && extensionState == extension.EXTENDED) ||
-                (extensionMotor.getCurrentPosition() < 13 && extensionState == extension.CLOSED) ||
+                (extensionMotor.getCurrentPosition() < 23 && extensionState == extension.CLOSED) ||
                 Math.abs(targetExtensionPos - extensionMotor.getCurrentPosition()) < 13);
     }
 
     public boolean rotationReached()
     {
-        return Math.abs(targetRotationPos - rotationMotor.getCurrentPosition()) < 7 /* && rotDeltaFiltered < 4*/;
+        return Math.abs(targetRotationPos - rotationMotor.getCurrentPosition()) < 13 && rotationState != rotation.FRONT /* && rotDeltaFiltered < 4*/;
     }
 }

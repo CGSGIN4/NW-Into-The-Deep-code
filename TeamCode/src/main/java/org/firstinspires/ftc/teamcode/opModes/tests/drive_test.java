@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opModes.tests;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
@@ -16,13 +17,14 @@ import org.firstinspires.ftc.teamcode.subsystems.velocity_calculator;
 import org.firstinspires.ftc.teamcode.utils.painter;
 
 @TeleOp(group = "Tests")
+@Config
 public class drive_test extends LinearOpMode {
     Robot robot;
     path_follower path_follower;
 
     Vector2d gamepad;
     double last_turn = 0;
-    double turn = 0;
+    public static double turn = 0;
 
     FtcDashboard dashboard;
 
@@ -46,10 +48,10 @@ public class drive_test extends LinearOpMode {
         while (opModeIsActive()) {
             dataStorage.updateData();
 
-            if (Math.abs(gamepad1.left_stick_x) > 0.01 || Math.abs(gamepad1.left_stick_y) > 0.01 || gamepad1.left_trigger > 0.01 || gamepad1.right_trigger > 0.01)
+            if (Math.abs(gamepad1.left_stick_x) > 0.01 || Math.abs(gamepad1.left_stick_y) > 0.01 || gamepad1.left_trigger > 0.01 || gamepad1.right_trigger > 0.01 || turn != 0)
             {
                 gamepad = new Vector2d(gamepad1.left_stick_x, -gamepad1.left_stick_y);
-                turn = (gamepad1.left_trigger - gamepad1.right_trigger) * 0.8;
+                //turn = (gamepad1.left_trigger - gamepad1.right_trigger) * 0.8;
 
                 robot.drivetrain.applyVector(gamepad, turn);
             }

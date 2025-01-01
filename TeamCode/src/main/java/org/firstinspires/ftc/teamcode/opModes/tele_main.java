@@ -13,6 +13,7 @@ import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.RES
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -20,9 +21,12 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.data.dataStorage;
+import org.firstinspires.ftc.teamcode.data.transfer;
 import org.firstinspires.ftc.teamcode.subsystems.modules.arm;
 import org.firstinspires.ftc.teamcode.subsystems.modules.differential;
 import org.firstinspires.ftc.teamcode.subsystems.modules.hang;
+import org.firstinspires.ftc.teamcode.subsystems.path_follower;
+import org.firstinspires.ftc.teamcode.subsystems.velocity_calculator;
 import org.firstinspires.ftc.teamcode.utils.GamepadNW;
 
 @TeleOp
@@ -42,10 +46,14 @@ public class tele_main extends LinearOpMode {
     boolean intakingSequence = false;
     ElapsedTime foldingTimer = new ElapsedTime();
     ElapsedTime intakingTimer = new ElapsedTime();
+    path_follower path_follower;
 
     @Override
     public void runOpMode() throws InterruptedException {
         Robot robot = new Robot(hardwareMap);
+        path_follower = new path_follower(robot.drivetrain);
+        velocity_calculator velocity_calculator = new velocity_calculator();
+
         differential differential = new differential(hardwareMap);
         arm arm = new arm(hardwareMap);
         hang hang = new hang(hardwareMap);
@@ -57,6 +65,7 @@ public class tele_main extends LinearOpMode {
         GamepadNW assistGamepad = new GamepadNW(gamepad2);
 
         waitForStart();
+        robot.drive.setPoseEstimate(new Pose2d(dataStorage.RobotWorldX, dataStorage.RobotWorldY, transfer.angle));
         differential.closeClaw();
         while(opModeIsActive()) {
             driverGamepad.update();
@@ -67,11 +76,14 @@ public class tele_main extends LinearOpMode {
             differential.update();
 
             /* DIFFERENTIAL SECTION */
-            if (assistGamepad.isClicked("dpad_down"))
+            if (assistGamepad.isClicked("dpad_down")) {
                 if (pitch > 100)
                     pitch = 100;
                 else
                     pitch = 25;
+                if (arm.rotationState == RESET)
+                    differential.openClaw();
+            }
             if (assistGamepad.isClicked("dpad_up"))
                 if (pitch < 100)
                     pitch = 100;
@@ -103,10 +115,20 @@ public class tele_main extends LinearOpMode {
             if (assistGamepad.isClicked("x"))
                 differential.clawSwitch();
 
+            if (driverGamepad.isClicked("start"))
+                robot.drive.setPoseEstimate(new Pose2d(dataStorage.RobotWorldX, dataStorage.RobotWorldY, -Math.PI));
+
             /* DRIVE SECTION */
             if (Math.abs(gamepad1.left_stick_x) > 0.01 || Math.abs(gamepad1.left_stick_y) > 0.01 || gamepad1.left_trigger > 0.01 || gamepad1.right_trigger > 0.01) {
                 gamepad = new Vector2d(gamepad1.left_stick_x, -gamepad1.left_stick_y);
-                turn = (gamepad1.left_trigger - gamepad1.right_trigger);
+
+                if (driverGamepad.isPressed("right_bumper"))
+                    turn = path_follower.velocity_calculator.getRotationCustomDirection(-Math.PI);
+                else if (driverGamepad.isPressed("left_bumper"))
+                    turn = path_follower.velocity_calculator.getRotationCustomDirection(-Math.PI * 3 / 4);
+                else
+                    turn = (gamepad1.left_trigger - gamepad1.right_trigger);
+
                 if (Math.abs(gamepad1.right_stick_y) > 0.05 || Math.abs(gamepad1.right_stick_x) > 0.05)
                     robot.drivetrain.applyVector(gamepad.div(2), turn / 2);
                 else
@@ -190,7 +212,7 @@ public class tele_main extends LinearOpMode {
                 else
                     pitch = 145;
                 arm.setExtension(EXTENDED);
-                if (arm.extensionMotor.getCurrentPosition() > 1300) {
+                if (arm.extensionMotor.getCurrentPosition() > 1320) {
                     unfoldingSequence = false;
                 }
             }
@@ -200,7 +222,10 @@ public class tele_main extends LinearOpMode {
                 if (Math.abs(gamepad2.right_stick_y) > 0.01)
                     unfoldingSequenceLowBasket = false;
 
-                pitch = 25;
+                if (scoring_mode == 1)
+                    pitch = 25;
+                else
+                    pitch = 145;
                 arm.setExtension(LOW_BASKET);
                 if (arm.extensionMotor.getCurrentPosition() > 465)
                     unfoldingSequenceLowBasket = false;
@@ -218,8 +243,8 @@ public class tele_main extends LinearOpMode {
 
             if (Math.abs(gamepad2.right_stick_y) > 0.01) {
                 arm.manuallyExtend(-gamepad2.right_stick_y);
-                if (gamepad2.right_stick_y < -0.1 && arm.rotationState == RESET)
-                    differential.openClaw();
+                //if (gamepad2.right_stick_y < -0.1 && arm.rotationState == RESET)
+                    //differential.openClaw();
             }
             else {
                 if (arm.extensionState == MANUAL)

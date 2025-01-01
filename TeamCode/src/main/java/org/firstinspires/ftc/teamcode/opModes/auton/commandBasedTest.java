@@ -70,6 +70,7 @@ public class commandBasedTest extends LinearOpMode {
         /* INIT */
 
         while (opModeIsActive()) {
+            /*
             module_master.schedule(SET_ROTATION_LIFT);
             module_master.schedule(SET_EXTENSION_LIFT);
             module_master.schedule(SET_EXTENSION_CLOSED);
@@ -78,6 +79,8 @@ public class commandBasedTest extends LinearOpMode {
             while (true)
                 module_master.update(dataStorage.telemetry);
             //break;
+            */
+
         }
         robot.stop();
         module_master.stop(dataStorage.telemetry);

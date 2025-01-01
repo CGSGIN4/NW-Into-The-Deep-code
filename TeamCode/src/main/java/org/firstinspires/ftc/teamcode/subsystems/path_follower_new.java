@@ -10,12 +10,12 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.data.dataStorage;
 import org.firstinspires.ftc.teamcode.math.curve;
 import org.firstinspires.ftc.teamcode.robotMovement.drivetrain;
-import org.firstinspires.ftc.teamcode.subsystems.modules.module_master;
+import org.firstinspires.ftc.teamcode.subsystems.modules.module_master_new;
 import org.firstinspires.ftc.teamcode.utils.painter;
 
 import java.util.HashMap;
 
-public class path_follower {
+public class path_follower_new {
 
     drivetrain drivetrain;
     public velocity_calculator velocity_calculator;
@@ -26,7 +26,7 @@ public class path_follower {
     double d_trans_coef = 0.1;
     double i_trans_coef = 0.013;
 
-    public path_follower(drivetrain drivetrain){
+    public path_follower_new(drivetrain drivetrain){
         this.drivetrain = drivetrain;
         velocity_calculator = new velocity_calculator();
         dashboard = FtcDashboard.getInstance();
@@ -40,7 +40,7 @@ public class path_follower {
 
         while (t < 0.94 && dataStorage.OpMode.opModeIsActive()){
             dataStorage.updateData();
-            module_master.update(dataStorage.telemetry);
+            module_master_new.update(dataStorage.telemetry);
             t = velocity_calculator.getCurrentT(dataStorage.RobotPose);
             Vector2d transV = velocity_calculator.getTranslationalV(t, dataStorage.RobotPose, dataStorage.DSTelemetry);
             logData(Traj, t);
@@ -61,11 +61,11 @@ public class path_follower {
 
         while (t < 0.94 && dataStorage.OpMode.opModeIsActive()){
             dataStorage.updateData();
-            module_master.update(dataStorage.telemetry);
+            module_master_new.update(dataStorage.telemetry);
             t = velocity_calculator.getCurrentT(dataStorage.RobotPose);
             if (tIndex < ts.length && t >= ts[tIndex])
             {
-                module_master.doAction(actions[tIndex]);
+                module_master_new.schedule(actions[tIndex]);
                 tIndex++;
             }
             Vector2d transV = velocity_calculator.getTranslationalV(t, dataStorage.RobotPose, dataStorage.DSTelemetry);
@@ -91,7 +91,7 @@ public class path_follower {
         //dataStorage.DSTelemetry.addData("PID", "off");
         while ((!nearToFinal || t < 0.4) && t < 0.9){
             dataStorage.updateData();
-            module_master.update(dataStorage.telemetry);
+            module_master_new.update(dataStorage.telemetry);
             t = velocity_calculator.getCurrentT(dataStorage.RobotPose);
             Vector2d transV = velocity_calculator.getTranslationalV(t, dataStorage.RobotPose, dataStorage.DSTelemetry);
             double rotation = velocity_calculator.getRotation();
@@ -110,7 +110,7 @@ public class path_follower {
 
         while (plannedPos.distTo(finish) > 1){
             dataStorage.updateData();
-            module_master.update(dataStorage.telemetry);
+            module_master_new.update(dataStorage.telemetry);
             t = velocity_calculator.getCurrentT(dataStorage.RobotPose);
             logData(Traj, t);
             double old_x_error = x_error;
@@ -137,7 +137,7 @@ public class path_follower {
         while (dataStorage.RobotVelocity.norm() > 1)
         {
             dataStorage.updateData();
-            module_master.update(dataStorage.telemetry);
+            module_master_new.update(dataStorage.telemetry);
         }
 
         //dataStorage.DSTelemetry.addData("PID", "2");
@@ -169,11 +169,11 @@ public class path_follower {
 
         while ((!nearToFinal || t < 0.4) && t < 0.9){
             dataStorage.updateData();
-            module_master.update(dataStorage.telemetry);
+            module_master_new.update(dataStorage.telemetry);
             t = velocity_calculator.getCurrentT(dataStorage.RobotPose);
             if (tIndex < ts.length && t >= ts[tIndex])
             {
-                module_master.doAction(actions[tIndex]);
+                module_master_new.schedule(actions[tIndex]);
                 tIndex++;
             }
             Vector2d transV = velocity_calculator.getTranslationalV(t, dataStorage.RobotPose, dataStorage.DSTelemetry);
@@ -195,7 +195,7 @@ public class path_follower {
 
         while (plannedPos.distTo(finish) > 1){
             dataStorage.updateData();
-            module_master.update(dataStorage.telemetry);
+            module_master_new.update(dataStorage.telemetry);
             t = velocity_calculator.getCurrentT(dataStorage.RobotPose);
             logData(Traj, t);
             double old_x_error = x_error;
@@ -237,10 +237,10 @@ public class path_follower {
         Vector2d finish = new Vector2d(X, Y);
 
         dataStorage.updateData();
-        module_master.update(dataStorage.telemetry);
+        module_master_new.update(dataStorage.telemetry);
         while(dataStorage.RobotPose.distTo(finish) > 1 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.027 || dataStorage.RobotVelocity.norm() > 3){
             dataStorage.updateData();
-            module_master.update(dataStorage.telemetry);
+            module_master_new.update(dataStorage.telemetry);
 
             pid = velocity_calculator.getPIDpower(finish, Heading);
             //dataStorage.telemetry.addData("HeadingBuffer", velocity_calculator.IHeading);
@@ -257,30 +257,10 @@ public class path_follower {
         timer.reset();
 
         dataStorage.updateData();
-        module_master.update(dataStorage.telemetry);
+        module_master_new.update(dataStorage.telemetry);
         while((dataStorage.RobotPose.distTo(finish) > 1 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.07 || dataStorage.RobotVelocity.norm() > 3) && timer.milliseconds() < 2000){
             dataStorage.updateData();
-            module_master.update(dataStorage.telemetry);
-
-            pid = velocity_calculator.getPIDpower(finish, Heading);
-            //dataStorage.telemetry.addData("HeadingBuffer", velocity_calculator.IHeading);
-
-            drivetrain.applyVectorFieldCentric(pid.vec().rotated(Math.toRadians(90)), pid.getHeading());
-        }
-        drivetrain.applyVector(new Vector2d(0, 0), 0);
-    }
-
-    public void goToPosVeryUnsafe(double X, double Y, double Heading){
-        Pose2d pid;
-        Vector2d finish = new Vector2d(X, Y);
-        ElapsedTime timer = new ElapsedTime();
-        timer.reset();
-
-        dataStorage.updateData();
-        module_master.update(dataStorage.telemetry);
-        while((dataStorage.RobotPose.distTo(finish) > 2.5 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.2 || dataStorage.RobotVelocity.norm() > 7) && timer.milliseconds() < 1200){
-            dataStorage.updateData();
-            module_master.update(dataStorage.telemetry);
+            module_master_new.update(dataStorage.telemetry);
 
             pid = velocity_calculator.getPIDpower(finish, Heading);
             //dataStorage.telemetry.addData("HeadingBuffer", velocity_calculator.IHeading);
