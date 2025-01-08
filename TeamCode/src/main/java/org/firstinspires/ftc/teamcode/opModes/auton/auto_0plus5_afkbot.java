@@ -90,8 +90,9 @@ public class auto_0plus5_afkbot extends LinearOpMode {
             module_master.arm.setExtension(arm.extension.CLOSED);
             module_master.arm.setRotation(arm.rotation.LIFT);
 
-            path_follower.followTrajectoryBreak(curves[2], -Math.PI * 3 / 4, new double[]{0.4}, new int[]{PITCH_DOWN});
+            path_follower.goToPosUnsafe(52.4, 52.4, -Math.PI * 3 / 4);
             waitArmExtension();
+            module_master.differential.pitchDown();
             waitArmRotation();
             module_master.arm.setExtension(arm.extension.EXTENDED);
             waitArmExtension();
@@ -180,6 +181,7 @@ public class auto_0plus5_afkbot extends LinearOpMode {
         timer.reset();
         while (!condition.getAsBoolean() && opModeIsActive() && timer.milliseconds() < 5000) {
             module_master.update(dataStorage.telemetry);
+            dataStorage.updateData();
         }
     }
 
@@ -187,6 +189,7 @@ public class auto_0plus5_afkbot extends LinearOpMode {
         timer.reset();
         while (timer.milliseconds() < milliseconds && opModeIsActive()) {
             module_master.update(dataStorage.telemetry);
+            dataStorage.updateData();
         }
     }
 

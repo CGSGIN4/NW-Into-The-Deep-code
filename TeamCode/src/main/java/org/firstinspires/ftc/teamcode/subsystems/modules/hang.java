@@ -106,6 +106,7 @@ public class hang {
     }
 
     public void update(MultipleTelemetry telemetry){
+        telemetry.addLine("------------HANG------------");
         telemetry.addData("hang state", state.toString());
         telemetry.addData("left pos", left.getCurrentPosition());
         telemetry.addData("right pos", right.getCurrentPosition());

@@ -9,6 +9,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 public class differential {
     /* ------------------ HARDWARE ------------------ */
     public Servo rServo;
@@ -133,5 +135,16 @@ public class differential {
         rTheta = pitch - roll;
         lServo.setPosition(1 - angleToPos(lTheta));
         rServo.setPosition(angleToPos(rTheta));
+    }
+
+    public void update(Telemetry telemetry){
+        lTheta = pitch + roll;
+        rTheta = pitch - roll;
+        lServo.setPosition(1 - angleToPos(lTheta));
+        rServo.setPosition(angleToPos(rTheta));
+
+        telemetry.addLine("------------DIFFY------------");
+        telemetry.addData("pitch", pitch);
+        telemetry.addData("roll", roll);
     }
 }

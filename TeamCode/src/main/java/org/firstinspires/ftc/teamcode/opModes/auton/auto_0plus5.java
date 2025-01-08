@@ -176,6 +176,7 @@ public class auto_0plus5 extends LinearOpMode {
         timer.reset();
         while (!condition.getAsBoolean() && opModeIsActive() && timer.milliseconds() < 5000) {
             module_master.update(dataStorage.telemetry);
+            dataStorage.updateData();
         }
     }
 
@@ -183,6 +184,7 @@ public class auto_0plus5 extends LinearOpMode {
         timer.reset();
         while (timer.milliseconds() < milliseconds && opModeIsActive()) {
             module_master.update(dataStorage.telemetry);
+            dataStorage.updateData();
         }
     }
 

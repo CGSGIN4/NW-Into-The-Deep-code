@@ -38,7 +38,7 @@ public class arm {
     int ROTATION_FRONT = 0;
     int ROTATION_BACK_HANG1 = 487; //508
     int ROTATION_LIFT = 487; //498 //was 467 before stopper
-    int ROTATION_CHAMBER = 208;
+    int ROTATION_CHAMBER = 238;
 
     /* ------------------ ON-FLY ------------------ */
     public int targetRotationPos;
@@ -145,6 +145,7 @@ public class arm {
     }
 
     public void update(Telemetry telemetry) {
+        telemetry.addLine("------------ARM------------");
         telemetry.addData("rot state", rotationState);
         telemetry.addData("wanted rot state", wantedRotation);
         telemetry.addData("voltage rot", rotationMotor.getCurrent(CurrentUnit.AMPS));
@@ -165,7 +166,7 @@ public class arm {
             telemetry.addData("ext pwr", setExtension(extensionState));
         }
         if (!rotationState.equals(rotation.MANUAL))
-            setRotation(wantedRotation);
+            telemetry.addData("rot pwr", setRotation(wantedRotation));
 
         if (extensionState.equals(extension.PID_MANUAL))
             pidExtend(targetExtensionPos);
@@ -319,6 +320,13 @@ public class arm {
     public double setRotation(rotation target)
     {
         wantedRotation = target;
+
+        if (wantedRotation == rotation.FRONT && rotationState == rotation.RESET)
+            wantedRotation = rotation.RESET;
+
+        if (wantedRotation == rotation.RESET && rotationState == rotation.RESET)
+            return setRotationMotorPower(0);
+
         if (rotationState == rotation.RESET && rotationBtn.getVoltage() < 0.4)
         {
             resetRotationEncoders();
@@ -329,7 +337,7 @@ public class arm {
             this.targetRotationPos = rotationPosToTicks(target);
         }
 
-        if (target == rotation.LIFT && rotationMotor.getCurrentPosition() > ROTATION_LIFT - 30)
+        if (target == rotation.LIFT && rotationMotor.getCurrentPosition() > ROTATION_LIFT - 10)
             return setRotationMotorPower(0.005);
 
         return this.setRotationMotorPower(pidCalculateRotationPower(targetRotationPos));
@@ -357,6 +365,7 @@ public class arm {
 
     public void manuallyRotate(double speed){
         this.rotationState = rotation.MANUAL;
+        this.wantedRotation = rotation.MANUAL;
         setRotationMotorPower(speed);
     }
 

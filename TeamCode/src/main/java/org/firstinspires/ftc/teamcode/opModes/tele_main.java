@@ -73,7 +73,7 @@ public class tele_main extends LinearOpMode {
             dataStorage.updateData();
             arm.update(dataStorage.telemetry);
             hang.update(dataStorage.telemetry);
-            differential.update();
+            differential.update(dataStorage.telemetry);
 
             /* DIFFERENTIAL SECTION */
             if (assistGamepad.isClicked("dpad_down")) {
@@ -184,11 +184,10 @@ public class tele_main extends LinearOpMode {
             if (foldingSequence) {
                 unfoldingSequenceLowBasket = false;
                 unfoldingSequence = false;
-                if (foldingTimer.milliseconds() > TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING && foldingTimer.milliseconds() < TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING + 200) /* perekid */
+                if (foldingTimer.milliseconds() > TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING) /* perekid */
                     differential.openClaw();
-                else if (foldingTimer.milliseconds() > TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING + 200 && foldingTimer.milliseconds() < TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING + 500)
+                if (foldingTimer.milliseconds() > TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING + 200)
                     pitch = 25;
-                else
                 if (foldingTimer.milliseconds() > TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING + 500) {
                     if (arm.extensionMotor.getCurrentPosition() > 100)
                         arm.setExtension(CLOSED);
@@ -262,10 +261,10 @@ public class tele_main extends LinearOpMode {
                 arm.setRotation(LIFT);
                 arm.setExtension(CLOSED);
                 differential.openClaw();
-                differential.pitchUp();
+                pitch = 180;
                 if (hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.SLEEPING)
                     hang.prepare();
-                else if (hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.ASCEND2COMPLETE)
+                else if (hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.ASCEND2COMPLETE || hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.FOLDING)
                     hang.prepare3();
                 else if (hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.PREPARE3)
                     hang.standby3();
@@ -275,11 +274,6 @@ public class tele_main extends LinearOpMode {
             if (assistGamepad.isClicked("b") && hang.state != org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.SLEEPING) {
                 hang.chill();
                 hang.state = org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.SLEEPING;
-            }
-
-            if (hang.state != org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.SLEEPING) {
-                differential.pitchUp();
-                differential.openClaw();
             }
 
             if (Math.abs(gamepad2.left_stick_y) > 0.05) {
@@ -295,6 +289,13 @@ public class tele_main extends LinearOpMode {
                 arm.resetRotationEncoders();
             if (assistGamepad.isPressed("left_stick_button"))
                 arm.manuallyRotate(-0.5);
+
+            telemetry.addData("folding", foldingSequence);
+            telemetry.addData("unfolding", unfoldingSequence);
+            telemetry.addData("unfolding low basket", unfoldingSequenceLowBasket);
+            telemetry.addData("intaking", intakingSequence);
+            telemetry.addData("diffy pitch", pitch);
+            telemetry.addData("diffy roll", roll);
         }
     }
 }
