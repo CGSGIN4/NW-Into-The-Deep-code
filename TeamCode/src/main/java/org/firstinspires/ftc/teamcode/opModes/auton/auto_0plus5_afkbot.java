@@ -85,51 +85,52 @@ public class auto_0plus5_afkbot extends LinearOpMode {
             delay(300);
             module_master.differential.closeClaw();
             delay(200);
-            module_master.differential.pitchHalfDown();
+            module_master.differential.pitchForward();
 
-            module_master.arm.setExtension(arm.extension.CLOSED);
+            module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
             module_master.arm.setRotation(arm.rotation.LIFT);
 
             path_follower.goToPosUnsafe(52.4, 52.4, -Math.PI * 3 / 4);
-            waitArmExtension();
             module_master.differential.pitchDown();
             waitArmRotation();
             module_master.arm.setExtension(arm.extension.EXTENDED);
             waitArmExtension();
             scoreHighBasket(); /* score dobor */
 
-            path_follower.goToPos(48.3, 49.5, -Math.PI / 2 - Math.toRadians(1.2)); /* sample 1 */
+            path_follower.goToPos(48.3, 49.6, -Math.PI / 2 - Math.toRadians(1.2)); /* sample 1 */
             //path_follower.goToPosUnsafe(51.4, 51.4, -Math.PI / 2 - Math.toRadians(11.5)); /* sample 1 */
             waitArmRotation();
-            module_master.differential.setPitch(52);
+            module_master.differential.setPitch(32);
             module_master.differential.update();
             setExtensionAndWait(arm.extension.YELLOW_1);
             takeSample(false);
 
-            module_master.arm.setExtension(arm.extension.CLOSED);
+            module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
             module_master.arm.setRotation(arm.rotation.LIFT);
-            module_master.differential.pitchHalfDown();
+            module_master.differential.pitchForward();
             path_follower.goToPosUnsafe(52.4, 52.4, -Math.PI * 3 / 4);
+            module_master.differential.pitchHalfDown();
             setExtensionAndWait(arm.extension.EXTENDED);
             scoreHighBasket();
 
-            path_follower.goToPos(58, 50.7, -Math.PI / 2); /* sample 2 */
+            path_follower.goToPos(57.5, 49.2, -Math.PI / 2); /* sample 2 */
             waitArmRotation();
-            module_master.differential.setPitch(52);
+            module_master.differential.setPitch(32);
             module_master.differential.update();
             module_master.arm.setExtension(arm.extension.YELLOW_2);
             waitArmExtension();
 
             takeSample(false);
 
-            module_master.arm.setExtension(arm.extension.CLOSED);
+            module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
             module_master.arm.setRotation(arm.rotation.LIFT);
-            module_master.differential.pitchHalfDown();
+            module_master.differential.pitchForward();
             path_follower.goToPosUnsafe(51.6, 51.6, -Math.PI * 3 / 4);
+            module_master.differential.pitchHalfDown();
             setExtensionAndWait(arm.extension.EXTENDED);
             scoreHighBasket();
 
-            path_follower.goToPos(59.5, 44.3, -Math.PI / 2 + Math.toRadians(21.4));
+            path_follower.goToPos(59.5, 44.55, -Math.PI / 2 + Math.toRadians(21.4));
             waitArmRotation();
 
             /* intaking yellow 3 */
@@ -138,14 +139,15 @@ public class auto_0plus5_afkbot extends LinearOpMode {
             takeSample(true);
             module_master.differential.rollDefault();
 
-            module_master.arm.setExtension(arm.extension.CLOSED);
+            module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
             module_master.arm.setRotation(arm.rotation.LIFT);
-            module_master.differential.pitchHalfDown();
+            module_master.differential.pitchForward();
             path_follower.goToPosUnsafe(51.7, 50, -Math.PI * 3 / 4);
+            module_master.differential.pitchHalfDown();
             setExtensionAndWait(arm.extension.EXTENDED);
             scoreHighBasket();
 
-            path_follower.followTrajectory(curves[3], -Math.PI, new double[]{0.2, 0.2, 0.8}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT, SET_EXTENSION_CHAMBER});
+            path_follower.followTrajectory(curves[4], -Math.PI, new double[]{0.2, 0.2, 0.8}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT, SET_EXTENSION_CHAMBER});
             path_follower.goToPosVeryUnsafe(21, 6, -Math.PI);
             module_master.arm.setRotation(arm.rotation.CHAMBER);
             //module_master.arm.setRotation(arm.rotation.FRONT);
@@ -204,11 +206,11 @@ public class auto_0plus5_afkbot extends LinearOpMode {
     /** PITCH DOWN, CLOSE CLAW, PITCH FORWARD **/
     private void takeSample(boolean third){
         if (!third) {
-            module_master.differential.setPitch(52);
+            module_master.differential.setPitch(32);
             module_master.differential.update();
         }
         else {
-            module_master.differential.setPitch(35);
+            module_master.differential.setPitch(29);
             module_master.differential.setRoll(23);
             module_master.differential.update();
             delay(200);

@@ -105,6 +105,9 @@ public class hang {
         right.setPower(power);
     }
 
+    public void update(){
+        update(new MultipleTelemetry());
+    }
     public void update(MultipleTelemetry telemetry){
         telemetry.addLine("------------HANG------------");
         telemetry.addData("hang state", state.toString());

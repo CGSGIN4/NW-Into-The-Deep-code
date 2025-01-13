@@ -26,15 +26,17 @@ public class arm {
 
     /* ------------------ CONSTANTS ------------------ */
     int EXTENSION_FULL = 1340; //370
-    int EXTENSION_FRONT_MAX = 806;
+    int EXTENSION_FRONT_MAX = 730;
     int EXTENSION_LOW_BASKET = 475;
     int EXTENSION_LOW_CHAMBER = 180;
     int EXTENSION_HIGH_CHAMBER = 524;
-    int EXTENSION_YELLOW_1 = 700;
-    int EXTENSION_YELLOW_2 = 778;
+    int EXTENSION_YELLOW_1 = 725;
+    int EXTENSION_YELLOW_2 = 700;
     int EXTENSION_YELLOW_3 = 673;
+    int EXTENSION_DOBOR = 680;
     int EXTENSION_YELLOW_AFKBOT = 485;
     int EXTENSION_SUPPORT = 158;
+    int EXTENSION_CLOSED_AUTO = -70;
     int ROTATION_FRONT = 0;
     int ROTATION_BACK_HANG1 = 487; //508
     int ROTATION_LIFT = 487; //498 //was 467 before stopper
@@ -108,7 +110,9 @@ public class arm {
         YELLOW_3,
         YELLOW_AFKBOT,
         SUPPORT,
-        PID_MANUAL
+        PID_MANUAL,
+        CLOSED_AUTO,
+        DOBOR
     }
 
     public enum rotation {
@@ -147,12 +151,14 @@ public class arm {
     public void update(Telemetry telemetry) {
         telemetry.addLine("------------ARM------------");
         telemetry.addData("rot state", rotationState);
+        telemetry.addData("rot pose", rotationMotor.getCurrentPosition());
         telemetry.addData("wanted rot state", wantedRotation);
         telemetry.addData("voltage rot", rotationMotor.getCurrent(CurrentUnit.AMPS));
         telemetry.addData("target ext", targetExtensionPos);
         telemetry.addData("ext state", extensionState);
         telemetry.addData("voltage ext", extensionMotor.getCurrent(CurrentUnit.AMPS));
         telemetry.addData("ext pos", extensionMotor.getCurrentPosition());
+        telemetry.addData("btn pressed", rotationBtn.getVoltage() < 0.4);
         cycleTime = cycleTimer.milliseconds();
         cycleTimer.reset();
 
@@ -191,7 +197,7 @@ public class arm {
             case LOW_BASKET:
                 return EXTENSION_LOW_BASKET;
             case CLOSED:
-                return (int)(-(31.5 / 928) * rotationMotor.getCurrentPosition());
+                return (int)(-(132.57 / 928) * rotationMotor.getCurrentPosition());
             case LOW_CHAMBER:
                 return EXTENSION_LOW_CHAMBER;
             case HIGH_CHAMBER:
@@ -204,10 +210,14 @@ public class arm {
                 return EXTENSION_YELLOW_2;
             case YELLOW_3:
                 return EXTENSION_YELLOW_3;
+            case DOBOR:
+                return EXTENSION_DOBOR;
             case YELLOW_AFKBOT:
                 return EXTENSION_YELLOW_AFKBOT;
             case SUPPORT:
                 return EXTENSION_SUPPORT;
+            case CLOSED_AUTO:
+                return EXTENSION_CLOSED_AUTO;
         }
         return -1;
     }
@@ -247,7 +257,7 @@ public class arm {
 
     private double pidCalculateExtensionPower(int targetPos){
         //if (extensionState == extension.EXTENDED && extensionMotor.getCurrentPosition() < EXTENSION_FULL)
-          //  return 1;
+        //  return 1;
         int error = targetPos - extensionMotor.getCurrentPosition();
         extDelta = error - oldExtensionError;
 
@@ -290,7 +300,7 @@ public class arm {
             double modExponential = 0.00048759 * Math.pow(Math.abs(error), 1.461020);
             if (error > 0)
                 error = modExponential / ROTATION_PIDF.p;
-            else 
+            else
                 error = -modExponential / ROTATION_PIDF.p;
         }
 
@@ -301,7 +311,7 @@ public class arm {
         this.targetExtensionPos = extensionPosToTicks(target);
         this.extensionState = target;
 
-        if (Math.abs(rotationPosToTicks(rotationState) - rotationMotor.getCurrentPosition()) > 120 && targetExtensionPos != EXTENSION_SUPPORT)
+        if (Math.abs(rotationPosToTicks(rotationState) - rotationMotor.getCurrentPosition()) > 120 && targetExtensionPos != EXTENSION_SUPPORT && targetExtensionPos != EXTENSION_CLOSED_AUTO)
             return this.setExtensionMotorPower(-0.3);
         else if (rotationState != rotation.LIFT || rotationReached()/* || target == extension.CLOSED*/)
             return this.setExtensionMotorPower(pidCalculateExtensionPower(targetExtensionPos));
@@ -327,18 +337,21 @@ public class arm {
         if (wantedRotation == rotation.RESET && rotationState == rotation.RESET)
             return setRotationMotorPower(0);
 
+        if (rotationState == rotation.FRONT && wantedRotation == rotation.FRONT && rotationMotor.getCurrentPosition() < 20)
+            return setRotationMotorPower(0);
+
         if (rotationState == rotation.RESET && rotationBtn.getVoltage() < 0.4)
         {
             resetRotationEncoders();
         }
 
-        if (target == rotation.CHAMBER || target == rotation.BACK_HANG1 || rotationState == rotation.BACK_HANG1 || (extensionState == extension.CLOSED && extensionMotor.getCurrentPosition() < 250) || (extensionMotor.getCurrentPosition() < 250 && extensionState == extension.MANUAL) || (extensionState == extension.SUPPORT && extensionMotor.getCurrentPosition() < 250)) {
+        if (target == rotation.CHAMBER || target == rotation.BACK_HANG1 || rotationState == rotation.BACK_HANG1 || (extensionState == extension.CLOSED && extensionMotor.getCurrentPosition() < 250) || (extensionMotor.getCurrentPosition() < 250 && extensionState == extension.MANUAL) || (extensionState == extension.SUPPORT && extensionMotor.getCurrentPosition() < 250) || (extensionState == extension.CLOSED_AUTO && extensionMotor.getCurrentPosition() < 200)) {
             rotationState = wantedRotation;
             this.targetRotationPos = rotationPosToTicks(target);
         }
 
         if (target == rotation.LIFT && rotationMotor.getCurrentPosition() > ROTATION_LIFT - 10)
-            return setRotationMotorPower(0.005);
+            return setRotationMotorPower(0.008);
 
         return this.setRotationMotorPower(pidCalculateRotationPower(targetRotationPos));
     }
@@ -370,6 +383,8 @@ public class arm {
     }
 
     public void stop(){
+        rotationState = rotation.MANUAL;
+        extensionState = extension.MANUAL;
         this.extensionMotor.setPower(0);
         this.rotationMotor.setPower(0);
     }

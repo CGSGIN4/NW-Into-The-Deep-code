@@ -35,8 +35,8 @@ public class tele_main extends LinearOpMode {
     double TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING = 0;
     int scoring_mode = 0;
     double scored = 0;
-    public static double pitch = 180;
-    public static double roll = -8;
+    public static double pitch = 176;
+    public static double roll = -2;
     Vector2d gamepad = new Vector2d();
     double turn = 0;
     FtcDashboard dashboard;
@@ -44,8 +44,12 @@ public class tele_main extends LinearOpMode {
     boolean unfoldingSequence = false;
     boolean unfoldingSequenceLowBasket = false;
     boolean intakingSequence = false;
+    boolean diff_flip = false;
+    boolean fast_pitch_swap = false;
+    String lastCall;
     ElapsedTime foldingTimer = new ElapsedTime();
     ElapsedTime intakingTimer = new ElapsedTime();
+    ElapsedTime safetyDiffTimer = new ElapsedTime();
     path_follower path_follower;
 
     @Override
@@ -72,15 +76,19 @@ public class tele_main extends LinearOpMode {
             assistGamepad.update();
             dataStorage.updateData();
             arm.update(dataStorage.telemetry);
-            hang.update(dataStorage.telemetry);
-            differential.update(dataStorage.telemetry);
+            hang.update();
+            differential.update();
 
             /* DIFFERENTIAL SECTION */
             if (assistGamepad.isClicked("dpad_down")) {
+                if (fast_pitch_swap) {
+                    pitch = 13;
+                    fast_pitch_swap = false;
+                }
                 if (pitch > 100)
                     pitch = 100;
                 else
-                    pitch = 25;
+                    pitch = 13;
                 if (arm.rotationState == RESET)
                     differential.openClaw();
             }
@@ -88,24 +96,24 @@ public class tele_main extends LinearOpMode {
                 if (pitch < 100)
                     pitch = 100;
                 else
-                    pitch = 180;
+                    pitch = 176;
 
             if (assistGamepad.isClicked("dpad_left"))
                 if (roll >= -80 && roll <= -45)
                     roll = -80;
-                else if (roll > -45 && roll <= -8)
+                else if (roll > -45 && roll <= -2)
                     roll = -45;
-                else if (roll > -8 && roll <= 45)
-                    roll = -8;
+                else if (roll > -2 && roll <= 45)
+                    roll = -2;
                 else
                     roll = 45;
             if (assistGamepad.isClicked("dpad_right"))
                 if (roll <= 75 && roll >= 45)
                     roll = 75;
-                else if (roll >= -8 && roll < 45)
+                else if (roll >= -2 && roll < 45)
                     roll = 45;
-                else if (roll >= -45 && roll < -8)
-                    roll = -8;
+                else if (roll >= -45 && roll < -2)
+                    roll = -2;
                 else
                     roll = -45;
 
@@ -140,14 +148,19 @@ public class tele_main extends LinearOpMode {
             /* ARM SECTION */
             if (assistGamepad.isClicked("a")) {
                 if (arm.rotationState == LIFT) {
-                    arm.setRotation(FRONT);
-                    arm.setExtension(CLOSED);
+                    if (arm.extensionMotor.getCurrentPosition() < 435) {
+                        arm.setRotation(FRONT);
+                        arm.setExtension(CLOSED);
+                        lastCall = ("called by pressing X in rotation LIFT");
+                        pitch = 176;
+                    }
                 }
                 else {
                     arm.setRotation(LIFT);
                     arm.setExtension(SUPPORT);
-                    pitch = 25;
-                    roll = -8;
+                    lastCall = ("called by pressing X in rotation RESET");
+                    pitch = 13;
+                    roll = -2;
                 }
                 //tele.addData("rotation power", arm.setRotation(LIFT));
             }
@@ -157,7 +170,7 @@ public class tele_main extends LinearOpMode {
                         unfoldingSequenceLowBasket = false;
                         unfoldingSequence = true;
                     } else {
-                        pitch = 145;
+                        pitch = 125;
                         foldingSequence = true;
                         foldingTimer.reset();
                     }
@@ -184,19 +197,30 @@ public class tele_main extends LinearOpMode {
             if (foldingSequence) {
                 unfoldingSequenceLowBasket = false;
                 unfoldingSequence = false;
+                intakingSequence = false;
+                if (foldingTimer.milliseconds() < TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING + 500 && arm.extensionState != MANUAL)
+                    arm.setExtension(EXTENDED);
                 if (foldingTimer.milliseconds() > TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING) /* perekid */
                     differential.openClaw();
-                if (foldingTimer.milliseconds() > TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING + 200)
-                    pitch = 25;
-                if (foldingTimer.milliseconds() > TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING + 500) {
-                    if (arm.extensionMotor.getCurrentPosition() > 100)
+                if (foldingTimer.milliseconds() > TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING + 200 && !diff_flip) {
+                    pitch = 13;
+                    safetyDiffTimer.reset();
+                    diff_flip = true;
+                }
+                if (foldingTimer.milliseconds() > TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING + 500 && safetyDiffTimer.milliseconds() > 300 && diff_flip) {
+                    if (arm.extensionMotor.getCurrentPosition() > 100) {
                         arm.setExtension(CLOSED);
-                    else if (arm.rotationMotor.getCurrentPosition() > 100)
+                        lastCall = ("called by folding sequence");
+                    }
+                    else if (arm.rotationMotor.getCurrentPosition() > 100) {
                         arm.setRotation(FRONT);
+                        pitch = 176;
+                    }
                     else {
-                        roll = -8;
-                        pitch = 100;
+                        roll = -2;
                         foldingSequence = false;
+                        diff_flip = false;
+                        fast_pitch_swap = true;
                     }
                 }
             }
@@ -207,10 +231,11 @@ public class tele_main extends LinearOpMode {
                     unfoldingSequence = false;
 
                 if (scoring_mode == 1)
-                    pitch = 25;
+                    pitch = 13;
                 else
-                    pitch = 145;
+                    pitch = 125;
                 arm.setExtension(EXTENDED);
+                lastCall = ("called by unfolding sequence");
                 if (arm.extensionMotor.getCurrentPosition() > 1320) {
                     unfoldingSequence = false;
                 }
@@ -222,10 +247,11 @@ public class tele_main extends LinearOpMode {
                     unfoldingSequenceLowBasket = false;
 
                 if (scoring_mode == 1)
-                    pitch = 25;
+                    pitch = 13;
                 else
-                    pitch = 145;
+                    pitch = 125;
                 arm.setExtension(LOW_BASKET);
+                lastCall = ("called by unfolding to low basket");
                 if (arm.extensionMotor.getCurrentPosition() > 465)
                     unfoldingSequenceLowBasket = false;
             }
@@ -235,33 +261,42 @@ public class tele_main extends LinearOpMode {
                     differential.closeClaw();
                 else {
                     arm.setExtension(CLOSED);
-                    pitch = 180;
+                    lastCall = ("called by intaking sequence");
+                    pitch = 176;
                     intakingSequence = false;
                 }
             }
 
-            if (Math.abs(gamepad2.right_stick_y) > 0.01) {
+            if (Math.abs(gamepad2.right_stick_y) > 0.01 && safetyDiffTimer.milliseconds() > 300) {
                 arm.manuallyExtend(-gamepad2.right_stick_y);
+                lastCall = ("called manually");
                 //if (gamepad2.right_stick_y < -0.1 && arm.rotationState == RESET)
                     //differential.openClaw();
             }
             else {
-                if (arm.extensionState == MANUAL)
+                if (arm.extensionState == MANUAL) {
                     arm.extensionMotor.setPower(0);
+                    lastCall = ("called by arm being in manual but not pressing stick");
+                }
             }
 
             if (arm.rotationState == RESET) {
-                if (gamepad2.right_trigger > 0.05 && arm.extensionMotor.getCurrentPosition() < 305)
+                if (gamepad2.right_trigger > 0.05 && arm.extensionMotor.getCurrentPosition() < 305) {
                     arm.pidExtend(arm.targetExtensionPos + 7);
-                if (gamepad2.left_trigger > 0.05)
+                    lastCall = ("called by trigger");
+                }
+                if (gamepad2.left_trigger > 0.05) {
                     arm.pidExtend(arm.targetExtensionPos - 7);
+                    lastCall = ("called by trigger down");
+                }
             }
 
             if (assistGamepad.isClicked("y")) {
                 arm.setRotation(LIFT);
                 arm.setExtension(CLOSED);
+                lastCall = ("called by hang");
                 differential.openClaw();
-                pitch = 180;
+                pitch = 176;
                 if (hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.SLEEPING)
                     hang.prepare();
                 else if (hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.ASCEND2COMPLETE || hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.FOLDING)
@@ -290,12 +325,19 @@ public class tele_main extends LinearOpMode {
             if (assistGamepad.isPressed("left_stick_button"))
                 arm.manuallyRotate(-0.5);
 
-            telemetry.addData("folding", foldingSequence);
-            telemetry.addData("unfolding", unfoldingSequence);
-            telemetry.addData("unfolding low basket", unfoldingSequenceLowBasket);
-            telemetry.addData("intaking", intakingSequence);
-            telemetry.addData("diffy pitch", pitch);
-            telemetry.addData("diffy roll", roll);
+            dataStorage.telemetry.addLine(lastCall);
+            //dataStorage.telemetry.addLine("-----------TELEOP----------");
+            //dataStorage.telemetry.addData("folding", foldingSequence);
+            //dataStorage.telemetry.addData("unfolding", unfoldingSequence);
+            //dataStorage.telemetry.addData("unfolding low basket", unfoldingSequenceLowBasket);
+            //dataStorage.telemetry.addData("intaking", intakingSequence);
+            //dataStorage.telemetry.addData("diffy pitch", pitch);
+            //dataStorage.telemetry.addData("diffy roll", roll);
+            //dataStorage.telemetry.addData("diff flip", diff_flip);
+            //dataStorage.telemetry.addData("folding timer", foldingTimer);
+            //dataStorage.telemetry.addData("safety timer", safetyDiffTimer);
+            //dataStorage.telemetry.addData("intaking timer", intakingTimer);
+            //dataStorage.telemetry.addData("scoring mode", scoring_mode);
         }
     }
 }

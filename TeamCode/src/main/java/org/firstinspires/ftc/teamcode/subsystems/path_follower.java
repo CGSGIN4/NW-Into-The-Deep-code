@@ -89,7 +89,7 @@ public class path_follower {
         Vector2d finish = Traj.getPoint(1.);
 
         //dataStorage.DSTelemetry.addData("PID", "off");
-        while ((!nearToFinal || t < 0.4) && t < 0.9){
+        while ((!nearToFinal || t < 0.4) && t < 0.9 && dataStorage.OpMode.opModeIsActive()){
             dataStorage.updateData();
             module_master.update(dataStorage.telemetry);
             t = velocity_calculator.getCurrentT(dataStorage.RobotPose);
@@ -167,7 +167,7 @@ public class path_follower {
 
         dataStorage.DSTelemetry.addData("PID", "off");
 
-        while ((!nearToFinal || t < 0.4) && t < 0.9){
+        while ((!nearToFinal || t < 0.4) && t < 0.9 && dataStorage.OpMode.opModeIsActive()){
             dataStorage.updateData();
             module_master.update(dataStorage.telemetry);
             t = velocity_calculator.getCurrentT(dataStorage.RobotPose);
@@ -238,7 +238,7 @@ public class path_follower {
 
         dataStorage.updateData();
         module_master.update(dataStorage.telemetry);
-        while(dataStorage.RobotPose.distTo(finish) > 1 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.027 || dataStorage.RobotVelocity.norm() > 3){
+        while((dataStorage.RobotPose.distTo(finish) > 1 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.027 || dataStorage.RobotVelocity.norm() > 3) && dataStorage.OpMode.opModeIsActive()){
             dataStorage.updateData();
             module_master.update(dataStorage.telemetry);
 
@@ -258,7 +258,7 @@ public class path_follower {
 
         dataStorage.updateData();
         module_master.update(dataStorage.telemetry);
-        while((dataStorage.RobotPose.distTo(finish) > 1 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.07 || dataStorage.RobotVelocity.norm() > 3) && timer.milliseconds() < 2000){
+        while(((dataStorage.RobotPose.distTo(finish) > 1 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.07 || dataStorage.RobotVelocity.norm() > 3) && timer.milliseconds() < 2000) && dataStorage.OpMode.opModeIsActive()){
             dataStorage.updateData();
             module_master.update(dataStorage.telemetry);
 
@@ -278,7 +278,7 @@ public class path_follower {
 
         dataStorage.updateData();
         module_master.update(dataStorage.telemetry);
-        while((dataStorage.RobotPose.distTo(finish) > 2.5 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.2 || dataStorage.RobotVelocity.norm() > 7) && timer.milliseconds() < 1200){
+        while(((dataStorage.RobotPose.distTo(finish) > 2.5 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.2 || dataStorage.RobotVelocity.norm() > 7) && timer.milliseconds() < 1200) && dataStorage.OpMode.opModeIsActive()){
             dataStorage.updateData();
             module_master.update(dataStorage.telemetry);
 

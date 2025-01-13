@@ -44,7 +44,7 @@ public class differential {
 
     public void setPitch(double angle)
     {
-        angle = max(20, min(angle, 180));
+        angle = max(13, min(angle, 176));
         pitch = angle + 80;
     }
 
@@ -55,13 +55,13 @@ public class differential {
 
     public void pitchUp()
     {
-        setPitch(180);
+        setPitch(176);
         update();
     }
 
     public void pitchDown()
     {
-        setPitch(25);
+        setPitch(13);
         update();
     }
 
@@ -109,7 +109,7 @@ public class differential {
 
     public void rollDefault()
     {
-        setRoll(-8);
+        setRoll(-2);
         update();
     }
 

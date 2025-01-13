@@ -6,8 +6,10 @@ import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.ac
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.PITCH_FRONT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_CHAMBER;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_CLOSED;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_DOBOR;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_LIFT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_LIMIT;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_YELLOW2;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_ROTATION_CHAMBER;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_ROTATION_FRONT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_ROTATION_LIFT;
@@ -34,6 +36,8 @@ public class module_master {
         public static final int PITCH_FRONT = 9;
         public static final int SET_EXTENSION_CHAMBER = 10;
         public static final int SET_ROTATION_CHAMBER = 11;
+        public static final int SET_EXTENSION_YELLOW2 = 12;
+        public static final int SET_EXTENSION_DOBOR = 13;
 
     }
 
@@ -76,8 +80,14 @@ public class module_master {
             case SET_EXTENSION_CHAMBER:
                 arm.setExtension(org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.HIGH_CHAMBER);
                 break;
+            case SET_EXTENSION_YELLOW2:
+                arm.setExtension(org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.YELLOW_2);
+                break;
             case SET_ROTATION_CHAMBER:
                 arm.setRotation(org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.CHAMBER);
+                break;
+            case SET_EXTENSION_DOBOR:
+                arm.setExtension(org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.DOBOR);
                 break;
             case PITCH_DOWN:
                 differential.pitchDown();
