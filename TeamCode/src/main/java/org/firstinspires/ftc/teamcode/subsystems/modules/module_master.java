@@ -13,6 +13,7 @@ import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.ac
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_ROTATION_CHAMBER;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_ROTATION_FRONT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_ROTATION_LIFT;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_ROTATION_PREASCEND;
 
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -38,6 +39,7 @@ public class module_master {
         public static final int SET_ROTATION_CHAMBER = 11;
         public static final int SET_EXTENSION_YELLOW2 = 12;
         public static final int SET_EXTENSION_DOBOR = 13;
+        public static final int SET_ROTATION_PREASCEND = 14;
 
     }
 
@@ -85,6 +87,9 @@ public class module_master {
                 break;
             case SET_ROTATION_CHAMBER:
                 arm.setRotation(org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.CHAMBER);
+                break;
+            case SET_ROTATION_PREASCEND:
+                arm.setRotation(org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.PREASCEND);
                 break;
             case SET_EXTENSION_DOBOR:
                 arm.setExtension(org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.DOBOR);

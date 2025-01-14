@@ -40,7 +40,8 @@ public class arm {
     int ROTATION_FRONT = 0;
     int ROTATION_BACK_HANG1 = 487; //508
     int ROTATION_LIFT = 487; //498 //was 467 before stopper
-    int ROTATION_CHAMBER = 238;
+    int ROTATION_CHAMBER = 258;
+    int ROTATION_PREASCEND = 110;
 
     /* ------------------ ON-FLY ------------------ */
     public int targetRotationPos;
@@ -122,7 +123,8 @@ public class arm {
         CHAMBER,
         LIFT,
         RESET,
-        MANUAL
+        MANUAL,
+        PREASCEND
     }
     public arm(HardwareMap HM){
         rotationMotor = HM.get(DcMotorEx.class, "armRotationMotor");
@@ -232,6 +234,8 @@ public class arm {
                 return ROTATION_LIFT;
             case CHAMBER:
                 return ROTATION_CHAMBER;
+            case PREASCEND:
+                return ROTATION_PREASCEND;
             case FRONT:
                 return ROTATION_FRONT;
             default:
@@ -345,13 +349,13 @@ public class arm {
             resetRotationEncoders();
         }
 
-        if (target == rotation.CHAMBER || target == rotation.BACK_HANG1 || rotationState == rotation.BACK_HANG1 || (extensionState == extension.CLOSED && extensionMotor.getCurrentPosition() < 250) || (extensionMotor.getCurrentPosition() < 250 && extensionState == extension.MANUAL) || (extensionState == extension.SUPPORT && extensionMotor.getCurrentPosition() < 250) || (extensionState == extension.CLOSED_AUTO && extensionMotor.getCurrentPosition() < 200)) {
+        if (target == rotation.PREASCEND || target == rotation.CHAMBER || target == rotation.BACK_HANG1 || rotationState == rotation.BACK_HANG1 || (extensionState == extension.CLOSED && extensionMotor.getCurrentPosition() < 250) || (extensionMotor.getCurrentPosition() < 250 && extensionState == extension.MANUAL) || (extensionState == extension.SUPPORT && extensionMotor.getCurrentPosition() < 250) || (extensionState == extension.CLOSED_AUTO && extensionMotor.getCurrentPosition() < 200)) {
             rotationState = wantedRotation;
             this.targetRotationPos = rotationPosToTicks(target);
         }
 
         if (target == rotation.LIFT && rotationMotor.getCurrentPosition() > ROTATION_LIFT - 10)
-            return setRotationMotorPower(0.008);
+            return setRotationMotorPower(0.028);
 
         return this.setRotationMotorPower(pidCalculateRotationPower(targetRotationPos));
     }
@@ -421,9 +425,9 @@ public class arm {
 
     public boolean extensionReached()
     {
-        return Math.abs(extDelta) <= 5 && ((extensionMotor.getCurrentPosition() >= EXTENSION_FULL - 25 && extensionState == extension.EXTENDED) ||
+        return (extensionMotor.getCurrentPosition() >= EXTENSION_FULL - 85 && extensionState == extension.EXTENDED) ||
                 (extensionMotor.getCurrentPosition() < 23 && extensionState == extension.CLOSED) ||
-                Math.abs(targetExtensionPos - extensionMotor.getCurrentPosition()) < 13);
+                (Math.abs(extDelta) <= 5 && Math.abs(targetExtensionPos - extensionMotor.getCurrentPosition()) < 13);
     }
 
     public boolean rotationReached()

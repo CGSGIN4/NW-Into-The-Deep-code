@@ -162,7 +162,7 @@ public class path_follower {
         int tIndex = 0;
         boolean nearToFinal = false;
         Vector2d plannedPos = Traj.getPoint(0);
-        double distanceToFinish = 5.;
+        double distanceToFinish = 10.;
         Vector2d finish = Traj.getPoint(1.);
 
         dataStorage.DSTelemetry.addData("PID", "off");

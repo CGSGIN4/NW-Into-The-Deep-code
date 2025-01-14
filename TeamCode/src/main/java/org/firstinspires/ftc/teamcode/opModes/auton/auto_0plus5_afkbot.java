@@ -73,7 +73,7 @@ public class auto_0plus5_afkbot extends LinearOpMode {
 
         while (opModeIsActive()) {
             prepareToScoreHighBasket();
-            path_follower.followTrajectoryBreak(curves[0], -Math.PI * 3 / 4);
+            path_follower.goToPos(curves[0].getPoint(1).getX(), curves[0].getPoint(1).getY(), -Math.PI * 3 / 4);
             scoreHighBasket();
 
             path_follower.goToPos(39.9, 61.7, Math.PI - Math.toRadians(7.3));
@@ -113,7 +113,7 @@ public class auto_0plus5_afkbot extends LinearOpMode {
             setExtensionAndWait(arm.extension.EXTENDED);
             scoreHighBasket();
 
-            path_follower.goToPos(57.5, 49.2, -Math.PI / 2); /* sample 2 */
+            path_follower.goToPos(57.5, 49.2, -Math.PI / 2 + Math.toRadians(1)); /* sample 2 */
             waitArmRotation();
             module_master.differential.setPitch(32);
             module_master.differential.update();

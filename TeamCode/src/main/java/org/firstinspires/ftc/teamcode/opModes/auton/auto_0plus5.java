@@ -11,6 +11,7 @@ import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.ac
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_ROTATION_FRONT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_ROTATION_LIFT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_YELLOW2;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_ROTATION_PREASCEND;
 
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -75,7 +76,8 @@ public class auto_0plus5 extends LinearOpMode {
 
         while (opModeIsActive()) {
             prepareToScoreHighBasket();
-            path_follower.followTrajectoryBreak(curves[0], -Math.PI * 3 / 4);
+            path_follower.goToPos(curves[0].getPoint(1).getX(), curves[0].getPoint(1).getY(), -Math.PI * 3 / 4);
+            //path_follower.followTrajectoryBreak(curves[0], -Math.PI * 3 / 4);
             scoreHighBasket();
 
             path_follower.followTrajectory(curves[1], Math.PI - Math.toRadians(5.1), new double[]{0.3, 0.7}, new int[]{SET_ROTATION_FRONT, SET_EXTENSION_DOBOR});
@@ -158,7 +160,7 @@ public class auto_0plus5 extends LinearOpMode {
             //waitArmRotation();
 
             robot.stop();
-            module_master.stop(dataStorage.telemetry);
+            //module_master.stop(dataStorage.telemetry);
             transfer.angle = robot.drive.getPoseEstimate().getHeading();
 
             packet = new TelemetryPacket();
