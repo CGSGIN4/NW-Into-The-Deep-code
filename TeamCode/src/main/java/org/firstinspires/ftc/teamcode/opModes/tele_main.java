@@ -76,7 +76,7 @@ public class tele_main extends LinearOpMode {
             assistGamepad.update();
             dataStorage.updateData();
             arm.update(dataStorage.telemetry);
-            hang.update();
+            hang.update(dataStorage.telemetry);
             differential.update();
 
             /* DIFFERENTIAL SECTION */
@@ -262,7 +262,7 @@ public class tele_main extends LinearOpMode {
                 else {
                     arm.setExtension(CLOSED);
                     lastCall = ("called by intaking sequence");
-                    pitch = 176;
+                    pitch = 130;
                     intakingSequence = false;
                 }
             }
@@ -292,6 +292,10 @@ public class tele_main extends LinearOpMode {
             }
 
             if (assistGamepad.isClicked("y")) {
+                unfoldingSequence = false;
+                unfoldingSequenceLowBasket = false;
+                intakingSequence = false;
+                foldingSequence = false;
                 arm.setRotation(LIFT);
                 arm.setExtension(CLOSED);
                 lastCall = ("called by hang");
@@ -325,19 +329,19 @@ public class tele_main extends LinearOpMode {
             if (assistGamepad.isPressed("left_stick_button"))
                 arm.manuallyRotate(-0.5);
 
-            dataStorage.telemetry.addLine(lastCall);
-            //dataStorage.telemetry.addLine("-----------TELEOP----------");
-            //dataStorage.telemetry.addData("folding", foldingSequence);
-            //dataStorage.telemetry.addData("unfolding", unfoldingSequence);
-            //dataStorage.telemetry.addData("unfolding low basket", unfoldingSequenceLowBasket);
-            //dataStorage.telemetry.addData("intaking", intakingSequence);
-            //dataStorage.telemetry.addData("diffy pitch", pitch);
-            //dataStorage.telemetry.addData("diffy roll", roll);
-            //dataStorage.telemetry.addData("diff flip", diff_flip);
-            //dataStorage.telemetry.addData("folding timer", foldingTimer);
-            //dataStorage.telemetry.addData("safety timer", safetyDiffTimer);
-            //dataStorage.telemetry.addData("intaking timer", intakingTimer);
-            //dataStorage.telemetry.addData("scoring mode", scoring_mode);
+            //dataStorage.telemetry.addLine(lastCall);
+            dataStorage.telemetry.addLine("-----------TELEOP----------");
+            dataStorage.telemetry.addData("folding", foldingSequence);
+            dataStorage.telemetry.addData("unfolding", unfoldingSequence);
+            dataStorage.telemetry.addData("unfolding low basket", unfoldingSequenceLowBasket);
+            dataStorage.telemetry.addData("intaking", intakingSequence);
+            dataStorage.telemetry.addData("diffy pitch", pitch);
+            dataStorage.telemetry.addData("diffy roll", roll);
+            dataStorage.telemetry.addData("diff flip", diff_flip);
+            dataStorage.telemetry.addData("folding timer", foldingTimer);
+            dataStorage.telemetry.addData("safety timer", safetyDiffTimer);
+            dataStorage.telemetry.addData("intaking timer", intakingTimer);
+            dataStorage.telemetry.addData("scoring mode", scoring_mode);
         }
     }
 }

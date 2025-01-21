@@ -80,7 +80,7 @@ public class su4ka extends LinearOpMode {
             path_follower.goToPos(48.3, 51, -Math.PI / 2); /* sample 1 */
             //path_follower.goToPosUnsafe(51.4, 51.4, -Math.PI / 2 - Math.toRadians(11.5)); /* sample 1 */
             waitArmRotation();
-            module_master.differential.setPitch(52);
+            module_master.differential.setPitch(32);
             module_master.differential.update();
             setExtensionAndWait(arm.extension.YELLOW_1);
             takeSample(false);
@@ -95,7 +95,7 @@ public class su4ka extends LinearOpMode {
 
             path_follower.goToPos(58, 50.2, -Math.PI / 2); /* sample 2 */
             waitArmRotation();
-            module_master.differential.setPitch(52);
+            module_master.differential.setPitch(32);
             module_master.differential.update();
             module_master.arm.setExtension(arm.extension.YELLOW_2);
             waitArmExtension();
@@ -131,8 +131,12 @@ public class su4ka extends LinearOpMode {
             path_follower.goToPosVeryUnsafe(21, 6, -Math.PI);
             module_master.arm.setRotation(arm.rotation.CHAMBER);
             //module_master.arm.setRotation(arm.rotation.FRONT);
-            //waitArmRotation();
+            waitArmRotation();
 
+            while (opModeIsActive()) {
+                module_master.arm.update();
+                module_master.arm.manuallyExtend(0);
+            }
             robot.stop();
             //module_master.stop(dataStorage.telemetry);
             transfer.angle = robot.drive.getPoseEstimate().getHeading();
@@ -186,7 +190,7 @@ public class su4ka extends LinearOpMode {
     /** PITCH DOWN, CLOSE CLAW, PITCH FORWARD **/
     private void takeSample(boolean third){
         if (!third) {
-            module_master.differential.setPitch(52);
+            module_master.differential.setPitch(32);
             module_master.differential.update();
         }
         else {

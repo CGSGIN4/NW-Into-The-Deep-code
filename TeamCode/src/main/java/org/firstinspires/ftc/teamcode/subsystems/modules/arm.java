@@ -179,7 +179,7 @@ public class arm {
         if (extensionState.equals(extension.PID_MANUAL))
             pidExtend(targetExtensionPos);
 
-        if (rotationBtn.getVoltage() < 0.4 && (rotationState == rotation.FRONT || rotationState == rotation.MANUAL)) /* pressed */ {
+        if (rotationMotor.getCurrentPosition() < 100 && rotationBtn.getVoltage() < 0.4 && (rotationState == rotation.FRONT || rotationState == rotation.MANUAL)) /* pressed */ {
             rotationState = rotation.RESET;
             setRotationMotorPower(0);
         }
@@ -344,7 +344,7 @@ public class arm {
         if (rotationState == rotation.FRONT && wantedRotation == rotation.FRONT && rotationMotor.getCurrentPosition() < 20)
             return setRotationMotorPower(0);
 
-        if (rotationState == rotation.RESET && rotationBtn.getVoltage() < 0.4)
+        if (rotationState == rotation.RESET && rotationBtn.getVoltage() < 0.4 && rotationMotor.getCurrentPosition() < 100)
         {
             resetRotationEncoders();
         }

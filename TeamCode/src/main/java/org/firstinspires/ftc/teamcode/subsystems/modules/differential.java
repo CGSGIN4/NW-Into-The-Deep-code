@@ -120,7 +120,7 @@ public class differential {
 
     public void closeClaw(){
         clawState = 0;
-        claw.setPosition(0.43);
+        claw.setPosition(0.455);
     }
 
     public void clawSwitch(){

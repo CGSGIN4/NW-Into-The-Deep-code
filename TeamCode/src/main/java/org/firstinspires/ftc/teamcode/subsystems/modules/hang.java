@@ -115,6 +115,8 @@ public class hang {
         telemetry.addData("right pos", right.getCurrentPosition());
         telemetry.addData("left voltage", left.getCurrent(CurrentUnit.AMPS));
         telemetry.addData("right voltage", right.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("left pwr", left.getPower());
+        telemetry.addData("right pwr", right.getPower());
         switch (state)
         {
             case PREPARE:
@@ -160,7 +162,7 @@ public class hang {
                     fold3();
                 break;
             case ASCEND3COMPLETE:
-                pushDown();
+                fold3();
                 break;
         }
     }
