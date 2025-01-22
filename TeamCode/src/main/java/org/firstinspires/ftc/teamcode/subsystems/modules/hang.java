@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems.modules;
 
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import org.firstinspires.ftc.teamcode.utils.MultipleTelemetry;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.RR.util.Encoder;
+import org.firstinspires.ftc.teamcode.utils.logger;
 
 public class hang {
     public hang.states state = states.SLEEPING;
@@ -43,6 +44,7 @@ public class hang {
         right = HM.get(DcMotorEx.class, "hangRight");
         right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         right.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        logger.writeLn("arm initialized");
     }
 
     private void goTo(int target)

@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems.modules;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import org.firstinspires.ftc.teamcode.utils.MultipleTelemetry;
 import com.arcrobotics.ftclib.controller.wpilibcontroller.ArmFeedforward;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.AnalogInput;
@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+import org.firstinspires.ftc.teamcode.utils.logger;
 import org.opencv.core.Mat;
 
 @Config
@@ -138,14 +139,17 @@ public class arm {
         resetExtensionEncoders();
 
         rotationBtn = HM.get(AnalogInput.class, "rotationBtn");
+        logger.writeLn("arm initialized");
     }
 
     public void resetRotationEncoders() {
+        logger.writeLn("reset rotation encoder called");
         rotationMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rotationMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     public void resetExtensionEncoders() {
+        logger.writeLn("reset extension encoder called");
         extensionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         extensionMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
@@ -244,6 +248,7 @@ public class arm {
     }
 
     private double setExtensionMotorPower(double power){
+        logger.writeLn("set extension motor power to " + power);
         if (Math.abs(extPower - power) > 0.00001) {
             this.extPower = power;
             this.extensionMotor.setPower(extPower);
@@ -252,6 +257,7 @@ public class arm {
     }
 
     private double setRotationMotorPower(double power){
+        logger.writeLn("set rotation motor power to " + power);
         if (Math.abs(rotPower - power) > 0.001) {
             this.rotPower = power;
             this.rotationMotor.setPower(rotPower);
@@ -312,6 +318,7 @@ public class arm {
     }
     public double setExtension(extension target)
     {
+        logger.addData("target extension", target);
         this.targetExtensionPos = extensionPosToTicks(target);
         this.extensionState = target;
 
@@ -333,6 +340,8 @@ public class arm {
 
     public double setRotation(rotation target)
     {
+        logger.addData("wanted rotation", target);
+        logger.addData("real target rotation (on prev call)", rotationState);
         wantedRotation = target;
 
         if (wantedRotation == rotation.FRONT && rotationState == rotation.RESET)
@@ -387,6 +396,7 @@ public class arm {
     }
 
     public void stop(){
+        logger.writeLn("arm stopped");
         rotationState = rotation.MANUAL;
         extensionState = extension.MANUAL;
         this.extensionMotor.setPower(0);

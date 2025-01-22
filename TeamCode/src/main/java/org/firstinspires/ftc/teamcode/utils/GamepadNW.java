@@ -52,10 +52,14 @@ public class GamepadNW {
     }
 
     public boolean isClicked(String button){
-        return Boolean.TRUE.equals(clicked.contains(button));
+        if (clicked.contains(button)) {
+            logger.writeLn("clicked " + button);
+            return true;
+        }
+        return false;
     }
     public boolean isPressed(String button){
-        return Boolean.TRUE.equals(pressed.contains(button));
+        return pressed.contains(button);
     }
 
     public Vector<String> getClicked(){

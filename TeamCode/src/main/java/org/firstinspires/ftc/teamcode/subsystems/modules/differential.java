@@ -10,6 +10,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.utils.MultipleTelemetry;
+import org.firstinspires.ftc.teamcode.utils.logger;
 
 public class differential {
     /* ------------------ HARDWARE ------------------ */
@@ -33,6 +35,7 @@ public class differential {
         claw = HM.get(Servo.class, "claw");
         pitch = 180;
         roll = 0;
+        logger.writeLn("differential initialized");
     }
     double posToDeg(double pos){
         return MAX_ANGLE * pos;
@@ -42,15 +45,17 @@ public class differential {
         return angle / MAX_ANGLE;
     }
 
-    public void setPitch(double angle)
+    public double setPitch(double angle)
     {
         angle = max(13, min(angle, 176));
         pitch = angle + 80;
+        return angle;
     }
 
-    public void setRoll(double angle)
+    public double setRoll(double angle)
     {
         roll = max(-80, (min(angle, 75)));
+        return angle;
     }
 
     public void pitchUp()
@@ -137,7 +142,7 @@ public class differential {
         rServo.setPosition(angleToPos(rTheta));
     }
 
-    public void update(Telemetry telemetry){
+    public void update(MultipleTelemetry telemetry){
         lTheta = pitch + roll;
         rTheta = pitch - roll;
         lServo.setPosition(1 - angleToPos(lTheta));
