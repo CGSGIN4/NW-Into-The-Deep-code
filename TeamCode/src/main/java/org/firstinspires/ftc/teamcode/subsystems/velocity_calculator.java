@@ -29,7 +29,7 @@ public class velocity_calculator {
 
     public double D_ROTATION_COEF = 1 /*0.4*/;
 
-    public double I_ROTATION_COEF = 0.2;//3;
+    public double I_ROTATION_COEF = 0.22;//3;
     double MIN_ROT_POWER = 0.023;
     double velocityModule;
 

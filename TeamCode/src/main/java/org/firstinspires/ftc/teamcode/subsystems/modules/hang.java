@@ -44,7 +44,7 @@ public class hang {
         right = HM.get(DcMotorEx.class, "hangRight");
         right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         right.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        logger.writeLn("arm initialized");
+        logger.writeLn("hang initialized");
     }
 
     private void goTo(int target)

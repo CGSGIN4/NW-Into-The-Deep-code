@@ -38,8 +38,8 @@ public class tele_main extends LinearOpMode {
     double TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING = 0;
     int scoring_mode = 0;
     double scored = 0;
-    public static double pitch = 176;
-    public static double roll = -2;
+    public static double pitch = 13;
+    public static double roll = -4;
     Vector2d gamepad = new Vector2d();
     double turn = 0;
     FtcDashboard dashboard;
@@ -63,7 +63,7 @@ public class tele_main extends LinearOpMode {
         velocity_calculator velocity_calculator = new velocity_calculator();
 
         differential differential = new differential(hardwareMap);
-        arm arm = new arm(hardwareMap);
+        arm arm = new arm(hardwareMap, true);
         hang hang = new hang(hardwareMap);
 
         robot.init();
@@ -75,7 +75,7 @@ public class tele_main extends LinearOpMode {
         waitForStart();
         logger.writeLn("started teleop");
         robot.drive.setPoseEstimate(new Pose2d(dataStorage.RobotWorldX, dataStorage.RobotWorldY, transfer.angle));
-        differential.closeClaw();
+        differential.openClaw();
         while(opModeIsActive()) {
             driverGamepad.update();
             assistGamepad.update();
@@ -90,36 +90,36 @@ public class tele_main extends LinearOpMode {
                     pitch = 13;
                     fast_pitch_swap = false;
                 }
-                if (pitch > 100)
-                    pitch = 100;
+                if (pitch > 99)
+                    pitch = 99;
                 else
                     pitch = 13;
                 if (arm.rotationState == RESET)
                     differential.openClaw();
             }
             if (assistGamepad.isClicked("dpad_up")) {
-                if (pitch < 100)
-                    pitch = 100;
+                if (pitch < 99)
+                    pitch = 99;
                 else
                     pitch = 176;
             }
             if (assistGamepad.isClicked("dpad_left")) {
                 if (roll >= -80 && roll <= -45)
                     roll = -80;
-                else if (roll > -45 && roll <= -2)
+                else if (roll > -45 && roll <= -4)
                     roll = -45;
-                else if (roll > -2 && roll <= 45)
-                    roll = -2;
+                else if (roll > -4 && roll <= 45)
+                    roll = -4;
                 else
                     roll = 45;
             }
             if (assistGamepad.isClicked("dpad_right")) {
                 if (roll <= 75 && roll >= 45)
                     roll = 75;
-                else if (roll >= -2 && roll < 45)
+                else if (roll >= -4 && roll < 45)
                     roll = 45;
-                else if (roll >= -45 && roll < -2)
-                    roll = -2;
+                else if (roll >= -45 && roll < -4)
+                    roll = -4;
                 else
                     roll = -45;
             }
@@ -155,7 +155,7 @@ public class tele_main extends LinearOpMode {
             /* ARM SECTION */
             if (assistGamepad.isClicked("a")) {
                 if (arm.rotationState == LIFT) {
-                    if (arm.extensionMotor.getCurrentPosition() < 435) {
+                    if (arm.extensionMotor.getCurrentPosition() + arm.offset < 435) {
                         arm.setRotation(FRONT);
                         arm.setExtension(CLOSED);
                         lastCall = ("called by pressing X in rotation LIFT");
@@ -167,13 +167,13 @@ public class tele_main extends LinearOpMode {
                     arm.setExtension(SUPPORT);
                     lastCall = ("called by pressing X in rotation RESET");
                     pitch = 13;
-                    roll = -2;
+                    roll = -4;
                 }
                 //tele.addData("rotation power", arm.setRotation(LIFT));
             }
             if (assistGamepad.isClicked("right_bumper")) {
                 if (arm.rotationState == LIFT) {
-                    if (arm.extensionMotor.getCurrentPosition() < 280) {
+                    if (arm.extensionMotor.getCurrentPosition() + arm.offset < 280) {
                         unfoldingSequenceLowBasket = false;
                         unfoldingSequence = true;
                         logger.writeLn("activated unfolding sequence");
@@ -220,7 +220,7 @@ public class tele_main extends LinearOpMode {
                     diff_flip = true;
                 }
                 if (foldingTimer.milliseconds() > TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING + 500 && safetyDiffTimer.milliseconds() > 300 && diff_flip) {
-                    if (arm.extensionMotor.getCurrentPosition() > 100) {
+                    if (arm.extensionMotor.getCurrentPosition() + arm.offset > 100) {
                         arm.setExtension(CLOSED);
                         lastCall = ("called by folding sequence");
                     }
@@ -229,7 +229,7 @@ public class tele_main extends LinearOpMode {
                         pitch = 176;
                     }
                     else {
-                        roll = -2;
+                        roll = -4;
                         foldingSequence = false;
                         diff_flip = false;
                         fast_pitch_swap = true;
@@ -249,7 +249,7 @@ public class tele_main extends LinearOpMode {
                     pitch = 125;
                 arm.setExtension(EXTENDED);
                 lastCall = ("called by unfolding sequence");
-                if (arm.extensionMotor.getCurrentPosition() > 1320) {
+                if (arm.extensionMotor.getCurrentPosition() + arm.offset > 1320) {
                     unfoldingSequence = false;
                     logger.writeLn("unfolding sequence finished as planned");
                 }
@@ -266,7 +266,7 @@ public class tele_main extends LinearOpMode {
                     pitch = 125;
                 arm.setExtension(LOW_BASKET);
                 lastCall = ("called by unfolding to low basket");
-                if (arm.extensionMotor.getCurrentPosition() > 465) {
+                if (arm.extensionMotor.getCurrentPosition() + arm.offset > 465) {
                     unfoldingSequenceLowBasket = false;
                     logger.writeLn("unfolding sequenceLowBasket finished as planned");
                 }
@@ -299,7 +299,7 @@ public class tele_main extends LinearOpMode {
             }
 
             if (arm.rotationState == RESET) {
-                if (gamepad2.right_trigger > 0.05 && arm.extensionMotor.getCurrentPosition() < 305) {
+                if (gamepad2.right_trigger > 0.05 && arm.extensionMotor.getCurrentPosition() + arm.offset < 305) {
                     arm.pidExtend(arm.targetExtensionPos + 7);
                     lastCall = ("called by trigger");
                 }
@@ -360,6 +360,12 @@ public class tele_main extends LinearOpMode {
             dataStorage.telemetry.addData("safety timer", safetyDiffTimer);
             dataStorage.telemetry.addData("intaking timer", intakingTimer);
             dataStorage.telemetry.addData("scoring mode", scoring_mode);
+        }
+        try {
+            logger.fw.flush();
+            logger.fw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

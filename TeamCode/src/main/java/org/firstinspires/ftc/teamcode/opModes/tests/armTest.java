@@ -113,7 +113,7 @@ public class armTest extends LinearOpMode {
 
             tele.addData("rotation pos", arm.rotationMotor.getCurrentPosition());
             tele.addData("gamepad", gamepad1.right_stick_y);
-            tele.addData("extension pos", arm.extensionMotor.getCurrentPosition());
+            tele.addData("extension pos", arm.extensionMotor.getCurrentPosition() + arm.offset);
             tele.addData("rotation state", arm.rotationState.toString());
             tele.addData("extension state", arm.extensionState.toString());
             tele.addData("rotation angle", arm.getRotationAngle());

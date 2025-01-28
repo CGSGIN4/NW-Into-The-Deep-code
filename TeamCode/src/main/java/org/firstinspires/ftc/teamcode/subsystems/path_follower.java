@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.data.dataStorage;
 import org.firstinspires.ftc.teamcode.math.curve;
 import org.firstinspires.ftc.teamcode.robotMovement.drivetrain;
+import org.firstinspires.ftc.teamcode.subsystems.modules.arm;
 import org.firstinspires.ftc.teamcode.subsystems.modules.module_master;
 import org.firstinspires.ftc.teamcode.utils.painter;
 
@@ -23,7 +24,7 @@ public class path_follower {
     public painter painter = new painter();
     double p_rotation_coef = 3.;
     double p_trans_coef = 0.15;
-    double d_trans_coef = 0.1;
+    double d_trans_coef = 0.12;
     double i_trans_coef = 0.013;
 
     public path_follower(drivetrain drivetrain){
@@ -239,6 +240,71 @@ public class path_follower {
         dataStorage.updateData();
         module_master.update(dataStorage.telemetry);
         while((dataStorage.RobotPose.distTo(finish) > 1 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.027 || dataStorage.RobotVelocity.norm() > 3) && dataStorage.OpMode.opModeIsActive()){
+            dataStorage.updateData();
+            module_master.update(dataStorage.telemetry);
+
+            pid = velocity_calculator.getPIDpower(finish, Heading);
+            //dataStorage.telemetry.addData("HeadingBuffer", velocity_calculator.IHeading);
+
+            drivetrain.applyVectorFieldCentric(pid.vec().rotated(Math.toRadians(90)), pid.getHeading());
+        }
+        drivetrain.applyVector(new Vector2d(0, 0), 0);
+    }
+
+    public void goToPosWithArm(double X, double Y, double Heading){
+        Pose2d pid;
+        Vector2d finish = new Vector2d(X, Y);
+
+        dataStorage.updateData();
+        module_master.update(dataStorage.telemetry);
+        while((dataStorage.RobotPose.distTo(finish) > 1 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.027 || dataStorage.RobotVelocity.norm() > 3) && dataStorage.OpMode.opModeIsActive()){
+            if (module_master.arm.extensionMotor.getCurrentPosition() < 250) {
+                module_master.differential.setPitch(32);
+                module_master.differential.update();
+            }
+            dataStorage.updateData();
+            module_master.update(dataStorage.telemetry);
+
+            pid = velocity_calculator.getPIDpower(finish, Heading);
+            //dataStorage.telemetry.addData("HeadingBuffer", velocity_calculator.IHeading);
+
+            drivetrain.applyVectorFieldCentric(pid.vec().rotated(Math.toRadians(90)), pid.getHeading());
+        }
+        drivetrain.applyVector(new Vector2d(0, 0), 0);
+    }
+
+    public void goToPosWithArmThirdSample(double X, double Y, double Heading){
+        Pose2d pid;
+        Vector2d finish = new Vector2d(X, Y);
+
+        dataStorage.updateData();
+        module_master.update(dataStorage.telemetry);
+        while((dataStorage.RobotPose.distTo(finish) > 1 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.027 || dataStorage.RobotVelocity.norm() > 3) && dataStorage.OpMode.opModeIsActive()){
+            if (module_master.arm.extensionMotor.getCurrentPosition() < 250) {
+                module_master.differential.setPitch(13);
+                module_master.differential.setRoll(45);
+                module_master.differential.update();
+            }
+            dataStorage.updateData();
+            module_master.update(dataStorage.telemetry);
+
+            pid = velocity_calculator.getPIDpower(finish, Heading);
+            //dataStorage.telemetry.addData("HeadingBuffer", velocity_calculator.IHeading);
+
+            drivetrain.applyVectorFieldCentric(pid.vec().rotated(Math.toRadians(90)), pid.getHeading());
+        }
+        drivetrain.applyVector(new Vector2d(0, 0), 0);
+    }
+
+    public void goToPosWithArmToBasket(double X, double Y, double Heading){
+        Pose2d pid;
+        Vector2d finish = new Vector2d(X, Y);
+
+        dataStorage.updateData();
+        module_master.update(dataStorage.telemetry);
+        while((dataStorage.RobotPose.distTo(finish) > 1 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.07 || dataStorage.RobotVelocity.norm() > 3) && dataStorage.OpMode.opModeIsActive()){
+            if (module_master.arm.rotationReached() && module_master.arm.rotationState == arm.rotation.LIFT)
+                module_master.arm.setExtension(arm.extension.EXTENDED);
             dataStorage.updateData();
             module_master.update(dataStorage.telemetry);
 

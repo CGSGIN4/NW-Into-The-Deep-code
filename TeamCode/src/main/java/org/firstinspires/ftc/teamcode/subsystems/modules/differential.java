@@ -84,7 +84,7 @@ public class differential {
 
     public void pitchForward()
     {
-        setPitch(100);
+        setPitch(99);
         update();
     }
 
@@ -114,7 +114,7 @@ public class differential {
 
     public void rollDefault()
     {
-        setRoll(-2);
+        setRoll(-4);
         update();
     }
 
@@ -133,6 +133,11 @@ public class differential {
             openClaw();
         else
             closeClaw();
+    }
+
+    // convert angle from [0; 180] to [-80; 80]
+    public static double geomToDifAngle(double angle) {
+        return -75 + (angle / 180.0) * 150;
     }
 
     public void update(){

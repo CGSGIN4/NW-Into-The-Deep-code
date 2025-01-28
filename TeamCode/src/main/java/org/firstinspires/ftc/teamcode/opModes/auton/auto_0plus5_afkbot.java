@@ -182,6 +182,7 @@ public class auto_0plus5_afkbot extends LinearOpMode {
         }
         robot.stop();
         module_master.stop(dataStorage.telemetry);
+        transfer.armExtensionPos = module_master.arm.extensionMotor.getCurrentPosition();
     }
 
     private void waitForCondition(BooleanSupplier condition) {

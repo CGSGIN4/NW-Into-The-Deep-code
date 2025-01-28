@@ -29,8 +29,8 @@ public class logger {
     private static final String COMMA_DELIMITER = ",";
     private static final String SEMICOLON_DELIMITER = ";";
     static String FILENAME = "log_";
-    static String PATH = String.format("%s/FIRST/custom_log/%s.txt", Environment.getExternalStorageDirectory().getPath(), FILENAME);
-    static FileWriter fw;
+    static String PATH = String.format("%s/FIRST/custom_log/%s.csv", Environment.getExternalStorageDirectory().getPath(), FILENAME);
+    public static FileWriter fw;
     static boolean init = false;
 
     static {
@@ -46,30 +46,34 @@ public class logger {
     public static void init(){
         init = true;
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        FILENAME = FILENAME + timestamp;
-        PATH = String.format("%s/FIRST/custom_log/%s.txt", Environment.getExternalStorageDirectory().getPath(), FILENAME);
+        FILENAME = FILENAME.concat(timestamp.toString());
+        PATH = String.format("%s/FIRST/custom_log/%s.csv", Environment.getExternalStorageDirectory().getPath(), FILENAME);
 
         try {
             File directory = new File(String.format("%s/FIRST/custom_log", Environment.getExternalStorageDirectory().getPath()));
-            directory.mkdir();
-            fw = new FileWriter(PATH, false);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            if (!directory.exists()) {
+                directory.mkdirs();
+            }
+            fw = new FileWriter(String.format("%s/FIRST/custom_log/%s.csv", Environment.getExternalStorageDirectory().getPath(), FILENAME), false);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
     public static void init(String filename){
         init = true;
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        FILENAME = filename + timestamp;
+        FILENAME = filename.concat(timestamp.toString());
         PATH = String.format("%s/FIRST/custom_log/%s.csv", Environment.getExternalStorageDirectory().getPath(), FILENAME);
 
         try {
             File directory = new File(String.format("%s/FIRST/custom_log", Environment.getExternalStorageDirectory().getPath()));
-            directory.mkdir();
+            if (!directory.exists()) {
+                directory.mkdirs();
+            }
             fw = new FileWriter(PATH, false);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -104,6 +108,13 @@ public class logger {
         try {
             fw.write("\n" + caption + SEPARATOR + value.toString() + " " + timestamp);
             fw.flush();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public static void close(){
+        try {
+            fw.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

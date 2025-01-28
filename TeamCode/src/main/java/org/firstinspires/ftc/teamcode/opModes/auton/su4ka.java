@@ -25,6 +25,7 @@ import org.firstinspires.ftc.teamcode.subsystems.modules.arm;
 import org.firstinspires.ftc.teamcode.subsystems.modules.differential;
 import org.firstinspires.ftc.teamcode.subsystems.modules.module_master;
 import org.firstinspires.ftc.teamcode.subsystems.path_follower;
+import org.firstinspires.ftc.teamcode.utils.logger;
 import org.firstinspires.ftc.teamcode.utils.parser;
 
 import java.io.IOException;
@@ -39,6 +40,7 @@ public class su4ka extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
+        logger.init();
         robot = new Robot(hardwareMap);
         robot.init();
         parser parser = new parser("b19dota");
@@ -74,7 +76,8 @@ public class su4ka extends LinearOpMode {
 
         while (opModeIsActive()) {
             prepareToScoreHighBasket();
-            path_follower.followTrajectoryBreak(curves[0], -Math.PI * 3 / 4);
+            path_follower.goToPosWithArmToBasket(curves[0].getPoint(1).getX(), curves[0].getPoint(1).getY(), -Math.PI * 3 / 4);
+            logger.writeLn("----------STARTING SCORING PRELOAD------------");
             scoreHighBasket();
 
             path_follower.goToPos(48.3, 51, -Math.PI / 2); /* sample 1 */
@@ -91,6 +94,7 @@ public class su4ka extends LinearOpMode {
             path_follower.goToPosUnsafe(52.4, 52.4, -Math.PI * 3 / 4);
             module_master.differential.pitchHalfDown();
             setExtensionAndWait(arm.extension.EXTENDED);
+            logger.writeLn("----------STARTING SCORING FIRST------------");
             scoreHighBasket();
 
             path_follower.goToPos(58, 50.2, -Math.PI / 2); /* sample 2 */
@@ -108,6 +112,7 @@ public class su4ka extends LinearOpMode {
             path_follower.goToPosUnsafe(51.6, 51.6, -Math.PI * 3 / 4);
             module_master.differential.pitchHalfDown();
             setExtensionAndWait(arm.extension.EXTENDED);
+            logger.writeLn("----------STARTING SCORING SECOND------------");
             scoreHighBasket();
 
             path_follower.goToPos(59, 47, -Math.PI / 2 + Math.toRadians(23.3));
@@ -125,6 +130,7 @@ public class su4ka extends LinearOpMode {
             path_follower.goToPosUnsafe(51.7, 50, -Math.PI * 3 / 4);
             module_master.differential.pitchHalfDown();
             setExtensionAndWait(arm.extension.EXTENDED);
+            logger.writeLn("----------STARTING SCORING THIRD------------");
             scoreHighBasket();
 
             path_follower.followTrajectory(curves[4], -Math.PI, new double[]{0.2, 0.2, 0.8}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT, SET_EXTENSION_CHAMBER});
@@ -161,6 +167,9 @@ public class su4ka extends LinearOpMode {
         }
         robot.stop();
         module_master.stop(dataStorage.telemetry);
+        transfer.armExtensionPos = module_master.arm.extensionMotor.getCurrentPosition();
+        logger.writeLn("offset: " + transfer.armExtensionPos);
+        logger.close();
     }
 
     private void waitForCondition(BooleanSupplier condition) {
