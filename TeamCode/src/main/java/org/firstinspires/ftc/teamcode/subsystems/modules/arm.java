@@ -29,7 +29,7 @@ public class arm {
 
     /* ------------------ CONSTANTS ------------------ */
     int EXTENSION_FULL = 1340; //370
-    int EXTENSION_FRONT_MAX = 730;
+    public int EXTENSION_FRONT_MAX = 730;
     int EXTENSION_LOW_BASKET = 475;
     int EXTENSION_LOW_CHAMBER = 180;
     int EXTENSION_HIGH_CHAMBER = 524;
@@ -38,9 +38,9 @@ public class arm {
     int EXTENSION_YELLOW_3 = 673;
     int EXTENSION_YELLOW_1_PRO = 525;
     int EXTENSION_YELLOW_2_PRO = 500;
-    int EXTENSION_YELLOW_3_PRO = 100;
+    int EXTENSION_YELLOW_3_PRO = 230;
     int EXTENSION_DOBOR = 680;
-    int EXTENSION_YELLOW_AFKBOT = 485;
+    int EXTENSION_YELLOW_AFKBOT = 510;
     int EXTENSION_SUPPORT = 158;
     int EXTENSION_CLOSED_AUTO = -70;
     int ROTATION_FRONT = 0;
@@ -148,7 +148,7 @@ public class arm {
         resetExtensionEncoders();
 
         rotationBtn = HM.get(AnalogInput.class, "rotationBtn");
-        logger.writeLn("arm initialized");
+        //logger.writeLn("arm initialized");
     }
 
     public arm(HardwareMap HM, boolean teleop){
@@ -163,20 +163,20 @@ public class arm {
         resetExtensionEncoders();
         extensionState = extension.MANUAL;
         offset = transfer.armExtensionPos;
-        logger.writeLn("offset: " + offset);
+        //logger.writeLn("offset: " + offset);
 
         rotationBtn = HM.get(AnalogInput.class, "rotationBtn");
-        logger.writeLn("arm initialized");
+        //logger.writeLn("arm initialized");
     }
 
     public void resetRotationEncoders() {
-        logger.writeLn("reset rotation encoder called");
+        //logger.writeLn("reset rotation encoder called");
         rotationMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rotationMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     public void resetExtensionEncoders() {
-        logger.writeLn("reset extension encoder called");
+        //logger.writeLn("reset extension encoder called");
         extensionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         extensionMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         offset = 0;
@@ -283,7 +283,7 @@ public class arm {
 
     private double setExtensionMotorPower(double power){
         if (Math.abs(extPower - power) > 0.00001) {
-            //logger.writeLn("set extension motor power to " + power);
+            ////logger.writeLn("set extension motor power to " + power);
             this.extPower = power;
             this.extensionMotor.setPower(extPower);
         }
@@ -292,7 +292,7 @@ public class arm {
 
     private double setRotationMotorPower(double power){
         if (Math.abs(rotPower - power) > 0.001) {
-            //logger.writeLn("set rotation motor power to " + power);
+            ////logger.writeLn("set rotation motor power to " + power);
             this.rotPower = power;
             this.rotationMotor.setPower(rotPower);
         }
@@ -352,13 +352,13 @@ public class arm {
     }
     public double setExtension(extension target)
     {
-        logger.addData("target extension", target);
+        //logger.addData("target extension", target);
         this.targetExtensionPos = extensionPosToTicks(target);
         this.extensionState = target;
 
-        if (Math.abs(rotationPosToTicks(rotationState) - rotationMotor.getCurrentPosition()) > 120 && targetExtensionPos != EXTENSION_SUPPORT && targetExtensionPos != EXTENSION_CLOSED_AUTO)
+        if (Math.abs(rotationPosToTicks(rotationState) - rotationMotor.getCurrentPosition()) > 480 && targetExtensionPos != EXTENSION_SUPPORT && targetExtensionPos != EXTENSION_CLOSED_AUTO)
             return this.setExtensionMotorPower(-0.3);
-        else if (rotationState != rotation.LIFT || rotationReached()/* || target == extension.CLOSED*/)
+        else if (rotationState != rotation.LIFT || rotationReached() || Math.abs(rotationPosToTicks(rotationState) - rotationMotor.getCurrentPosition()) < 240/* || target == extension.CLOSED*/)
             return this.setExtensionMotorPower(pidCalculateExtensionPower(targetExtensionPos));
         else
             return 0;
@@ -374,8 +374,8 @@ public class arm {
 
     public double setRotation(rotation target)
     {
-        logger.addData("wanted rotation", target);
-        logger.addData("real target rotation (on prev call)", rotationState);
+        //logger.addData("wanted rotation", target);
+        //logger.addData("real target rotation (on prev call)", rotationState);
         wantedRotation = target;
 
         if (wantedRotation == rotation.FRONT && rotationState == rotation.RESET)
@@ -392,13 +392,13 @@ public class arm {
             resetRotationEncoders();
         }
 
-        if (target == rotation.PREASCEND || target == rotation.CHAMBER || target == rotation.BACK_HANG1 || rotationState == rotation.BACK_HANG1 || (extensionState == extension.CLOSED && extensionMotor.getCurrentPosition() + offset < 250) || (extensionMotor.getCurrentPosition() + offset < 250 && extensionState == extension.MANUAL) || (extensionState == extension.SUPPORT && extensionMotor.getCurrentPosition() + offset < 250) || (extensionState == extension.CLOSED_AUTO && extensionMotor.getCurrentPosition() + offset < 200)) {
+        if (target == rotation.PREASCEND || target == rotation.CHAMBER || target == rotation.BACK_HANG1 || rotationState == rotation.BACK_HANG1 || (extensionState == extension.CLOSED && extensionMotor.getCurrentPosition() + offset < 250) || (extensionMotor.getCurrentPosition() + offset < 250 && extensionState == extension.MANUAL) || (extensionState == extension.SUPPORT && extensionMotor.getCurrentPosition() + offset < 250) || (extensionState == extension.CLOSED_AUTO && extensionMotor.getCurrentPosition() + offset < 200) || (extensionState == extension.YELLOW_3_PRO && extensionMotor.getCurrentPosition() < EXTENSION_YELLOW_3_PRO + 90)) {
             rotationState = wantedRotation;
             this.targetRotationPos = rotationPosToTicks(target);
         }
 
         if (target == rotation.LIFT && rotationMotor.getCurrentPosition() > ROTATION_LIFT - 10)
-            return setRotationMotorPower(0.036);
+            return setRotationMotorPower(0.1);
 
         return this.setRotationMotorPower(pidCalculateRotationPower(targetRotationPos));
     }
@@ -430,7 +430,7 @@ public class arm {
     }
 
     public void stop(){
-        logger.writeLn("arm stopped");
+        //logger.writeLn("arm stopped");
         rotationState = rotation.MANUAL;
         extensionState = extension.MANUAL;
         this.extensionMotor.setPower(0);
@@ -469,13 +469,13 @@ public class arm {
 
     public boolean extensionReached()
     {
-        return (extensionMotor.getCurrentPosition() + offset >= EXTENSION_FULL - 85 && extensionState == extension.EXTENDED) ||
+        return (extensionMotor.getCurrentPosition() + offset >= EXTENSION_FULL - 575 && extensionState == extension.EXTENDED) ||
                 (extensionMotor.getCurrentPosition() + offset < 23 && extensionState == extension.CLOSED) ||
                 (Math.abs(extDelta) <= 5 && Math.abs(targetExtensionPos - extensionMotor.getCurrentPosition() - offset) < 13);
     }
 
     public boolean rotationReached()
     {
-        return Math.abs(targetRotationPos - rotationMotor.getCurrentPosition()) < 13 && rotationState != rotation.FRONT /* && rotDeltaFiltered < 4*/;
+        return Math.abs(targetRotationPos - rotationMotor.getCurrentPosition()) < 15 && rotationState != rotation.FRONT /* && rotDeltaFiltered < 4*/;
     }
 }

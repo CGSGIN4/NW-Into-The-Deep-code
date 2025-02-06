@@ -79,9 +79,11 @@ public class SampleDetectionProcessor implements VisionProcessor, CameraStreamSo
             if (width * height < MIN_AREA) continue;
             if (width * height > MAX_AREA) continue;
             // -230 - 100 x
-            // > -57
-            if (!(center.x > -200 && center.x < 70)) continue;
-            if (!(center.y > -57)) continue;
+//            // > -57
+            if (center.x < -20) continue;
+            if (!(center.y > -75 && center.y < 170)) continue;
+
+
 
             Point[] boxPoints = new Point[4];
             box.points(boxPoints);
@@ -130,10 +132,6 @@ public class SampleDetectionProcessor implements VisionProcessor, CameraStreamSo
 
     @Override
     public Object processFrame(Mat frame, long captureTimeNanos) {
-        Point center = new Point(frame.cols() / 2.0, frame.rows() / 2.0);
-        Mat rotMat = Imgproc.getRotationMatrix2D(center, 50, 1.0);
-        Imgproc.warpAffine(frame, frame, rotMat, frame.size());
-
         tempNearestSample = new Sample(0, 0, new Point(0, 0), 0, SampleColor.UNDETECTED);
 
 //        frame.convertTo(frame, -1, 1, 20);

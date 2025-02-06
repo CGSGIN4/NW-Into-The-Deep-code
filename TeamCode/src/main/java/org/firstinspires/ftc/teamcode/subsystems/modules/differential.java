@@ -35,7 +35,7 @@ public class differential {
         claw = HM.get(Servo.class, "claw");
         pitch = 180;
         roll = 0;
-        logger.writeLn("differential initialized");
+        ////logger.writeLn("differential initialized");
     }
     double posToDeg(double pos){
         return MAX_ANGLE * pos;
@@ -47,7 +47,7 @@ public class differential {
 
     public double setPitch(double angle)
     {
-        angle = max(13, min(angle, 176));
+        angle = max(6, min(angle, 176));
         pitch = angle + 80;
         return angle;
     }
@@ -66,13 +66,13 @@ public class differential {
 
     public void pitchDown()
     {
-        setPitch(13);
+        setPitch(6);
         update();
     }
 
     public void pitchHalfDown()
     {
-        setPitch(50);
+        setPitch(15);
         update();
     }
 
@@ -114,7 +114,7 @@ public class differential {
 
     public void rollDefault()
     {
-        setRoll(-4);
+        setRoll(-11);
         update();
     }
 
@@ -125,7 +125,7 @@ public class differential {
 
     public void closeClaw(){
         clawState = 0;
-        claw.setPosition(0.455);
+        claw.setPosition(0.415);
     }
 
     public void clawSwitch(){
@@ -137,7 +137,7 @@ public class differential {
 
     // convert angle from [0; 180] to [-80; 80]
     public static double geomToDifAngle(double angle) {
-        return -75 + (angle / 180.0) * 150;
+        return -80 + (angle / 180.0) * 160;
     }
 
     public void update(){

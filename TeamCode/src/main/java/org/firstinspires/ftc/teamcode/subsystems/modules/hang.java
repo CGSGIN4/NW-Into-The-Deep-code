@@ -44,7 +44,7 @@ public class hang {
         right = HM.get(DcMotorEx.class, "hangRight");
         right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         right.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        logger.writeLn("hang initialized");
+        //logger.writeLn("hang initialized");
     }
 
     private void goTo(int target)
@@ -100,7 +100,7 @@ public class hang {
     }
     public void standby3(){
         state = states.STANDBY3;
-        goTo(2640);
+        goTo(2540);
     }
     public void setPower(double power){
         left.setPower(power);

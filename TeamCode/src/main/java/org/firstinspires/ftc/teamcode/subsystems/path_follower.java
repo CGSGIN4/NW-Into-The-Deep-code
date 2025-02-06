@@ -257,9 +257,9 @@ public class path_follower {
 
         dataStorage.updateData();
         module_master.update(dataStorage.telemetry);
-        while((dataStorage.RobotPose.distTo(finish) > 1 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.027 || dataStorage.RobotVelocity.norm() > 3) && dataStorage.OpMode.opModeIsActive()){
+        while((dataStorage.RobotPose.distTo(finish) > 1 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.06 || dataStorage.RobotVelocity.norm() > 4) && dataStorage.OpMode.opModeIsActive()){
             if (module_master.arm.extensionMotor.getCurrentPosition() < 250) {
-                module_master.differential.setPitch(32);
+                module_master.differential.setPitch(25);
                 module_master.differential.update();
             }
             dataStorage.updateData();
@@ -280,10 +280,8 @@ public class path_follower {
         dataStorage.updateData();
         module_master.update(dataStorage.telemetry);
         while((dataStorage.RobotPose.distTo(finish) > 1 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.027 || dataStorage.RobotVelocity.norm() > 3) && dataStorage.OpMode.opModeIsActive()){
-            if (module_master.arm.extensionMotor.getCurrentPosition() < 250) {
-                module_master.differential.setPitch(13);
-                module_master.differential.setRoll(45);
-                module_master.differential.update();
+            if (module_master.arm.rotationState == arm.rotation.RESET) {
+                module_master.arm.setExtension(arm.extension.YELLOW_3_PRO);
             }
             dataStorage.updateData();
             module_master.update(dataStorage.telemetry);
@@ -302,8 +300,8 @@ public class path_follower {
 
         dataStorage.updateData();
         module_master.update(dataStorage.telemetry);
-        while((dataStorage.RobotPose.distTo(finish) > 1 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.07 || dataStorage.RobotVelocity.norm() > 3) && dataStorage.OpMode.opModeIsActive()){
-            if (module_master.arm.rotationReached() && module_master.arm.rotationState == arm.rotation.LIFT)
+        while((dataStorage.RobotPose.distTo(finish) > 3 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.1 || dataStorage.RobotVelocity.norm() > 15) && dataStorage.OpMode.opModeIsActive()){
+            if (Math.abs(module_master.arm.targetRotationPos - module_master.arm.rotationMotor.getCurrentPosition()) < 480 && module_master.arm.rotationState == arm.rotation.LIFT)
                 module_master.arm.setExtension(arm.extension.EXTENDED);
             dataStorage.updateData();
             module_master.update(dataStorage.telemetry);

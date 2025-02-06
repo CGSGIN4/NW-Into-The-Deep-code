@@ -24,7 +24,7 @@ import java.io.IOException;
 
 @TeleOp(group = "Utils")
 public class traj_builder2 extends LinearOpMode {
-    String FILENAME = "b19dota";
+    String FILENAME = "b19dotaPRO";
     private FtcDashboard dashboard;
     int MAX_CURVES = 30;
     parser parser = new parser(FILENAME);
