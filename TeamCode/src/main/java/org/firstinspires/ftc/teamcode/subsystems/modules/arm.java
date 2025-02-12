@@ -28,6 +28,7 @@ public class arm {
     public AnalogInput rotationBtn;
 
     /* ------------------ CONSTANTS ------------------ */
+    boolean teleop = false;
     int EXTENSION_FULL = 1340; //370
     public int EXTENSION_FRONT_MAX = 730;
     int EXTENSION_LOW_BASKET = 475;
@@ -38,7 +39,7 @@ public class arm {
     int EXTENSION_YELLOW_3 = 673;
     int EXTENSION_YELLOW_1_PRO = 525;
     int EXTENSION_YELLOW_2_PRO = 500;
-    int EXTENSION_YELLOW_3_PRO = 230;
+    int EXTENSION_YELLOW_3_PRO = 130;
     int EXTENSION_DOBOR = 680;
     int EXTENSION_YELLOW_AFKBOT = 510;
     int EXTENSION_SUPPORT = 158;
@@ -70,7 +71,7 @@ public class arm {
     /* no load 1:4 */ //public PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.0069, 0, 0.0003, -0.0064);
     /* no load 1:1.17 *///final PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.009, 0, 0.019, 0.028);
     /* load 1:1.17 *///final PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.02, 0, 0.04, 0.052);
-    /* load 1:4 */ public PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.0026, 0, 0.0019, -0.003);
+    /* load 1:4 */ public PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.0026, 0, 0.0019, -0.002);
     public PIDFCoefficients EXTENSION_PIDF = new PIDFCoefficients(0.0034, 0, 0.0034, 0.004);/*0.017*/
     int oldExtensionError = 0;
     public double oldRotationError = 0;
@@ -163,6 +164,7 @@ public class arm {
         resetExtensionEncoders();
         extensionState = extension.MANUAL;
         offset = transfer.armExtensionPos;
+        this.teleop = teleop;
         //logger.writeLn("offset: " + offset);
 
         rotationBtn = HM.get(AnalogInput.class, "rotationBtn");
@@ -213,7 +215,7 @@ public class arm {
 
         if (rotationMotor.getCurrentPosition() < 100 && rotationBtn.getVoltage() < 0.4 && (rotationState == rotation.FRONT || rotationState == rotation.MANUAL)) /* pressed */ {
             rotationState = rotation.RESET;
-            setRotationMotorPower(0);
+            setRotationMotorPower(0 - (teleop ? 0 : 1) * 0.004);
         }
         //telemetry.update();
     }
@@ -348,6 +350,9 @@ public class arm {
                 error = -modExponential / ROTATION_PIDF.p;
         }
 
+        if (targetPos == 0 && error < 80)
+            error *= (1.25 + (teleop ? 0 : 1) * 0.25);
+
         return (error * ROTATION_PIDF.p + delta * ROTATION_PIDF.d + ROTATION_PIDF.f * Math.sin(Math.toRadians(rotationAngle)) * (1 + ratio * ratio));
     }
     public double setExtension(extension target)
@@ -356,7 +361,7 @@ public class arm {
         this.targetExtensionPos = extensionPosToTicks(target);
         this.extensionState = target;
 
-        if (Math.abs(rotationPosToTicks(rotationState) - rotationMotor.getCurrentPosition()) > 480 && targetExtensionPos != EXTENSION_SUPPORT && targetExtensionPos != EXTENSION_CLOSED_AUTO)
+        if (Math.abs(rotationPosToTicks(rotationState) - rotationMotor.getCurrentPosition()) >= 120 && targetExtensionPos != EXTENSION_SUPPORT && targetExtensionPos != EXTENSION_CLOSED_AUTO && teleop)
             return this.setExtensionMotorPower(-0.3);
         else if (rotationState != rotation.LIFT || rotationReached() || Math.abs(rotationPosToTicks(rotationState) - rotationMotor.getCurrentPosition()) < 240/* || target == extension.CLOSED*/)
             return this.setExtensionMotorPower(pidCalculateExtensionPower(targetExtensionPos));
@@ -397,8 +402,8 @@ public class arm {
             this.targetRotationPos = rotationPosToTicks(target);
         }
 
-        if (target == rotation.LIFT && rotationMotor.getCurrentPosition() > ROTATION_LIFT - 10)
-            return setRotationMotorPower(0.1);
+        if (target == rotation.LIFT && rotationMotor.getCurrentPosition() > ROTATION_LIFT - 20)
+            return setRotationMotorPower(0.1 + (teleop ? 0 : 1) * 0.06);
 
         return this.setRotationMotorPower(pidCalculateRotationPower(targetRotationPos));
     }
@@ -476,6 +481,6 @@ public class arm {
 
     public boolean rotationReached()
     {
-        return Math.abs(targetRotationPos - rotationMotor.getCurrentPosition()) < 15 && rotationState != rotation.FRONT /* && rotDeltaFiltered < 4*/;
+        return Math.abs(targetRotationPos - rotationMotor.getCurrentPosition()) < 15 && rotationState != rotation.FRONT || rotationState == rotation.LIFT && rotationMotor.getCurrentPosition() > ROTATION_LIFT /* && rotDeltaFiltered < 4*/;
     }
 }

@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opModes.auton;
 
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.CLAW_CLOSE;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.CLAW_OPEN;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.PITCH_DOWN;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.PITCH_FRONT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_CHAMBER;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_CLOSED;
@@ -46,7 +47,7 @@ public class su4ka_pro extends LinearOpMode {
     path_follower path_follower;
     ElapsedTime timer = new ElapsedTime();
 
-    SampleDetectionProcessor sampleDetection = new SampleDetectionProcessor();
+    //SampleDetectionProcessor sampleDetection = new SampleDetectionProcessor();
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -69,6 +70,7 @@ public class su4ka_pro extends LinearOpMode {
         module_master.differential.closeClaw();
         module_master.differential.update();
 
+        /*
         WebcamName camName = hardwareMap.get(WebcamName.class, "cam");
 
         VisionPortal portal = new VisionPortal.Builder()
@@ -79,7 +81,7 @@ public class su4ka_pro extends LinearOpMode {
 
         portal.stopLiveView();
         portal.stopStreaming();
-
+*/
         waitForStart();
 
         TelemetryPacket packet = new TelemetryPacket();
@@ -97,7 +99,7 @@ public class su4ka_pro extends LinearOpMode {
 
         while (opModeIsActive()) {
             prepareToScoreHighBasket();
-            path_follower.goToPosWithArmToBasket(53.356, 52.35, -Math.PI * 3 / 4);
+            path_follower.goToPosWithArmToBasket(53.356, 48.35, -Math.PI * 3 / 4);
             //logger.writeLn("----------STARTING SCORING PRELOAD------------");
             scoreHighBasket();
 
@@ -110,12 +112,12 @@ public class su4ka_pro extends LinearOpMode {
             module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
             module_master.arm.setRotation(arm.rotation.LIFT);
             module_master.differential.pitchHalfDown();
-            path_follower.goToPosWithArmToBasket(52.4, 52.4, -Math.PI * 3 / 4);
+            path_follower.goToPosWithArmToBasket(51.9, 51.9, -Math.PI * 3 / 4);
             setExtensionAndWait(arm.extension.EXTENDED);
             //logger.writeLn("----------STARTING SCORING FIRST------------");
             scoreHighBasket();
 
-            path_follower.goToPosWithArm(58, 36.2, -Math.PI / 2); /* sample 2 */
+            path_follower.goToPosWithArm(58, 35.2, -Math.PI / 2); /* sample 2 */
             waitArmRotation();
             waitArmExtension();
             takeSample(false);
@@ -123,60 +125,87 @@ public class su4ka_pro extends LinearOpMode {
             module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
             module_master.arm.setRotation(arm.rotation.LIFT);
             module_master.differential.pitchHalfDown();
-            path_follower.goToPosWithArmToBasket(51.6, 51.6, -Math.PI * 3 / 4);
+            path_follower.goToPosWithArmToBasket(48.6, 51.6, -Math.PI * 3 / 4);
             setExtensionAndWait(arm.extension.EXTENDED);
             //logger.writeLn("----------STARTING SCORING SECOND------------");
             scoreHighBasket();
+            module_master.differential.setPitch(6);
+            module_master.differential.setRoll(35);
+            module_master.differential.update();
+            module_master.arm.setExtension(arm.extension.SUPPORT);
 
-            path_follower.goToPosWithArmThirdSample(59, 29.5, -Math.PI / 2 + Math.toRadians(61.3)); /* intaking yellow 3 */
+            path_follower.goToPosWithArmThirdSample(57, 29.5, -Math.PI / 2 + Math.toRadians(61.3)); /* intaking yellow 3 */
+            module_master.arm.setExtension(arm.extension.YELLOW_3_PRO);
             //module_master.arm.setExtension(arm.extension.YELLOW_3_PRO);
             waitArmRotation();
             waitArmExtension();
             takeSample(true);
             module_master.differential.rollDefault();
 
-            module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
+            //module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
             module_master.arm.setRotation(arm.rotation.LIFT);
             module_master.differential.pitchHalfDown();
-            path_follower.goToPosWithArmToBasket(51.7, 50, -Math.PI * 3 / 4);
+            path_follower.velocity_calculator.setThirdSampleRotationCoeffs();
+            path_follower.goToPosWithArmToBasket(52.2, 47.2, -Math.PI * 3 / 4 + Math.toRadians(10));
+            path_follower.velocity_calculator.setDefaultRotationCoeffs();
             setExtensionAndWait(arm.extension.EXTENDED);
             //logger.writeLn("----------STARTING SCORING THIRD------------");
             scoreHighBasket();
 
-            portal.resumeStreaming();
-            path_follower.followTrajectory(curves[4], -Math.PI, new double[]{0.2, 0.2, 0.8}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT, SET_EXTENSION_LOW_CHAMBER});
-            path_follower.goToPosVeryUnsafe(21, 6, -Math.PI);
-            if (!takeFromSubmersible())
-                instapark();
-            portal.stopStreaming();
-            module_master.arm.setExtension(arm.extension.CLOSED);
-            module_master.arm.setRotation(arm.rotation.LIFT);
-            path_follower.followTrajectory(curves[5], -Math.PI * 3 / 4, new double[]{0.3}, new int[]{SET_EXTENSION_LIFT});
-            path_follower.goToPosWithArmToBasket(51.7, 50, -Math.PI * 3 / 4);
-            setExtensionAndWait(arm.extension.EXTENDED);
-            //logger.writeLn("----------STARTING SCORING SUB1------------");
+            /* go to dobor1 */
+            path_follower.followTrajectoryForwards(curves[4], new double[]{0.2, 0.2, 0.8}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT, SET_EXTENSION_CHAMBER});
+            //module_master.arm.setExtension(arm.extension.HIGH_CHAMBER);
+            path_follower.goToPosVeryUnsafe(21, 6, -Math.PI - Math.toRadians(5));
+
+            module_master.differential.pitchDown();
+            module_master.differential.rollHalfRight();
+            delay(200);
+            takeSample(true);
+            module_master.differential.rollDefault();
+            module_master.differential.setPitch(135);
+            module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
+            /* go to score dobor1 */
+            path_follower.followTrajectoryBackwards(curves[5], new double[]{0.02, 0.06, 0.2, 0.3}, new int[]{SET_EXTENSION_CLOSED, SET_ROTATION_LIFT, SET_EXTENSION_LIFT, PITCH_DOWN});
+            path_follower.goToPosWithArmToBasket(51.5, 48.1, -Math.PI * 3 / 4);
             scoreHighBasket();
 
-            portal.resumeStreaming();
-            path_follower.followTrajectory(curves[4], -Math.PI, new double[]{0.2, 0.2, 0.8}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT, SET_EXTENSION_LOW_CHAMBER});
-            path_follower.goToPosVeryUnsafe(21, 6, -Math.PI);
-            if (!takeFromSubmersible())
-                instapark();
-            portal.stopStreaming();
-            module_master.arm.setExtension(arm.extension.CLOSED);
-            module_master.arm.setRotation(arm.rotation.LIFT);
-            path_follower.followTrajectory(curves[5], -Math.PI * 3 / 4, new double[]{0.3}, new int[]{SET_EXTENSION_LIFT});
-            path_follower.goToPosWithArmToBasket(51.7, 50, -Math.PI * 3 / 4);
-            setExtensionAndWait(arm.extension.EXTENDED);
-            //logger.writeLn("----------STARTING SCORING SUB2------------");
+            /* go to dobor2 */
+            path_follower.followTrajectoryForwards(curves[4], 84, new double[]{0.2, 0.2, 0.8}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT, SET_EXTENSION_CHAMBER});
+            //module_master.arm.setExtension(arm.extension.HIGH_CHAMBER);
+            path_follower.goToPosVeryUnsafe(22, 6, -Math.PI - Math.toRadians(5));
+
+            module_master.differential.pitchDown();
+            module_master.differential.rollHalfLeft();
+            delay(200);
+            takeSample(true);
+            module_master.differential.rollDefault();
+            module_master.differential.setPitch(135);
+            module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
+            /* go to score dobor2 */
+            path_follower.followTrajectoryBackwards(curves[5], new double[]{0.02, 0.06, 0.2, 0.3}, new int[]{SET_EXTENSION_CLOSED, SET_ROTATION_LIFT, SET_EXTENSION_LIFT, PITCH_DOWN});
+            path_follower.goToPosWithArmToBasket(50.2, 48.8, -Math.PI * 3 / 4);
             scoreHighBasket();
 
-            path_follower.followTrajectory(curves[4], -Math.PI, new double[]{0.2, 0.2, 0.8}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT, SET_EXTENSION_CHAMBER});
-            path_follower.goToPosVeryUnsafe(21, 6, -Math.PI);
+            /* go to dobor3 */
+            path_follower.followTrajectoryForwards(curves[4], 84, new double[]{0.2, 0.2, 0.8}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT, SET_EXTENSION_CHAMBER});
+            //module_master.arm.setExtension(arm.extension.HIGH_CHAMBER);
+            path_follower.goToPosVeryUnsafe(23, 6, -Math.PI);
 
+            module_master.differential.pitchDown();
+            delay(200);
+            takeSample(true);
+            module_master.differential.setPitch(135);
+            module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
+            /* go to score dobor3 */
+            path_follower.followTrajectoryBackwards(curves[5], new double[]{0.02, 0.06, 0.2, 0.3}, new int[]{SET_EXTENSION_CLOSED, SET_ROTATION_LIFT, SET_EXTENSION_LIFT, PITCH_DOWN});
+            path_follower.goToPosWithArmToBasket(50.2, 48.8, -Math.PI * 3 / 4);
+            scoreHighBasket();
+
+            path_follower.followTrajectoryForwards(curves[4], 73, new double[]{0.2, 0.2, 0.65}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT, SET_EXTENSION_CHAMBER});
             module_master.arm.setRotation(arm.rotation.CHAMBER);
+            path_follower.goToPosVeryUnsafe(23, 9, -Math.PI);
+
             //module_master.arm.setRotation(arm.rotation.FRONT);
-            waitArmRotation();
 
             while (opModeIsActive()) {
                 module_master.arm.update();
@@ -279,13 +308,13 @@ public class su4ka_pro extends LinearOpMode {
         delay(200);
 
         module_master.differential.pitchHalfDown();
-        delay(100);
 
         /* FOLD */
         module_master.arm.setExtension(arm.extension.CLOSED);
         module_master.arm.setRotation(arm.rotation.FRONT);
     }
 
+    /*
     private boolean takeFromSubmersible(){
         module_master.differential.setPitch(99);
         module_master.differential.setRoll(-4);
@@ -348,4 +377,5 @@ public class su4ka_pro extends LinearOpMode {
         robot.stop();
         transfer.angle = dataStorage.RobotWorldHeading;
     }
+     */
 }

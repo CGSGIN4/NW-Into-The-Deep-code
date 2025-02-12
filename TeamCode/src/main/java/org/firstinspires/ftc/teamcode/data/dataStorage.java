@@ -58,6 +58,7 @@ public enum dataStorage {;
     public static Vector2d relocation = new Vector2d(0, 0);
 
     public static ring_buffer<Vector2d> lastPoses = new ring_buffer<>(3);
+    public static boolean opModeIsAutonomous = true;
 
     public static void updateData()
     {

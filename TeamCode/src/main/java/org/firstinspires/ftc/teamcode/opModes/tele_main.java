@@ -66,6 +66,7 @@ public class tele_main extends LinearOpMode {
 
         robot.init();
         dataStorage.init(robot.drive, telemetry, this);
+        dataStorage.opModeIsAutonomous = false;
 
         GamepadNW driverGamepad = new GamepadNW(gamepad1);
         GamepadNW assistGamepad = new GamepadNW(gamepad2);
@@ -314,6 +315,7 @@ public class tele_main extends LinearOpMode {
                 if (hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.SLEEPING && pitch != 176) {
                     hangTimer.reset();
                     pitch = 176;
+                    roll = -11;
                     lastCall = "hang";
                 }
                 arm.setExtension(CLOSED);

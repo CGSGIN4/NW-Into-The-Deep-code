@@ -27,10 +27,10 @@ public class velocity_calculator {
 
     public double P_ROTATION_COEF = 0.7 /*0.2*/;
 
-    public double D_ROTATION_COEF = 1 /*0.4*/;
+    public double D_ROTATION_COEF = 1.4 /*0.4*/;
 
     public double I_ROTATION_COEF = 0.22;//3;
-    double MIN_ROT_POWER = 0.023;
+    double MIN_ROT_POWER = 0.019;
     double velocityModule;
 
     double oldTargetHeading;
@@ -142,7 +142,12 @@ public class velocity_calculator {
 
     public double getRotation(double t){
         this.velocity = this.trajectory.getFirstDerivative(t);
-        return (dataStorage.RobotWorldHeading - this.velocity.angle()) * P_ROTATION_COEF;
+        return (getRotationCustomDirection(velocity));
+    }
+
+    public double getRotationBackwards(double t){
+        this.velocity = this.trajectory.getFirstDerivative(t);
+        return (getRotationCustomDirection(velocity.times(-1)));
     }
 
     public double getRotation(){
@@ -401,5 +406,15 @@ public class velocity_calculator {
         if (p1.getX() != p2.getX())
             return (p1.getY() - p2.getY()) / (p1.getX() - p2.getX());
         return 0;
+    }
+
+    public void setThirdSampleRotationCoeffs(){
+        D_ROTATION_COEF = 2;
+        P_ROTATION_COEF = 0.5;
+    }
+
+    public void setDefaultRotationCoeffs(){
+        D_ROTATION_COEF = 1.4;
+        P_ROTATION_COEF = 0.7;
     }
 }
