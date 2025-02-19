@@ -5,8 +5,7 @@ import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.ac
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_CHAMBER;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_CLOSED;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_LIFT;
-import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_LIMIT;
-import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_ROTATION_CHAMBER;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_LOW_CHAMBER;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_ROTATION_FRONT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_ROTATION_LIFT;
 
@@ -25,14 +24,13 @@ import org.firstinspires.ftc.teamcode.math.curve;
 import org.firstinspires.ftc.teamcode.subsystems.modules.arm;
 import org.firstinspires.ftc.teamcode.subsystems.modules.module_master;
 import org.firstinspires.ftc.teamcode.subsystems.path_follower;
-import org.firstinspires.ftc.teamcode.utils.logger;
 import org.firstinspires.ftc.teamcode.utils.parser;
 
 import java.io.IOException;
 import java.util.function.BooleanSupplier;
 
 @Autonomous
-public class auto_0plus5_afkbot extends LinearOpMode {
+public class auto_0plus5_afkbot_pro extends LinearOpMode {
     Robot robot;
     path_follower path_follower;
     ElapsedTime timer = new ElapsedTime();
@@ -42,7 +40,7 @@ public class auto_0plus5_afkbot extends LinearOpMode {
         //logger.init();
         robot = new Robot(hardwareMap);
         robot.init();
-        parser parser = new parser("b19dota");
+        parser parser = new parser("b19dotaPRO");
         dataStorage.init(robot.drive, telemetry, this);
         path_follower = new path_follower(robot.drivetrain);
         robot.drive.setPoseEstimate(new Pose2d(39.9, 64.93, Math.PI));
@@ -75,88 +73,119 @@ public class auto_0plus5_afkbot extends LinearOpMode {
 
         while (opModeIsActive()) {
             prepareToScoreHighBasket();
-            path_follower.goToPos(53.356, 52.35, -Math.PI * 3 / 4);
+            path_follower.goToPosWithArmToBasket(53.356, 48.35, -Math.PI * 3 / 4);
+            //logger.writeLn("----------STARTING SCORING PRELOAD------------");
             scoreHighBasket();
 
-            path_follower.goToPos(39.9, 61.7, Math.PI - Math.toRadians(7.3));
-            waitArmRotation();
             module_master.differential.openClaw();
-            module_master.arm.setExtension(arm.extension.YELLOW_AFKBOT);
+            path_follower.goToPos(30.3, 61.7, Math.PI - Math.toRadians(7.3));
+            waitArmRotation();
             waitArmExtension();
             module_master.differential.closeClaw();
             delay(200);
-            module_master.differential.pitchForward();
 
             module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
             module_master.arm.setRotation(arm.rotation.LIFT);
 
-            path_follower.goToPosUnsafe(51.4, 51.4, -Math.PI * 3 / 4);
-            module_master.differential.pitchDown();
-            waitArmRotation();
+            path_follower.goToPosWithArmToBasket(53.4, 49.4, -Math.PI * 3 / 4);
+            module_master.differential.pitchHalfDown();
             module_master.arm.setExtension(arm.extension.EXTENDED);
             waitArmExtension();
             scoreHighBasket(); /* score dobor */
 
-            path_follower.goToPos(48.3, 49.6, -Math.PI / 2 - Math.toRadians(1.2)); /* sample 1 */
+            path_follower.goToPosWithArm(47.4, 34.5, -Math.PI / 2); /* sample 1 */
             //path_follower.goToPosUnsafe(51.4, 51.4, -Math.PI / 2 - Math.toRadians(11.5)); /* sample 1 */
             waitArmRotation();
-            module_master.differential.setPitch(25);
-            module_master.differential.update();
-            setExtensionAndWait(arm.extension.YELLOW_1);
-            takeSample(false);
-
-            module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
-            module_master.arm.setRotation(arm.rotation.LIFT);
-            module_master.differential.pitchForward();
-            path_follower.goToPosWithArmToBasket(51.4, 51.4, -Math.PI * 3 / 4);
-            module_master.differential.pitchHalfDown();
-            setExtensionAndWait(arm.extension.EXTENDED);
-            scoreHighBasket();
-
-            path_follower.goToPos(57.2, 48.2, -Math.PI / 2 + Math.toRadians(1)); /* sample 2 */
-            waitArmRotation();
-            module_master.differential.setPitch(25);
-            module_master.differential.update();
-            module_master.arm.setExtension(arm.extension.YELLOW_2);
             waitArmExtension();
-
             takeSample(false);
 
             module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
             module_master.arm.setRotation(arm.rotation.LIFT);
-            module_master.differential.pitchForward();
-            path_follower.goToPosUnsafe(50.6, 50.6, -Math.PI * 3 / 4);
             module_master.differential.pitchHalfDown();
+            path_follower.goToPosWithArmToBasket(51.4, 51.4, -Math.PI * 3 / 4);
             setExtensionAndWait(arm.extension.EXTENDED);
+            //logger.writeLn("----------STARTING SCORING FIRST------------");
             scoreHighBasket();
 
-            path_follower.goToPos(59.5, 44.55, -Math.PI / 2 + Math.toRadians(21.4));
+            path_follower.goToPosWithArm(57, 33.2, -Math.PI / 2); /* sample 2 */
             waitArmRotation();
+            waitArmExtension();
+            takeSample(false);
 
-            /* intaking yellow 3 */
+            module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
+            module_master.arm.setRotation(arm.rotation.LIFT);
+            module_master.differential.pitchHalfDown();
+            path_follower.goToPosWithArmToBasket(51.6, 51.6, -Math.PI * 3 / 4);
+            setExtensionAndWait(arm.extension.EXTENDED);
+            //logger.writeLn("----------STARTING SCORING SECOND------------");
+            scoreHighBasket();
+            module_master.differential.setPitch(6);
+            module_master.differential.setRoll(35);
             module_master.differential.update();
-            setExtensionAndWait(arm.extension.YELLOW_3);
+            module_master.arm.setExtension(arm.extension.SUPPORT);
+
+            path_follower.goToPosWithArmThirdSample(58.7, 32, -Math.PI / 2 + Math.toRadians(40.3)); /* intaking yellow 3 */
+            module_master.arm.setExtension(arm.extension.YELLOW_3_PRO);
+            //module_master.arm.setExtension(arm.extension.YELLOW_3_PRO);
+            waitArmRotation();
+            waitArmExtension();
             takeSample(true);
             module_master.differential.rollDefault();
 
-            module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
+            //module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
             module_master.arm.setRotation(arm.rotation.LIFT);
-            module_master.differential.pitchForward();
-            path_follower.goToPosUnsafe(50.6, 49, -Math.PI * 3 / 4);
             module_master.differential.pitchHalfDown();
+            path_follower.velocity_calculator.setThirdSampleRotationCoeffs();
+            path_follower.goToPosWithArmToBasket(52.2, 47.2, -Math.PI * 3 / 4 + Math.toRadians(10));
+            path_follower.velocity_calculator.setDefaultRotationCoeffs();
             setExtensionAndWait(arm.extension.EXTENDED);
+            //logger.writeLn("----------STARTING SCORING THIRD------------");
             scoreHighBasket();
 
-            path_follower.followTrajectory(curves[4], -Math.PI, new double[]{0.2, 0.2, 0.8}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT, SET_EXTENSION_CHAMBER});
-            path_follower.goToPosVeryUnsafe(21, 6, -Math.PI);
+            /* go to dobor1 */
+            path_follower.followTrajectoryForwards(curves[4], new double[]{0.2, 0.2, 0.8}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT, SET_EXTENSION_CHAMBER});
+            //module_master.arm.setExtension(arm.extension.HIGH_CHAMBER);
+            path_follower.goToPosVeryUnsafe(21, 6, -Math.PI - Math.toRadians(5));
+
+            module_master.differential.pitchDown();
+            module_master.differential.rollHalfRight();
+            delay(200);
+            takeSample(true);
+            module_master.differential.rollDefault();
+            module_master.differential.setPitch(135);
+            module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
+            /* go to score dobor1 */
+            path_follower.followTrajectoryBackwards(curves[5], new double[]{0.02, 0.06, 0.2, 0.3}, new int[]{SET_EXTENSION_CLOSED, SET_ROTATION_LIFT, SET_EXTENSION_LIFT, PITCH_DOWN});
+            path_follower.goToPosWithArmToBasket(50.2, 46.8, -Math.PI * 3 / 4);
+            scoreHighBasket();
+
+            /* go to dobor2 */
+            path_follower.followTrajectoryForwards(curves[4], 84, new double[]{0.2, 0.2, 0.8}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT, SET_EXTENSION_CHAMBER});
+            //module_master.arm.setExtension(arm.extension.HIGH_CHAMBER);
+            path_follower.goToPosVeryUnsafe(20.5, 6, -Math.PI - Math.toRadians(15));
+
+            module_master.differential.pitchDown();
+            module_master.differential.rollHalfLeft();
+            delay(200);
+            takeSample(true);
+            module_master.differential.rollDefault();
+            module_master.differential.setPitch(135);
+            module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
+            /* go to score dobor2 */
+            path_follower.followTrajectoryBackwards(curves[5], new double[]{0.02, 0.06, 0.2, 0.3}, new int[]{SET_EXTENSION_CLOSED, SET_ROTATION_LIFT, SET_EXTENSION_LIFT, PITCH_DOWN});
+            path_follower.goToPosWithArmToBasket(50.2, 48.8, -Math.PI * 3 / 4);
+            scoreHighBasket();
+
+            path_follower.followTrajectoryForwards(curves[4], new double[]{0.2, 0.2, 0.8}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT, SET_EXTENSION_CHAMBER});
+            path_follower.goToPosVeryUnsafe(20, 6, -Math.PI);
+
             module_master.arm.setRotation(arm.rotation.CHAMBER);
+            //module_master.arm.setRotation(arm.rotation.FRONT);
+
             while (opModeIsActive()) {
                 module_master.arm.update();
                 module_master.arm.manuallyExtend(0);
             }
-            //module_master.arm.setRotation(arm.rotation.FRONT);
-            //waitArmRotation();
-
             robot.stop();
             //module_master.stop(dataStorage.telemetry);
             transfer.angle = robot.drive.getPoseEstimate().getHeading();
@@ -181,7 +210,9 @@ public class auto_0plus5_afkbot extends LinearOpMode {
         }
         robot.stop();
         module_master.stop(dataStorage.telemetry);
-        //transfer.armExtensionPos = module_master.arm.extensionMotor.getCurrentPosition();
+        transfer.armExtensionPos = module_master.arm.extensionMotor.getCurrentPosition();
+        //logger.writeLn("offset: " + transfer.armExtensionPos);
+        //logger.close();
     }
 
     private void waitForCondition(BooleanSupplier condition) {
@@ -215,10 +246,7 @@ public class auto_0plus5_afkbot extends LinearOpMode {
             module_master.differential.update();
         }
         else {
-            module_master.differential.setPitch(22);
-            module_master.differential.setRoll(23);
-            module_master.differential.update();
-            delay(200);
+            ;
         }
 
         module_master.differential.closeClaw();
@@ -250,7 +278,7 @@ public class auto_0plus5_afkbot extends LinearOpMode {
 
         //waitArmRotation();
         module_master.differential.openClaw();
-        delay(300);
+        delay(200);
 
         module_master.differential.pitchHalfDown();
         delay(100);

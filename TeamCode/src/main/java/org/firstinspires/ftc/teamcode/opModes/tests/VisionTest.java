@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.opModes.tests;
 
+import android.annotation.SuppressLint;
 import android.util.Size;
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -19,9 +20,10 @@ import org.firstinspires.ftc.vision.VisionPortal;
 @Config
 public class VisionTest extends LinearOpMode {
 
-    public static double speed = -0.09;
+    public static double speed = -0.12;
     public static int WBC = 0;
 
+    @SuppressLint("SuspiciousIndentation")
     @Override
     public void runOpMode() throws InterruptedException {
         differential diff = new differential(hardwareMap);
@@ -33,7 +35,7 @@ public class VisionTest extends LinearOpMode {
         int timesSeen = 0;
 //
         diff.openClaw();
-        diff.rollDefault();
+        diff.setRoll(-10);
         diff.pitchForward();
         diff.update();
 //        diff.setRoll(-8);
@@ -44,11 +46,13 @@ public class VisionTest extends LinearOpMode {
 
         WebcamName camName = hardwareMap.get(WebcamName.class, "cam");
 
+
         VisionPortal portal = new VisionPortal.Builder()
                 .addProcessor(sampleDetection)
                 .setCameraResolution(new Size(640, 480))
                 .setCamera(camName)
                 .build();
+
 
         waitForStart();
 
@@ -69,7 +73,7 @@ public class VisionTest extends LinearOpMode {
 
             int whiteBalance = -1;
 
-            telemetry.addData("wbc true", portal.getCameraControl(WhiteBalanceControl.class).setMode(WhiteBalanceControl.Mode.MANUAL));
+//            telemetry.addData("wbc true", portal.getCameraControl(WhiteBalanceControl.class).setMode(WhiteBalanceControl.Mode.MANUAL));
 
             if (((ang > 0 && ang < 30) || (ang > 150 && ang < 180)) && x > 150) {
                 nice = true;
@@ -79,14 +83,6 @@ public class VisionTest extends LinearOpMode {
                 nice = true;
             }
 
-            telemetry.addData("angle", nearestSample.getAngle());
-            telemetry.addData("x", nearestSample.getCenter().x);
-            telemetry.addData("y", nearestSample.getCenter().y);
-            telemetry.addData("color", nearestSample.getColor().toString());
-            telemetry.addData("nice", nice);
-            telemetry.addData("wbc", portal.getCameraControl(WhiteBalanceControl.class).getWhiteBalanceTemperature());
-            telemetry.addData("state", portal.getCameraState().toString());
-
 //            portal.getCameraControl(WhiteBalanceControl.class).setWhiteBalanceTemperature(100);
 
             if (extMotor.getCurrentPosition() < -730 ) {
@@ -94,36 +90,49 @@ public class VisionTest extends LinearOpMode {
 //                break;
             }
 
-            if (nearestSample.getColor() == Sample.SampleColor.RED || nearestSample.getColor() == Sample.SampleColor.YELLOW)
+            if ((nearestSample.getColor() == Sample.SampleColor.RED || nearestSample.getColor() == Sample.SampleColor.YELLOW) && timesSeen == 0)
             {
+                if (nearestSample.getCenter().x < -20) continue;
+                timesSeen ++;
 //                if (timesSeen == 0) {
 //                    timesSeen = 1;
 //                    extMotor.setPower(0.08);
 //                    sleep(700);
 //                } else {
-                    extMotor.setPower(0);
-                    ang += 90;
 
-                    if (ang > 180) ang -= 180;
 
-                    diff.pitchDown();
-                    sleep(300);
-                    diff.setRoll(differential.geomToDifAngle(ang));
-                    diff.update();
-                    sleep(300);
-                    diff.closeClaw();
-                    sleep(200);
-                    diff.setRoll(-2);
-                    diff.setPitch(100);
-                    diff.update();
-                    sleep(500);
+                extMotor.setPower(0);
+//                    ang += 90;
 
-                    break;
-//                }
+//                if (ang > 180) ang -= 180;
+
+                diff.pitchDown();
+                sleep(300);
+                diff.setRoll(differential.geomToDifAngle(ang));
+                diff.update();
+                sleep(300);
+                diff.closeClaw();
+                sleep(200);
+                diff.setRoll(-4);
+                diff.setPitch(100);
+                diff.update();
+                sleep(500);
+
+
+                telemetry.addData("angle", nearestSample.getAngle());
+                telemetry.addData("angle diff", differential.geomToDifAngle(nearestSample.getAngle()));
+                telemetry.addData("x", nearestSample.getCenter().x);
+                telemetry.addData("y", nearestSample.getCenter().y);
+                telemetry.addData("color", nearestSample.getColor().toString());
+                telemetry.addData("nice", nice);
+                telemetry.addData("wbc", portal.getCameraControl(WhiteBalanceControl.class).getWhiteBalanceTemperature());
+                telemetry.addData("state", portal.getCameraState().toString());
+                telemetry.update();
+                break;
             }
 
 
-            telemetry.addData("whenSeen", whenSeen);
+//            telemetry.addData("whenSeen", whenSeen);
 
             /*
             if (gamepad1.x && nearestSample.getColor() != Sample.SampleColor.UNDETECTED) {
@@ -149,7 +158,7 @@ public class VisionTest extends LinearOpMode {
             }*/
 
 
-
+//            telemetry.update();
 
 
 
@@ -158,8 +167,6 @@ public class VisionTest extends LinearOpMode {
                 diff.openClaw();
                 diff.update();
             }
-
-            telemetry.update();
             sleep(20);
         }
     }

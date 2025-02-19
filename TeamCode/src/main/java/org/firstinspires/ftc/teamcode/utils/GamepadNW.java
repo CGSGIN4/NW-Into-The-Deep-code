@@ -53,7 +53,7 @@ public class GamepadNW {
 
     public boolean isClicked(String button){
         if (clicked.contains(button)) {
-            logger.writeLn("clicked " + button);
+            //logger.writeLn("clicked " + button);
             return true;
         }
         return false;

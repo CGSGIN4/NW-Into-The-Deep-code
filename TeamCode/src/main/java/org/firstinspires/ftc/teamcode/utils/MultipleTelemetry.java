@@ -152,7 +152,7 @@ public class MultipleTelemetry implements Telemetry {
         for (Telemetry telemetry : telemetryList) {
             lines.add(telemetry.addLine(s));
         }
-        //logger.writeLn(s);
+        ////logger.writeLn(s);
         return new MultipleLine(lines);
     }
 
