@@ -6,131 +6,76 @@ import org.opencv.imgproc.Imgproc;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ai_samples extends OpenCvPipeline {
-
-    private Scalar lowerHSV;
-    private Scalar upperHSV;
-    private Mat hsv = new Mat();
-    private Mat mask = new Mat();
-    private Mat hierarchy = new Mat();
-    private List<RotatedRect> detectedElements = new ArrayList<>();
-
-    public ai_samples() {
-        String targetColor = "yellow";
-        // Define color ranges based on the target color
-        switch (targetColor.toLowerCase()) {
-            case "red":
-                lowerHSV = new Scalar(0, 90, 80);  // Lower bound of red
-                upperHSV = new Scalar(3, 255, 255); // Upper bound of red
-                break;
-            case "blue":
-                lowerHSV = new Scalar(100, 90, 5);  // Lower bound of blue
-                upperHSV = new Scalar(140, 255, 255); // Upper bound of blue
-                break;
-            case "yellow":
-                lowerHSV = new Scalar(8, 240, 230);  // Lower bound of yellow
-                upperHSV = new Scalar(40, 255, 255); // Upper bound of yellow
-                break;
-            case "black":
-                lowerHSV = new Scalar(0, 0, 0);  // Lower bound of yellow
-                upperHSV = new Scalar(179, 180, 130); // Upper bound of yellow
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid color: " + targetColor);
-        }
-    }
+public class ai_samples extends OpenCvPipeline{
 
     @Override
-    public Mat processFrame(Mat input) {
-        // Convert image from RGB to HSV
-        Imgproc.cvtColor(input, hsv, Imgproc.COLOR_RGB2HSV);
+    public Mat processFrame(Mat image) {
+        Mat hsv = new Mat();
+        Imgproc.cvtColor(image, hsv, Imgproc.COLOR_BGR2HSV);
 
-        // Apply color threshold
-        Core.inRange(hsv, lowerHSV, upperHSV, mask);
+        Mat mask = new Mat();
+        Scalar lower = new Scalar(160, 0, 200);
+        Scalar upper = new Scalar(200, 5, 250);
 
-        // Find contours of the detected elements
+        //Scalar lower = new Scalar(160, 0, 142);
+        //Scalar upper = new Scalar(200, 250, 250);
+
+        Core.inRange(hsv, lower, upper, mask);
+
+        Mat filtered = new Mat();
+        Core.bitwise_and(image, image, filtered, mask);
+        Mat cornersImage = findCorners(filtered);
+        return cornersImage;
+    }
+
+    public static Mat findCorners(Mat image) {
+        Mat gray = new Mat();
+        Imgproc.cvtColor(image, gray, Imgproc.COLOR_BGR2GRAY);
+
+        Mat edges = new Mat();
+        Imgproc.Canny(gray, edges, 50, 150);
+
         List<MatOfPoint> contours = new ArrayList<>();
-        Imgproc.findContours(mask, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+        Mat hierarchy = new Mat();
+        Imgproc.findContours(edges, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+        Imgproc.drawContours(image, contours, -1, new Scalar(255, 0, 255));
 
-        Imgproc.drawContours(input, contours, -1, new Scalar(0, 255, 255));
-        // Clear previous detections
-        detectedElements.clear();
+        Mat result = image.clone();
+        for (MatOfPoint cnt : contours) {
+            double area = Imgproc.contourArea(cnt);
+            if (area < 10 || area > 750) continue;
 
-        // Iterate through contours and filter by shape and size
-        for (MatOfPoint contour : contours) {
-            MatOfPoint2f contour2f = new MatOfPoint2f(contour.toArray());
-            RotatedRect rect = Imgproc.minAreaRect(contour2f);
+            Point rightmost = null, leftmost = null, topmost = null, bottommost = null;
+            for (Point point : cnt.toArray()) {
+                if (rightmost == null || point.x > rightmost.x) rightmost = point;
+                if (leftmost == null || point.x < leftmost.x) leftmost = point;
+                if (topmost == null || point.y < topmost.y) topmost = point;
+                if (bottommost == null || point.y > bottommost.y) bottommost = point;
+            }
 
-            // Get dimensions of the rotated rectangle
-            Size rectSize = rect.size;
+            if (rightmost != null && leftmost != null && topmost != null && bottommost != null) {
+                double minDistance = 0.0;
+                if (getDistance(rightmost, leftmost) > minDistance &&
+                        getDistance(rightmost, topmost) > minDistance &&
+                        getDistance(rightmost, bottommost) > minDistance &&
+                        getDistance(topmost, leftmost) > minDistance &&
+                        getDistance(bottommost, leftmost) > minDistance &&
+                        getDistance(topmost, bottommost) > minDistance) {
 
-            // Check if the contour matches the expected size (1.5" x 3")
-            double aspectRatio = Math.max(rectSize.width, rectSize.height) / Math.min(rectSize.width, rectSize.height);
-            if ((rectSize.width > 30 || rectSize.height > 30) && rectSize.width < 100 && rectSize.height < 50) {
-                // Store detected element
-                detectedElements.add(rect);
+                    Imgproc.circle(result, rightmost, 2, new Scalar(0, 0, 255), -1);
+                    Imgproc.circle(result, leftmost, 2, new Scalar(0, 255, 0), -1);
+                    Imgproc.circle(result, topmost, 2, new Scalar(255, 0, 0), -1);
+                    Imgproc.circle(result, bottommost, 2, new Scalar(255, 255, 0), -1);
 
-                // Draw the rectangle on the input frame
-                Point[] vertices = new Point[4];
-                rect.points(vertices);
-                for (int i = 0; i < 4; i++) {
-                    Imgproc.line(input, vertices[i], vertices[(i + 1) % 4], new Scalar(0, 255, 0), 2);
+                    Imgproc.line(result, rightmost, leftmost, new Scalar(0, 255, 255), 1);
+                    Imgproc.line(result, bottommost, topmost, new Scalar(255, 0, 255), 1);
                 }
-
-                // Draw orientation line (longer side)
-                Point center = rect.center;
-                double angle = rect.angle;
-                Imgproc.putText(input, angle + "", new Point(center.x, center.y - rectSize.height / 2), 16, 0.3, new Scalar(0, 255, 255));
-
-                // Calculate endpoint for orientation line
-                double length = Math.max(rectSize.width, rectSize.height) / 2;
-                double angleRad = Math.toRadians(angle);
-                Point endpoint = new Point(
-                        center.x + length * Math.cos(angleRad),
-                        center.y + length * Math.sin(angleRad)
-                );
-
-                // Draw orientation line
-                Imgproc.line(input, center, endpoint, new Scalar(255, 0, 0), 2);
             }
         }
-
-        // Return the frame with drawings
-        return input;
+        return result;
     }
 
-    public List<RotatedRect> getDetectedElements() {
-        return detectedElements;
-    }
-
-    public List<ElementData> getElementsData() {
-        List<ElementData> elementsData = new ArrayList<>();
-        for (RotatedRect rect : detectedElements) {
-            ElementData data = new ElementData(rect.center.x, rect.center.y, rect.angle);
-            elementsData.add(data);
-        }
-        return elementsData;
-    }
-
-    public static class ElementData {
-        public double x;
-        public double y;
-        public double orientation;
-
-        public ElementData(double x, double y, double orientation) {
-            this.x = x;
-            this.y = y;
-            this.orientation = orientation;
-        }
-
-        @Override
-        public String toString() {
-            return "ElementData{" +
-                    "x=" + x +
-                    ", y=" + y +
-                    ", orientation=" + orientation +
-                    '}';
-        }
+    static double getDistance(Point p1, Point p2) {
+        return Math.sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
     }
 }
-
