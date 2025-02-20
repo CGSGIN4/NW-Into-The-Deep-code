@@ -54,7 +54,7 @@ public class module_master {
     public static arm arm;
 
     public static void init(HardwareMap HM){
-        arm = new arm(HM);
+        arm = new arm(HM, false);
         differential = new differential(HM);
     }
     public static void doAction(int action){

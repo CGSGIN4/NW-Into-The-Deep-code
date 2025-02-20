@@ -65,7 +65,7 @@ public class su4ka_pro extends LinearOpMode {
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-        module_master.differential.pitchUp();
+        module_master.differential.pitchDown();
         module_master.differential.rollDefault();
         module_master.differential.closeClaw();
         module_master.differential.update();
@@ -102,8 +102,12 @@ public class su4ka_pro extends LinearOpMode {
             path_follower.goToPosWithArmToBasket(53.356, 48.35, -Math.PI * 3 / 4);
             //logger.writeLn("----------STARTING SCORING PRELOAD------------");
             scoreHighBasket();
+            module_master.arm.setExtension(arm.extension.SUPPORT);
+            module_master.differential.setPitch(25);
+            module_master.differential.update();
 
-            path_follower.goToPosWithArm(48.3, 35.5, -Math.PI / 2); /* sample 1 */
+            path_follower.goToPosWithArmThirdSample(48.3, 38.5, -Math.PI / 2); /* sample 1 */
+            module_master.arm.setExtension(arm.extension.YELLOW_3_PRO);
             //path_follower.goToPosUnsafe(51.4, 51.4, -Math.PI / 2 - Math.toRadians(11.5)); /* sample 1 */
             waitArmRotation();
             waitArmExtension();
@@ -116,8 +120,12 @@ public class su4ka_pro extends LinearOpMode {
             setExtensionAndWait(arm.extension.EXTENDED);
             //logger.writeLn("----------STARTING SCORING FIRST------------");
             scoreHighBasket();
+            module_master.arm.setExtension(arm.extension.SUPPORT);
+            module_master.differential.setPitch(25);
+            module_master.differential.update();
 
-            path_follower.goToPosWithArm(58, 35.2, -Math.PI / 2); /* sample 2 */
+            path_follower.goToPosWithArmThirdSample(58, 38.2, -Math.PI / 2); /* sample 2 */
+            module_master.arm.setExtension(arm.extension.YELLOW_3_PRO);
             waitArmRotation();
             waitArmExtension();
             takeSample(false);
@@ -134,9 +142,8 @@ public class su4ka_pro extends LinearOpMode {
             module_master.differential.update();
             module_master.arm.setExtension(arm.extension.SUPPORT);
 
-            path_follower.goToPosWithArmThirdSample(57, 29.5, -Math.PI / 2 + Math.toRadians(61.3)); /* intaking yellow 3 */
+            path_follower.goToPosWithArmThirdSample(57.4, 29.5, -Math.PI / 2 + Math.toRadians(61.3)); /* intaking yellow 3 */
             module_master.arm.setExtension(arm.extension.YELLOW_3_PRO);
-            //module_master.arm.setExtension(arm.extension.YELLOW_3_PRO);
             waitArmRotation();
             waitArmExtension();
             takeSample(true);
@@ -153,7 +160,7 @@ public class su4ka_pro extends LinearOpMode {
             scoreHighBasket();
 
             /* go to dobor1 */
-            path_follower.followTrajectoryForwards(curves[4], new double[]{0.2, 0.2, 0.8}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT, SET_EXTENSION_CHAMBER});
+            path_follower.followTrajectoryForwardsPercentageHypeAngleControl(curves[4], 90, -Math.PI - Math.toRadians(5), new double[]{0.2, 0.2, 0.8}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT, SET_EXTENSION_CHAMBER});
             //module_master.arm.setExtension(arm.extension.HIGH_CHAMBER);
             path_follower.goToPosVeryUnsafe(21, 6, -Math.PI - Math.toRadians(5));
 
@@ -170,7 +177,7 @@ public class su4ka_pro extends LinearOpMode {
             scoreHighBasket();
 
             /* go to dobor2 */
-            path_follower.followTrajectoryForwards(curves[4], 84, new double[]{0.2, 0.2, 0.8}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT, SET_EXTENSION_CHAMBER});
+            path_follower.followTrajectoryForwardsPercentageHypeAngleControl(curves[4], 84,74, -Math.PI - Math.toRadians(5), new double[]{0.2, 0.2, 0.8}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT, SET_EXTENSION_CHAMBER});
             //module_master.arm.setExtension(arm.extension.HIGH_CHAMBER);
             path_follower.goToPosVeryUnsafe(22, 6, -Math.PI - Math.toRadians(5));
 
@@ -187,7 +194,7 @@ public class su4ka_pro extends LinearOpMode {
             scoreHighBasket();
 
             /* go to dobor3 */
-            path_follower.followTrajectoryForwards(curves[4], 84, new double[]{0.2, 0.2, 0.8}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT, SET_EXTENSION_CHAMBER});
+            path_follower.followTrajectoryForwardsPercentageHypeAngleControl(curves[4], 84, 74, -Math.PI, new double[]{0.2, 0.2, 0.8}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT, SET_EXTENSION_CHAMBER});
             //module_master.arm.setExtension(arm.extension.HIGH_CHAMBER);
             path_follower.goToPosVeryUnsafe(23, 6, -Math.PI);
 

@@ -28,8 +28,8 @@ public class edge_detection extends OpenCvPipeline {
                 upperHSV = new Scalar(140, 255, 255); // Upper bound of blue
                 break;
             case "yellow":
-                lowerHSV = new Scalar(8, 240, 230);  // Lower bound of yellow
-                upperHSV = new Scalar(40, 255, 255); // Upper bound of yellow
+                lowerHSV = new Scalar(120, 0, 0);  // Lower bound of yellow
+                upperHSV = new Scalar(160, 0, 0); // Upper bound of yellow
                 break;
             case "black":
                 lowerHSV = new Scalar(0, 0, 0);  // Lower bound of yellow

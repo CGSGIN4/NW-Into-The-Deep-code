@@ -46,16 +46,15 @@ public class VisionTest extends LinearOpMode {
 
         WebcamName camName = hardwareMap.get(WebcamName.class, "cam");
 
-
         VisionPortal portal = new VisionPortal.Builder()
                 .addProcessor(sampleDetection)
                 .setCameraResolution(new Size(640, 480))
                 .setCamera(camName)
+                .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                 .build();
 
 
         waitForStart();
-
 
         while (portal.getCameraState() != VisionPortal.CameraState.STREAMING) {
             telemetry.addData("waiting for camera to start stream", portal.getCameraState().toString());
@@ -119,6 +118,7 @@ public class VisionTest extends LinearOpMode {
                 sleep(500);
 
 
+                telemetry.addData("fps", portal.getFps());
                 telemetry.addData("angle", nearestSample.getAngle());
                 telemetry.addData("angle diff", differential.geomToDifAngle(nearestSample.getAngle()));
                 telemetry.addData("x", nearestSample.getCenter().x);

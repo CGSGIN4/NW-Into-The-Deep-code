@@ -1,11 +1,16 @@
 package org.firstinspires.ftc.teamcode.subsystems.modules;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.utils.MultipleTelemetry;
+
+import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -13,6 +18,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.RR.util.Encoder;
 import org.firstinspires.ftc.teamcode.utils.logger;
 
+@Config
 public class hang {
     public hang.states state = states.SLEEPING;
     DcMotorEx left;
@@ -28,12 +34,16 @@ public class hang {
         READY3, FOLDING, ASCEND3COMPLETE, FOLDING3,
         STANDBY3
     }
-    PIDCoefficients pid = new PIDCoefficients(0.007, 0, 0.001);
-    int target_2_extended = 1900;
-    int target_3_extended = 2915;
-    int target_2_hang = 0;
+    PIDCoefficients pid = new PIDCoefficients(0.003, 0, 0.001);
+    public static int target_2_extended = 1900;
+    public static int target_3_extended = 2915;
+    public static int target_2_hang = -100;
     int oldErrLeft = 0;
     int oldErrRight = 0;
+    IMU imu;
+    public static double startPitch = 0;
+    public static double perhvat_angle = -2;
+    public static double third_angle = 16;
 
     public hang(HardwareMap HM){
         left = HM.get(DcMotorEx.class, "hangLeft");
@@ -44,6 +54,8 @@ public class hang {
         right = HM.get(DcMotorEx.class, "hangRight");
         right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         right.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        imu = HM.get(IMU.class, "imu");
         //logger.writeLn("hang initialized");
     }
 
@@ -56,8 +68,8 @@ public class hang {
         int rDelta = rError - oldErrRight;
         if (state == states.FOLDING3)
         {
-            left.setPower(-0.7);
-            right.setPower(-0.7);
+            left.setPower(-1);
+            right.setPower(-1);
         }
         else {
             left.setPower(lError * pid.p + lDelta * pid.d);
@@ -84,6 +96,10 @@ public class hang {
 
     public void pushDown(){
         goTo(target_2_hang);
+    }
+    public void pushDownGently(){
+        left.setPower(-0.4);
+        right.setPower(-0.4);
     }
     public void pushUp(){
         goTo(target_3_extended);
@@ -119,9 +135,11 @@ public class hang {
         telemetry.addData("right voltage", right.getCurrent(CurrentUnit.AMPS));
         telemetry.addData("left pwr", left.getPower());
         telemetry.addData("right pwr", right.getPower());
+        telemetry.addData("pitch", imu.getRobotYawPitchRollAngles().getPitch(AngleUnit.DEGREES));
         switch (state)
         {
             case PREPARE:
+                startPitch = imu.getRobotYawPitchRollAngles().getPitch(AngleUnit.DEGREES);
                 if (Math.abs(left.getCurrentPosition() - target_2_extended) < 20 && Math.abs(right.getCurrentPosition() - target_2_extended) < 20) {
                     state = states.READY;
                 }
@@ -140,31 +158,32 @@ public class hang {
                 break;
             case ASCEND2COMPLETE:
                 pushDown();
-                //prepare3();
+                if (imu.getRobotYawPitchRollAngles().getPitch(AngleUnit.DEGREES) - startPitch < perhvat_angle)
+                    prepare3();
                 break;
             case PREPARE3:
-                /*
                 if (Math.abs(left.getCurrentPosition() - target_3_extended) < 20 && Math.abs(right.getCurrentPosition() - target_3_extended) < 20)
                     state = states.READY3;
                 else
-                 */
                     pushUp();
                 break;
             case READY3:
                 //fold3();
                 pushUp();
+                if (imu.getRobotYawPitchRollAngles().getPitch(AngleUnit.DEGREES) - startPitch > third_angle)
+                    state = states.STANDBY3;
                 break;
             case STANDBY3:
                 standby3();
                 break;
             case FOLDING3:
-                if (Math.abs(left.getCurrentPosition() - target_2_hang) < 20 && Math.abs(right.getCurrentPosition() - target_2_hang) < 20)
+                if (Math.abs(left.getCurrentPosition() - target_2_hang) < 50 && Math.abs(right.getCurrentPosition() - target_2_hang) < 50)
                     state = states.ASCEND3COMPLETE;
                 else
                     fold3();
                 break;
             case ASCEND3COMPLETE:
-                fold3();
+                pushDownGently();
                 break;
         }
     }

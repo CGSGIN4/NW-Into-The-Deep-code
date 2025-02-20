@@ -124,6 +124,60 @@ public class path_follower {
         drivetrain.applyVector(new Vector2d(0, 0), 0);
     }
 
+    public void followTrajectoryForwardsPercentageHypeAngleControl(curve Traj, double percentage, double angle, double[] ts, int[] actions){
+        velocity_calculator.setTrajectory(Traj);
+        double t = 0;
+        int tIndex = 0;
+
+        while (t < 0.94 && dataStorage.OpMode.opModeIsActive()){
+            dataStorage.updateData();
+            module_master.update(dataStorage.telemetry);
+            t = velocity_calculator.getCurrentT(dataStorage.RobotPose);
+            if (tIndex < ts.length && t >= ts[tIndex])
+            {
+                module_master.doAction(actions[tIndex]);
+                tIndex++;
+            }
+            Vector2d transV = velocity_calculator.getTranslationalV(t, dataStorage.RobotPose, dataStorage.DSTelemetry);
+            double rotation = 0;
+            if (t < percentage / 100)
+                rotation = velocity_calculator.getRotation(t);
+            else
+                rotation = velocity_calculator.getRotationCustomDirection(angle);
+            logData(Traj, t);
+            drivetrain.applyVectorFieldCentric(transV.rotated(Math.toRadians(90)), rotation);
+            //drivetrain.applyVectorFieldCentric(new Vector2d(0, 0), rotation);
+        }
+        drivetrain.applyVector(new Vector2d(0, 0), 0);
+    }
+
+    public void followTrajectoryForwardsPercentageHypeAngleControl(curve Traj, double trajPercentage, double rotPercentage, double angle, double[] ts, int[] actions){
+        velocity_calculator.setTrajectory(Traj);
+        double t = 0;
+        int tIndex = 0;
+
+        while (t < trajPercentage / 100 && dataStorage.OpMode.opModeIsActive()){
+            dataStorage.updateData();
+            module_master.update(dataStorage.telemetry);
+            t = velocity_calculator.getCurrentT(dataStorage.RobotPose);
+            if (tIndex < ts.length && t >= ts[tIndex])
+            {
+                module_master.doAction(actions[tIndex]);
+                tIndex++;
+            }
+            Vector2d transV = velocity_calculator.getTranslationalV(t, dataStorage.RobotPose, dataStorage.DSTelemetry);
+            double rotation = 0;
+            if (t < rotPercentage / 100)
+                rotation = velocity_calculator.getRotation(t);
+            else
+                rotation = velocity_calculator.getRotationCustomDirection(angle);
+            logData(Traj, t);
+            drivetrain.applyVectorFieldCentric(transV.rotated(Math.toRadians(90)), rotation);
+            //drivetrain.applyVectorFieldCentric(new Vector2d(0, 0), rotation);
+        }
+        drivetrain.applyVector(new Vector2d(0, 0), 0);
+    }
+
     public void followTrajectoryBackwards(curve Traj, double[] ts, int[] actions){
         velocity_calculator.setTrajectory(Traj);
         double t = 0;

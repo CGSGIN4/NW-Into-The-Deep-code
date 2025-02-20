@@ -59,7 +59,7 @@ public class discord extends OpenCvPipeline
      * Colors
      */
     static final Scalar RED = new Scalar(255, 0, 0);
-    static final Scalar BLUE = new Scalar(0, 0, 255);
+    static final Scalar BLUE = new Scalar(40, 40, 40);
     static final Scalar YELLOW = new Scalar(255, 255, 0);
 
     static final int CONTOUR_LINE_THICKNESS = 2;

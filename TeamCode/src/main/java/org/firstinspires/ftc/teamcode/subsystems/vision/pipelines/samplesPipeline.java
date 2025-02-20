@@ -24,11 +24,12 @@ public class samplesPipeline extends OpenCvPipeline {
         Imgproc.findContours(yellowMask, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 
         // Find the largest yellow contour (blob)
-        MatOfPoint largestContour = findLargestContour(contours);
+        int largestContour = findLargestContour(contours);
 
-        if (largestContour != null) {
-            for (MatOfPoint contour : contours)
-                Imgproc.rectangle(input, bbox(contour), new Scalar(0, 255, 255));
+        if (largestContour != -1) {
+            Imgproc.drawContours(input, contours, -1, new Scalar(0, 255, 255));
+            //for (MatOfPoint contour : contours)
+                //Imgproc.rectangle(input, bbox(contour), new Scalar(0, 255, 255));
         }
 
         return input;
@@ -38,8 +39,8 @@ public class samplesPipeline extends OpenCvPipeline {
         Mat hsvFrame = new Mat();
         Imgproc.cvtColor(frame, hsvFrame, Imgproc.COLOR_RGB2HSV);
 
-        Scalar lowerYellow = new Scalar(0, 80, 80);
-        Scalar upperYellow = new Scalar(10, 255, 255);
+        Scalar lowerYellow = new Scalar(0, 0, 145);
+        Scalar upperYellow = new Scalar(255, 255, 255);
 
 
         Mat yellowMask = new Mat();
@@ -48,11 +49,13 @@ public class samplesPipeline extends OpenCvPipeline {
         return yellowMask;
     }
 
-    private MatOfPoint findLargestContour(List<MatOfPoint> contours) {
+    private int findLargestContour(List<MatOfPoint> contours) {
         double maxArea = 0;
         MatOfPoint largestContour = null;
 
+        int id = -1;
         for (MatOfPoint contour : contours) {
+            id = contours.indexOf(contour);
             double area = Imgproc.contourArea(contour);
             if (area > maxArea) {
                 maxArea = area;
@@ -60,7 +63,7 @@ public class samplesPipeline extends OpenCvPipeline {
             }
         }
 
-        return largestContour;
+        return id;
     }
     private double calculateWidth(MatOfPoint contour) {
         Rect boundingRect = Imgproc.boundingRect(contour);
