@@ -5,16 +5,22 @@ import android.util.Size;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.WhiteBalanceControl;
+import org.firstinspires.ftc.teamcode.Robot;
+import org.firstinspires.ftc.teamcode.data.dataStorage;
+import org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation;
+import org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension;
 import org.firstinspires.ftc.teamcode.subsystems.modules.differential;
-import org.firstinspires.ftc.teamcode.subsystems.vision.Sample;
-import org.firstinspires.ftc.teamcode.subsystems.vision.SampleDetectionProcessor;
+import org.firstinspires.ftc.teamcode.subsystems.path_follower;
+import org.firstinspires.ftc.teamcode.subsystems.vision.pipelines.BlackPipeline;
 import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.teamcode.subsystems.modules.module_master;
 
 @TeleOp
 @Config
@@ -26,23 +32,29 @@ public class VisionTest extends LinearOpMode {
     @SuppressLint("SuspiciousIndentation")
     @Override
     public void runOpMode() throws InterruptedException {
-        differential diff = new differential(hardwareMap);
+        Robot bot = new Robot(hardwareMap);
+        bot.init();
+
+        module_master.init(hardwareMap);
+
         DcMotor extMotor = hardwareMap.get(DcMotor.class, "armExtensionMotor");
         extMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         extMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        dataStorage.init(bot.drive, telemetry, this);
+        bot.drive.setPoseEstimate(new Pose2d(39.9, 64.93, Math.PI));
+        path_follower follower = new path_follower(bot.drivetrain);
+
 
         int whenSeen = 0;
         int timesSeen = 0;
 //
-        diff.openClaw();
-        diff.setRoll(-10);
-        diff.pitchForward();
-        diff.update();
 //        diff.setRoll(-8);
 //        diff.setPitch(112);
 //        diff.update();
 
-        SampleDetectionProcessor sampleDetection = new SampleDetectionProcessor();
+
+
+        BlackPipeline sampleDetection = new BlackPipeline();
 
         WebcamName camName = hardwareMap.get(WebcamName.class, "cam");
 
@@ -51,123 +63,86 @@ public class VisionTest extends LinearOpMode {
                 .setCameraResolution(new Size(640, 480))
                 .setCamera(camName)
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
+                .enableLiveView(true)
                 .build();
 
-
         waitForStart();
+
+        module_master.arm.setRotation(rotation.CAMERA);
+        module_master.arm.setExtension(extension.CAMERA);
+
+        module_master.differential.openClaw();
+        module_master.differential.setRoll(-10);
+        module_master.differential.setPitch(73);
+        module_master.differential.update();
 
         while (portal.getCameraState() != VisionPortal.CameraState.STREAMING) {
             telemetry.addData("waiting for camera to start stream", portal.getCameraState().toString());
         }
 
-        FtcDashboard.getInstance().startCameraStream(sampleDetection, 0);
+//        extMotor.setPower(speed);
 
-        extMotor.setPower(speed);
-
+        double rememberAng = 0;
+        int rememberDist = 0;
+        module_master.arm.resetRotationEncoders();
+        module_master.arm.setRotation(rotation.FRONT);
         while (opModeIsActive()) {
-            Sample nearestSample = sampleDetection.getNearestSample();
-            double x = nearestSample.getCenter().x;
-            double ang = nearestSample.getAngle();
-            boolean nice = false;
+            telemetry.addData("nearestAng", sampleDetection.getNearestAng());
+            telemetry.addData("nearest x", sampleDetection.getNearestCenter().x);
+            telemetry.addData("nearest y", sampleDetection.getNearestCenter().y);
+            telemetry.update();
 
-            int whiteBalance = -1;
+            if (gamepad1.cross) {
+                dataStorage.updateData();
+                double yOffset = 0, xOffset = 0;
+                rememberAng = sampleDetection.getNearestAng();
+                yOffset = BlackPipeline.pixelToInchesY(sampleDetection.getNearestCenter().y);
+                rememberDist = BlackPipeline.pixelToTicks(sampleDetection.getNearestCenter().x);
+                module_master.arm.ROTATION_PIDF = new PIDFCoefficients(0.0026, 0, 0.0019, -0.0032);
+                module_master.arm.pidExtend(rememberDist);
+                module_master.arm.setRotation(rotation.FRONT);
+                follower.goToPos(dataStorage.RobotWorldX, dataStorage.RobotWorldY + yOffset, dataStorage.RobotWorldHeading);
 
-//            telemetry.addData("wbc true", portal.getCameraControl(WhiteBalanceControl.class).setMode(WhiteBalanceControl.Mode.MANUAL));
-
-            if (((ang > 0 && ang < 30) || (ang > 150 && ang < 180)) && x > 150) {
-                nice = true;
-            }
-
-            if (ang > 30 && ang < 150 && x > 120) {
-                nice = true;
-            }
-
-//            portal.getCameraControl(WhiteBalanceControl.class).setWhiteBalanceTemperature(100);
-
-            if (extMotor.getCurrentPosition() < -730 ) {
-                extMotor.setPower(0);
-//                break;
-            }
-
-            if ((nearestSample.getColor() == Sample.SampleColor.RED || nearestSample.getColor() == Sample.SampleColor.YELLOW) && timesSeen == 0)
-            {
-                if (nearestSample.getCenter().x < -20) continue;
-                timesSeen ++;
-//                if (timesSeen == 0) {
-//                    timesSeen = 1;
-//                    extMotor.setPower(0.08);
-//                    sleep(700);
-//                } else {
-
-
-                extMotor.setPower(0);
-//                    ang += 90;
-
-//                if (ang > 180) ang -= 180;
-
-                diff.pitchDown();
+                while (!module_master.arm.extensionReached() || !module_master.arm.rotationReached())
+                    module_master.update(dataStorage.telemetry);
+                module_master.differential.pitchDown();
+                module_master.differential.setRoll(differential.geomToDifAngle(rememberAng));
+                module_master.differential.update();
                 sleep(300);
-                diff.setRoll(differential.geomToDifAngle(ang));
-                diff.update();
-                sleep(300);
-                diff.closeClaw();
+
+                module_master.differential.closeClaw();
                 sleep(200);
-                diff.setRoll(-4);
-                diff.setPitch(100);
-                diff.update();
-                sleep(500);
-
-
-                telemetry.addData("fps", portal.getFps());
-                telemetry.addData("angle", nearestSample.getAngle());
-                telemetry.addData("angle diff", differential.geomToDifAngle(nearestSample.getAngle()));
-                telemetry.addData("x", nearestSample.getCenter().x);
-                telemetry.addData("y", nearestSample.getCenter().y);
-                telemetry.addData("color", nearestSample.getColor().toString());
-                telemetry.addData("nice", nice);
-                telemetry.addData("wbc", portal.getCameraControl(WhiteBalanceControl.class).getWhiteBalanceTemperature());
-                telemetry.addData("state", portal.getCameraState().toString());
-                telemetry.update();
-                break;
+                module_master.differential.pitchUp();
+                module_master.arm.setExtension(extension.CLOSED);
             }
 
+            if (gamepad1.square) {
+                module_master.arm.ROTATION_PIDF = new PIDFCoefficients(0.0026, 0, 0.0019, -0.0182);
+                module_master.arm.setRotation(rotation.CAMERA);
+                module_master.arm.setExtension(extension.CAMERA);
+                module_master.differential.openClaw();
+                module_master.differential.setRoll(-10);
+                module_master.differential.setPitch(73);
+                module_master.differential.update();
+            }
 
-//            telemetry.addData("whenSeen", whenSeen);
+            if (gamepad1.triangle) {
+                module_master.arm.pidExtend(rememberDist);
+            }
 
-            /*
-            if (gamepad1.x && nearestSample.getColor() != Sample.SampleColor.UNDETECTED) {
-                ang += 50;
-
-                if (ang > 180) ang -= 180;
-
-                diff.openClaw();
-                diff.update();
+            if(gamepad1.circle) {
+                module_master.differential.pitchDown();
                 sleep(300);
-                diff.pitchDown();
-                diff.update();
-                sleep(500);
-                diff.setRoll(differential.geomToDifAngle(ang));
-                diff.update();
+                module_master.differential.setRoll(differential.geomToDifAngle(rememberAng));
+                module_master.differential.update();
                 sleep(400);
-                diff.closeClaw();
-                diff.update();
-                sleep(500);
-                diff.setRoll(-2);
-                diff.setPitch(100);
-                diff.update();
-            }*/
-
-
-//            telemetry.update();
-
-
-
-
-            if (gamepad1.a) {
-                diff.openClaw();
-                diff.update();
+                module_master.differential.closeClaw();
+                sleep(200);
+                module_master.differential.pitchUp();
+                module_master.arm.setExtension(extension.CLOSED);
             }
-            sleep(20);
+
+            module_master.update(dataStorage.telemetry);
         }
     }
 }

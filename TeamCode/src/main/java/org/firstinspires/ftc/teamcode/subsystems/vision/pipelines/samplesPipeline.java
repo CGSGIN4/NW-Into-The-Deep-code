@@ -39,7 +39,7 @@ public class samplesPipeline extends OpenCvPipeline {
         Mat hsvFrame = new Mat();
         Imgproc.cvtColor(frame, hsvFrame, Imgproc.COLOR_RGB2HSV);
 
-        Scalar lowerYellow = new Scalar(0, 0, 145);
+        Scalar lowerYellow = new Scalar(0, 0, 170);
         Scalar upperYellow = new Scalar(255, 255, 255);
 
 

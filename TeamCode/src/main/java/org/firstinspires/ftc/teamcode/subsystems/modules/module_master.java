@@ -4,6 +4,7 @@ import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.ac
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.CLAW_OPEN;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.PITCH_DOWN;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.PITCH_FRONT;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_CAMERA;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_CHAMBER;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_CLOSED;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_DOBOR;
@@ -11,6 +12,7 @@ import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.ac
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_LIMIT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_LOW_CHAMBER;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_YELLOW2;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_ROTATION_CAMERA;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_ROTATION_CHAMBER;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_ROTATION_FRONT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_ROTATION_LIFT;
@@ -42,6 +44,9 @@ public class module_master {
         public static final int SET_EXTENSION_DOBOR = 13;
         public static final int SET_ROTATION_PREASCEND = 14;
         public static final int SET_EXTENSION_LOW_CHAMBER = 15;
+        public static final int SET_ROTATION_CAMERA = 16;
+        public static final int SET_EXTENSION_CAMERA = 17;
+
 
     }
 
@@ -98,6 +103,12 @@ public class module_master {
                 break;
             case SET_EXTENSION_LOW_CHAMBER:
                 arm.setExtension(org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.LOW_CHAMBER);
+                break;
+            case SET_EXTENSION_CAMERA:
+                arm.setExtension(org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.CAMERA);
+                break;
+            case SET_ROTATION_CAMERA:
+                arm.setRotation(org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.CAMERA);
                 break;
             case PITCH_DOWN:
                 differential.pitchDown();

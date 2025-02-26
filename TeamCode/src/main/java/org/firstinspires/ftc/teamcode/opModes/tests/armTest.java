@@ -6,9 +6,11 @@ import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.FR
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.HIGH_CHAMBER;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.LOW_CHAMBER;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.MANUAL;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.CAMERA;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.CHAMBER;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.FRONT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.LIFT;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.RESET;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
@@ -38,7 +40,7 @@ public class armTest extends LinearOpMode {
 
     Vector2d gamepad;
     arm arm;
-    public static double p = 0.0034, i = 0, d = 0.0034, f = 0.004;
+    public static double p = 0.0026, i = 0, d = 0.0019, f = -0.002;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -68,10 +70,12 @@ public class armTest extends LinearOpMode {
             if (currentGamepad1.a && !previousGamepad1.a)
             {
                     //tele.addData("rotation power", arm.setRotation(BACK));
-                if (arm.rotationState == CHAMBER)
-                    arm.setRotation(LIFT);
+                if (arm.rotationState == RESET) {
+                    arm.setRotation(CAMERA);
+                    arm.setExtension(org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.CAMERA);
+                }
                 else
-                    arm.setRotation(CHAMBER);
+                    arm.setRotation(FRONT);
                     //tele.addData("rotation power", arm.setRotation(LIFT));
             }
 
@@ -99,11 +103,10 @@ public class armTest extends LinearOpMode {
                 arm.setExtension(CLOSED);
                 //tele.addData("extension power", arm.setExtension(CLOSED));
 
-            arm.EXTENSION_PIDF.p = p;
-            arm.EXTENSION_PIDF.i = i;
-            arm.EXTENSION_PIDF.d = d;
-            arm.EXTENSION_PIDF.f = f;
-
+            arm.ROTATION_PIDF.p = p;
+            arm.ROTATION_PIDF.i = i;
+            arm.ROTATION_PIDF.d = d;
+            arm.ROTATION_PIDF.f = f;
 
             if (Math.abs(gamepad1.right_stick_y) > 0.01)
                 arm.manuallyExtend(-gamepad1.right_stick_y);
