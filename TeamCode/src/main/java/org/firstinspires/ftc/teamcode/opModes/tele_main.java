@@ -34,12 +34,14 @@ import java.io.IOException;
 @Config
 public class tele_main extends LinearOpMode {
     double TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING = 0;
+    /** 0 - fast, 1 - slow **/
     int scoring_mode = 0;
     double scored = 0;
     public static double pitch = 6;
     public static double roll = -11;
     Vector2d gamepad = new Vector2d();
     double turn = 0;
+    double extraWaitDiffyFlip = 0;
     FtcDashboard dashboard;
     boolean foldingSequence = false;
     boolean unfoldingSequence = false;
@@ -51,6 +53,7 @@ public class tele_main extends LinearOpMode {
     ElapsedTime foldingTimer = new ElapsedTime();
     ElapsedTime intakingTimer = new ElapsedTime();
     ElapsedTime hangTimer = new ElapsedTime();
+    ElapsedTime zazhimTimer = new ElapsedTime();
     path_follower path_follower;
 
     @Override
@@ -86,22 +89,12 @@ public class tele_main extends LinearOpMode {
             /* DIFFERENTIAL SECTION */
             if (assistGamepad.isClicked("dpad_down")) {
                 lastCall = "dpad";
-                if (fast_pitch_swap) {
-                    pitch = 6;
-                    fast_pitch_swap = false;
-                }
-                if (pitch > 99)
-                    pitch = 99;
-                else
-                    pitch = 6;
+                pitch = 6;
                 if (arm.rotationState == RESET)
                     differential.openClaw();
             }
             if (assistGamepad.isClicked("dpad_up")) {
-                if (pitch < 99)
-                    pitch = 99;
-                else
-                    pitch = 176;
+                pitch = 176;
                 lastCall = "dpad_up";
             }
             if (assistGamepad.isClicked("dpad_left")) {
@@ -180,6 +173,7 @@ public class tele_main extends LinearOpMode {
                     if (arm.extensionMotor.getCurrentPosition() + arm.offset < 280) {
                         unfoldingSequenceLowBasket = false;
                         unfoldingSequence = true;
+                        zazhimTimer.reset();
                         //logger.writeLn("activated unfolding sequence");
                     } else {
                         if (pitch == 6)
@@ -216,23 +210,28 @@ public class tele_main extends LinearOpMode {
                 unfoldingSequenceLowBasket = false;
                 unfoldingSequence = false;
                 intakingSequence = false;
-                if (foldingTimer.milliseconds() < TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING + 500 && arm.extensionState != MANUAL && arm.extensionMotor.getCurrentPosition() > arm.EXTENSION_FRONT_MAX)
+                if (foldingTimer.milliseconds() < TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING + 500 + extraWaitDiffyFlip && arm.extensionState != MANUAL && arm.extensionMotor.getCurrentPosition() > arm.EXTENSION_FRONT_MAX)
                     arm.setExtension(EXTENDED);
-                if (foldingTimer.milliseconds() > TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING) /* perekid */
+                if (foldingTimer.milliseconds() > TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING) /* perekid */ {
                     differential.openClaw();
-                if (foldingTimer.milliseconds() > TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING + 200) {
-                    pitch = 6;
-                    lastCall = "folding seq";
+                    if (roll != -11)
+                        extraWaitDiffyFlip = 250;
                 }
-                if (foldingTimer.milliseconds() > TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING + 500) {
-                    if (arm.extensionMotor.getCurrentPosition() + arm.offset > 100) {
+                if (foldingTimer.milliseconds() > TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING + 200) {
+                    lastCall = "folding seq";
+                    roll = -11;
+                }
+                if (foldingTimer.milliseconds() > TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING + 200 + extraWaitDiffyFlip)
+                    pitch = 6;
+                if (foldingTimer.milliseconds() > TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING + 500 + extraWaitDiffyFlip) {
+                    if (arm.extensionMotor.getCurrentPosition() + arm.offset > 72) {
                         arm.setExtension(CLOSED);
                     }
                     else {
                         arm.setRotation(FRONT);
-                        roll = -11;
                         foldingSequence = false;
                         pitch = 176;
+                        extraWaitDiffyFlip = 0;
                         fast_pitch_swap = true;
                         //logger.writeLn("folding sequence finished as planned");
                         lastCall = "folding end";
@@ -249,11 +248,16 @@ public class tele_main extends LinearOpMode {
                     pitch = 6;
                     lastCall = "unfolding seq";
                 }
-                else
+                else {
                     pitch = 125;
+                }
+                if (zazhimTimer.milliseconds() > 1000 && scoring_mode == 0)
+                    differential.closeClawSilno();
                 arm.setExtension(EXTENDED);
-                if (arm.extensionMotor.getCurrentPosition() + arm.offset > 1320) {
+                if (arm.extensionMotor.getCurrentPosition() + arm.offset > 944) {
                     unfoldingSequence = false;
+                    if (scoring_mode == 0)
+                        differential.closeClawSilno();
                     //logger.writeLn("unfolding sequence finished as planned");
                 }
             }
@@ -268,7 +272,7 @@ public class tele_main extends LinearOpMode {
                 else
                     pitch = 125;
                 arm.setExtension(LOW_BASKET);
-                if (arm.extensionMotor.getCurrentPosition() + arm.offset > 465) {
+                if (arm.extensionMotor.getCurrentPosition() + arm.offset > 333) {
                     unfoldingSequenceLowBasket = false;
                     //logger.writeLn("unfolding sequenceLowBasket finished as planned");
                 }
@@ -299,10 +303,10 @@ public class tele_main extends LinearOpMode {
 
             if (arm.rotationState == RESET) {
                 if (gamepad2.right_trigger > 0.05 && arm.extensionMotor.getCurrentPosition() + arm.offset < 305) {
-                    arm.pidExtend(arm.targetExtensionPos + 7);
+                    arm.pidExtend(arm.targetExtensionPos + 5);
                 }
                 if (gamepad2.left_trigger > 0.05) {
-                    arm.pidExtend(arm.targetExtensionPos - 7);
+                    arm.pidExtend(arm.targetExtensionPos - 5);
                 }
             }
 

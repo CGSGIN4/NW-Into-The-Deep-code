@@ -23,9 +23,9 @@ public class path_follower {
     public FtcDashboard dashboard;
     public painter painter = new painter();
     double p_rotation_coef = 3.;
-    double p_trans_coef = 0.15;
-    double d_trans_coef = 0.12;
-    double i_trans_coef = 0.013;
+    double p_trans_coef = 0.019;
+    double d_trans_coef = 0.18;
+    double i_trans_coef = 0.003;
 
     public path_follower(drivetrain drivetrain){
         this.drivetrain = drivetrain;
@@ -374,6 +374,42 @@ public class path_follower {
         drivetrain.applyVector(new Vector2d(0, 0), 0);
     }
 
+    public void holdPosAsync(double X, double Y, double Heading){
+        Pose2d pid;
+        Vector2d finish = new Vector2d(X, Y);
+
+        dataStorage.updateData();
+        module_master.update(dataStorage.telemetry);
+        if(dataStorage.OpMode.opModeIsActive()) {
+            dataStorage.updateData();
+            module_master.update(dataStorage.telemetry);
+
+            pid = velocity_calculator.getPIDpower(finish, Heading);
+            //dataStorage.telemetry.addData("HeadingBuffer", velocity_calculator.IHeading);
+
+            drivetrain.applyVectorFieldCentric(pid.vec().rotated(Math.toRadians(90)), pid.getHeading());
+        }
+    }
+
+    public void holdPosAsync(Pose2d pose){
+        Pose2d pid;
+        Vector2d finish = new Vector2d(pose.getX(), pose.getY());
+
+        dataStorage.updateData();
+        module_master.update(dataStorage.telemetry);
+        if(dataStorage.OpMode.opModeIsActive() && dataStorage.RobotPose.distTo(finish) > 2) {
+            dataStorage.updateData();
+            module_master.update(dataStorage.telemetry);
+
+            pid = velocity_calculator.getPIDpower(finish, pose.getHeading());
+            //dataStorage.telemetry.addData("HeadingBuffer", velocity_calculator.IHeading);
+
+            drivetrain.applyVectorFieldCentric(pid.vec().rotated(Math.toRadians(90)), pid.getHeading());
+        }
+        else
+            drivetrain.applyVectorFieldCentric(new Vector2d(0, 0), 0);
+    }
+
     public void goToPosWithArm(double X, double Y, double Heading){
         Pose2d pid;
         Vector2d finish = new Vector2d(X, Y);
@@ -417,13 +453,13 @@ public class path_follower {
         drivetrain.applyVector(new Vector2d(0, 0), 0);
     }
 
-    public void goToPosWithArmToBasket(double X, double Y, double Heading){
+    public Pose2d goToPosWithArmToBasket(double X, double Y, double Heading){
         Pose2d pid;
         Vector2d finish = new Vector2d(X, Y);
 
         dataStorage.updateData();
         module_master.update(dataStorage.telemetry);
-        while((dataStorage.RobotPose.distTo(finish) > 3 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.14 || dataStorage.RobotVelocity.norm() > 25) && dataStorage.OpMode.opModeIsActive()){
+        while((dataStorage.RobotPose.distTo(finish) > 3 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.14 || dataStorage.RobotVelocity.norm() > 25) && dataStorage.OpMode.opModeIsActive()/* && !module_master.arm.extensionReached()*/){
             if (Math.abs(module_master.arm.targetRotationPos - module_master.arm.rotationMotor.getCurrentPosition()) < 480 && module_master.arm.rotationState == arm.rotation.LIFT)
                 module_master.arm.setExtension(arm.extension.EXTENDED);
             dataStorage.updateData();
@@ -435,6 +471,27 @@ public class path_follower {
             drivetrain.applyVectorFieldCentric(pid.vec().rotated(Math.toRadians(90)), pid.getHeading());
         }
         drivetrain.applyVector(new Vector2d(0, 0), 0);
+        return new Pose2d(X, Y, Heading);
+    }
+
+    public Pose2d goToPosWithArmToBasketAsync(double X, double Y, double Heading){
+        Pose2d pid;
+        Vector2d finish = new Vector2d(X, Y);
+
+        dataStorage.updateData();
+        module_master.update(dataStorage.telemetry);
+        if(dataStorage.OpMode.opModeIsActive()){
+            if (Math.abs(module_master.arm.targetRotationPos - module_master.arm.rotationMotor.getCurrentPosition()) < 480 && module_master.arm.rotationState == arm.rotation.LIFT)
+                module_master.arm.setExtension(arm.extension.EXTENDED);
+            dataStorage.updateData();
+            module_master.update(dataStorage.telemetry);
+
+            pid = velocity_calculator.getPIDpower(finish, Heading);
+            //dataStorage.telemetry.addData("HeadingBuffer", velocity_calculator.IHeading);
+
+            drivetrain.applyVectorFieldCentric(pid.vec().rotated(Math.toRadians(90)), pid.getHeading());
+        }
+        return new Pose2d(X, Y, Heading);
     }
 
     public void goToPosUnsafe(double X, double Y, double Heading){

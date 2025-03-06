@@ -19,6 +19,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.data.transfer;
 
 import com.acmerobotics.dashboard.canvas.Canvas;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
@@ -57,8 +58,8 @@ public class su4ka_pro extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         //logger.init();
-        Smotritel smotritel = new Smotritel(hardwareMap);
-        smotritel.stopStream();
+        /* Smotritel smotritel = new Smotritel(hardwareMap);
+        smotritel.stopStream(); */
         robot = new Robot(hardwareMap);
         robot.init();
         parser parser = new parser("b19dotaPRO");
@@ -77,18 +78,6 @@ public class su4ka_pro extends LinearOpMode {
         module_master.differential.closeClaw();
         module_master.differential.update();
 
-        /*
-        WebcamName camName = hardwareMap.get(WebcamName.class, "cam");
-
-        VisionPortal portal = new VisionPortal.Builder()
-                .addProcessor(sampleDetection)
-                .setCameraResolution(new Size(640, 480))
-                .setCamera(camName)
-                .build();
-
-        portal.stopLiveView();
-        portal.stopStreaming();
-*/
         waitForStart();
 
         TelemetryPacket packet = new TelemetryPacket();
@@ -113,12 +102,14 @@ public class su4ka_pro extends LinearOpMode {
             module_master.differential.setPitch(25);
             module_master.differential.update();
 
-            path_follower.goToPosWithArmThirdSample(48.3, 38.5, -Math.PI / 2); /* sample 1 */
+            module_master.arm.ROTATION_PIDF = new PIDFCoefficients(0.0026, 0, 0.0019, -0.001);
+            path_follower.goToPosWithArmThirdSample(50.3, 40.5, -Math.PI / 2); /* sample 1 */
             module_master.arm.setExtension(arm.extension.YELLOW_3_PRO);
             //path_follower.goToPosUnsafe(51.4, 51.4, -Math.PI / 2 - Math.toRadians(11.5)); /* sample 1 */
             waitArmRotation();
             waitArmExtension();
             takeSample(false);
+            module_master.arm.ROTATION_PIDF = new PIDFCoefficients(0.0026, 0, 0.0019, -0.0024);
 
             module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
             module_master.arm.setRotation(arm.rotation.LIFT);
@@ -160,33 +151,51 @@ public class su4ka_pro extends LinearOpMode {
             module_master.arm.setRotation(arm.rotation.LIFT);
             module_master.differential.pitchHalfDown();
             path_follower.velocity_calculator.setThirdSampleRotationCoeffs();
+            module_master.arm.setExtension(arm.extension.EXTENDED);
             path_follower.goToPosWithArmToBasket(52.2, 47.2, -Math.PI * 3 / 4 + Math.toRadians(10));
             path_follower.velocity_calculator.setDefaultRotationCoeffs();
             setExtensionAndWait(arm.extension.EXTENDED);
             //logger.writeLn("----------STARTING SCORING THIRD------------");
             scoreHighBasket();
 
+            /* delete this after robot reveal*/
+            path_follower.followTrajectoryForwardsPercentageHypeAngleControl(curves[4], 94, 54, -Math.PI, new double[]{0.2, 0.2, 0.65}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT, SET_EXTENSION_CHAMBER});
+            module_master.arm.setRotation(arm.rotation.CHAMBER);
+            path_follower.goToPosVeryUnsafe(23, 9, -Math.PI);
+
+            //module_master.arm.setRotation(arm.rotation.FRONT);
+
+            while (opModeIsActive()) {
+                module_master.arm.update();
+                module_master.arm.manuallyExtend(0);
+            }
+            /* delete this after robot reveal*/
+
             /* go to dobor1 */
-            path_follower.followTrajectoryForwardsPercentageHypeAngleControl(curves[4], 90, -Math.PI - Math.toRadians(5), new double[]{0.2, 0.2, 0.68, 0.68}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT, SET_EXTENSION_CAMERA, SET_ROTATION_CAMERA});
+            path_follower.followTrajectoryForwardsPercentageHypeAngleControl(curves[4], 90, 54,-Math.PI, new double[]{0.2, 0.2, 0.34, 0.34}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT, SET_EXTENSION_CAMERA, SET_ROTATION_CAMERA});
             //module_master.arm.setExtension(arm.extension.HIGH_CHAMBER);
-            takeFromSubmersible(smotritel, 1);
+            /*if (!takeFromSubmersible(smotritel, 1))
+                if (!takeFromSubmersible(smotritel, -1))
+                    instapark();*/
             module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
             /* go to score dobor1 */
             path_follower.followTrajectoryBackwards(curves[5], new double[]{0.02, 0.06, 0.2, 0.3}, new int[]{SET_EXTENSION_CLOSED, SET_ROTATION_LIFT, SET_EXTENSION_LIFT, PITCH_DOWN});
             path_follower.goToPosWithArmToBasket(52.5, 50.1, -Math.PI * 3 / 4 + Math.toRadians(10));
             waitArmExtension();
             scoreHighBasket();
-
             /* go to dobor2 */
-            path_follower.followTrajectoryForwardsPercentageHypeAngleControl(curves[4], 84,74, -Math.PI - Math.toRadians(5), new double[]{0.2, 0.2, 0.68, 0.68}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT, SET_EXTENSION_CAMERA, SET_ROTATION_CAMERA});
-            takeFromSubmersible(smotritel, 2);
+            path_follower.followTrajectoryForwardsPercentageHypeAngleControl(curves[4], 84,39, -Math.PI, new double[]{0.2, 0.2, 0.34, 0.34}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT, SET_EXTENSION_CAMERA, SET_ROTATION_CAMERA});
+            /*if (!takeFromSubmersible(smotritel, 2))
+                if (!takeFromSubmersible(smotritel, -1))
+                    instapark();*/
             module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
             /* go to score dobor2 */
             path_follower.followTrajectoryBackwards(curves[5], new double[]{0.02, 0.06, 0.2, 0.3}, new int[]{SET_EXTENSION_CLOSED, SET_ROTATION_LIFT, SET_EXTENSION_LIFT, PITCH_DOWN});
             path_follower.goToPosWithArmToBasket(52.2, 50.8, -Math.PI * 3 / 4 + Math.toRadians(8));
+            waitArmExtension();
             scoreHighBasket();
 
-            path_follower.followTrajectoryForwards(curves[4], 94, new double[]{0.2, 0.2, 0.65}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT, SET_EXTENSION_CHAMBER});
+            path_follower.followTrajectoryForwardsPercentageHypeAngleControl(curves[4], 94, 54, -Math.PI, new double[]{0.2, 0.2, 0.65}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT, SET_EXTENSION_CHAMBER});
             module_master.arm.setRotation(arm.rotation.CHAMBER);
             path_follower.goToPosVeryUnsafe(23, 9, -Math.PI);
 
@@ -220,6 +229,8 @@ public class su4ka_pro extends LinearOpMode {
         }
         robot.stop();
         module_master.stop(dataStorage.telemetry);
+        //smotritel.stopDashboardStream();
+        /*smotritel.stopStream();*/
         transfer.armExtensionPos = module_master.arm.extensionMotor.getCurrentPosition();
         //logger.writeLn("offset: " + transfer.armExtensionPos);
         //logger.close();
@@ -290,7 +301,7 @@ public class su4ka_pro extends LinearOpMode {
 
         //waitArmRotation();
         module_master.differential.openClaw();
-        delay(200);
+        delay(100);
 
         module_master.differential.pitchHalfDown();
 
@@ -301,6 +312,7 @@ public class su4ka_pro extends LinearOpMode {
 
     private boolean takeFromSubmersible(Smotritel smotritel, int call){
         smotritel.startStream();
+        //smotritel.startDashboardStream();
 
         module_master.arm.setRotation(arm.rotation.CAMERA);
         module_master.arm.setExtension(arm.extension.CAMERA);
@@ -309,37 +321,78 @@ public class su4ka_pro extends LinearOpMode {
         module_master.differential.setPitch(73);
         module_master.differential.update();
 
-        if (call == 1)
-            path_follower.goToPosVeryUnsafe(22.2, 6, -Math.PI - Math.toRadians(7));
+        if (call == -1)
+            ;
+        else if (call == 1)
+            path_follower.goToPosVeryUnsafe(22.2, 7, -Math.PI);
+        else if (call == 2)
+            path_follower.goToPosVeryUnsafe(22.2, 9, -Math.PI);
         else
-            path_follower.goToPosVeryUnsafe(22.2, 9, -Math.PI - Math.toRadians(8.5));
-        while (!module_master.arm.extensionReached() || !module_master.arm.rotationReached())
+            path_follower.goToPosVeryUnsafe(22.2, 7.5, -Math.PI);
+        while ((!module_master.arm.extensionReached() || !module_master.arm.rotationReached()) && opModeIsActive())
             module_master.update(dataStorage.telemetry);
 
         dataStorage.updateData();
         double yOffset = 0;
         int xOffset = 0;
         Sample nearest = smotritel.getNearestSample();
+        telemetry.addData("area", nearest.getArea());
+        telemetry.update();
         double angle = nearest.getAngle();
-        smotritel.stopStream();
-        yOffset = BlackPipeline.pixelToInchesY(nearest.getCenter().y);
-        xOffset = BlackPipeline.pixelToTicks(nearest.getCenter().x);
-        module_master.arm.pidExtend(xOffset);
-        module_master.arm.setRotation(arm.rotation.FRONT);
-        path_follower.goToPos(dataStorage.RobotWorldX, dataStorage.RobotWorldY + yOffset, dataStorage.RobotWorldHeading);
 
-        while (!module_master.arm.extensionReached() || !module_master.arm.rotationReached())
+        if (nearest.getColor() == Sample.SampleColor.UNDETECTED) {
+            if (call == -1)
+                path_follower.goToPos(dataStorage.RobotWorldX, dataStorage.RobotWorldY - 4, dataStorage.RobotWorldHeading);
+            else
+                path_follower.goToPos(dataStorage.RobotWorldX + 4, dataStorage.RobotWorldY, dataStorage.RobotWorldHeading);
+            //smotritel.stopStream();
+            //smotritel.startDashboardStream();
+            return false;
+        }
+        else {
+            if (nearest.getArea() > 10000) {
+                smotritel.stopStream();
+                //smotritel.stopDashboardStream();
+            }
+            yOffset = BlackPipeline.pixelToInchesY(nearest.getCenter().y);
+            xOffset = BlackPipeline.pixelToTicks(nearest.getCenter().x);
+            if (nearest.getArea() > 10000) {
+                module_master.arm.ROTATION_PIDF = new PIDFCoefficients(0.0026, 0, 0.0019, 0);
+                module_master.arm.pidExtend(xOffset);
+                module_master.arm.setRotation(arm.rotation.FRONT);
+            }
+            path_follower.goToPos(dataStorage.RobotWorldX, dataStorage.RobotWorldY + yOffset, dataStorage.RobotWorldHeading);
+
+            if (nearest.getArea() <= 10000) {
+                nearest = smotritel.getNearestSample();
+                telemetry.addData("area", nearest.getArea());
+                telemetry.update();
+                smotritel.stopStream();
+                //smotritel.startDashboardStream();
+                angle = nearest.getAngle();
+
+                yOffset = BlackPipeline.pixelToInchesY(nearest.getCenter().y);
+                xOffset = BlackPipeline.pixelToTicks(nearest.getCenter().x);
+                module_master.arm.ROTATION_PIDF = new PIDFCoefficients(0.0026, 0, 0.0019, 0);
+                module_master.arm.pidExtend(xOffset);
+                module_master.arm.setRotation(arm.rotation.FRONT);
+                path_follower.goToPos(dataStorage.RobotWorldX, dataStorage.RobotWorldY + yOffset, dataStorage.RobotWorldHeading);
+            }
+        }
+        while ((!module_master.arm.extensionReached() || !module_master.arm.rotationReached()) && opModeIsActive())
             module_master.update(dataStorage.telemetry);
         module_master.differential.pitchDown();
+        delay(300);
         module_master.differential.setRoll(differential.geomToDifAngle(angle));
         module_master.differential.update();
-        sleep(300);
+        delay(300);
 
         module_master.differential.closeClaw();
-        sleep(200);
+        delay(200);
         module_master.differential.setPitch(135);
         module_master.differential.rollDefault();
         module_master.differential.update();
+        module_master.arm.ROTATION_PIDF = new PIDFCoefficients(0.0026, 0, 0.0019, -0.0024);
         return true;
     }
 
@@ -356,7 +409,7 @@ public class su4ka_pro extends LinearOpMode {
         module_master.differential.pitchForward();
         module_master.differential.update();
     }
-
+    */
     private void instapark(){
         module_master.arm.setExtension(arm.extension.HIGH_CHAMBER);
         module_master.arm.setRotation(arm.rotation.CHAMBER);
@@ -369,5 +422,4 @@ public class su4ka_pro extends LinearOpMode {
         robot.stop();
         transfer.angle = dataStorage.RobotWorldHeading;
     }
-     */
 }

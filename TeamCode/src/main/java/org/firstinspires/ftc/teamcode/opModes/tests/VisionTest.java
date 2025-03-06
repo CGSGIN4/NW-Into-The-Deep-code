@@ -86,63 +86,63 @@ public class VisionTest extends LinearOpMode {
         int rememberDist = 0;
         module_master.arm.resetRotationEncoders();
         module_master.arm.setRotation(rotation.FRONT);
-        while (opModeIsActive()) {
-            telemetry.addData("nearestAng", sampleDetection.getNearestAng());
-            telemetry.addData("nearest x", sampleDetection.getNearestCenter().x);
-            telemetry.addData("nearest y", sampleDetection.getNearestCenter().y);
-            telemetry.update();
-
-            if (gamepad1.cross) {
-                dataStorage.updateData();
-                double yOffset = 0, xOffset = 0;
-                rememberAng = sampleDetection.getNearestAng();
-                yOffset = BlackPipeline.pixelToInchesY(sampleDetection.getNearestCenter().y);
-                rememberDist = BlackPipeline.pixelToTicks(sampleDetection.getNearestCenter().x);
-                module_master.arm.ROTATION_PIDF = new PIDFCoefficients(0.0026, 0, 0.0019, -0.0032);
-                module_master.arm.pidExtend(rememberDist);
-                module_master.arm.setRotation(rotation.FRONT);
-                follower.goToPos(dataStorage.RobotWorldX, dataStorage.RobotWorldY + yOffset, dataStorage.RobotWorldHeading);
-
-                while (!module_master.arm.extensionReached() || !module_master.arm.rotationReached())
-                    module_master.update(dataStorage.telemetry);
-                module_master.differential.pitchDown();
-                module_master.differential.setRoll(differential.geomToDifAngle(rememberAng));
-                module_master.differential.update();
-                sleep(300);
-
-                module_master.differential.closeClaw();
-                sleep(200);
-                module_master.differential.pitchUp();
-                module_master.arm.setExtension(extension.CLOSED);
-            }
-
-            if (gamepad1.square) {
-                module_master.arm.ROTATION_PIDF = new PIDFCoefficients(0.0026, 0, 0.0019, -0.0182);
-                module_master.arm.setRotation(rotation.CAMERA);
-                module_master.arm.setExtension(extension.CAMERA);
-                module_master.differential.openClaw();
-                module_master.differential.setRoll(-10);
-                module_master.differential.setPitch(73);
-                module_master.differential.update();
-            }
-
-            if (gamepad1.triangle) {
-                module_master.arm.pidExtend(rememberDist);
-            }
-
-            if(gamepad1.circle) {
-                module_master.differential.pitchDown();
-                sleep(300);
-                module_master.differential.setRoll(differential.geomToDifAngle(rememberAng));
-                module_master.differential.update();
-                sleep(400);
-                module_master.differential.closeClaw();
-                sleep(200);
-                module_master.differential.pitchUp();
-                module_master.arm.setExtension(extension.CLOSED);
-            }
-
-            module_master.update(dataStorage.telemetry);
-        }
+//        while (opModeIsActive()) {
+//            telemetry.addData("nearestAng", sampleDetection.getNearestAng());
+//            telemetry.addData("nearest x", sampleDetection.getNearestCenter().x);
+//            telemetry.addData("nearest y", sampleDetection.getNearestCenter().y);
+//            telemetry.update();
+//
+//            if (gamepad1.cross) {
+//                dataStorage.updateData();
+//                double yOffset = 0, xOffset = 0;
+//                rememberAng = sampleDetection.getNearestAng();
+//                yOffset = BlackPipeline.pixelToInchesY(sampleDetection.getNearestCenter().y);
+//                rememberDist = BlackPipeline.pixelToTicks(sampleDetection.getNearestCenter().x);
+//                module_master.arm.ROTATION_PIDF = new PIDFCoefficients(0.0026, 0, 0.0019, -0.0032);
+//                module_master.arm.pidExtend(rememberDist);
+//                module_master.arm.setRotation(rotation.FRONT);
+//                follower.goToPos(dataStorage.RobotWorldX, dataStorage.RobotWorldY + yOffset, dataStorage.RobotWorldHeading);
+//
+//                while (!module_master.arm.extensionReached() || !module_master.arm.rotationReached())
+//                    module_master.update(dataStorage.telemetry);
+//                module_master.differential.pitchDown();
+//                module_master.differential.setRoll(differential.geomToDifAngle(rememberAng));
+//                module_master.differential.update();
+//                sleep(300);
+//
+//                module_master.differential.closeClaw();
+//                sleep(200);
+//                module_master.differential.pitchUp();
+//                module_master.arm.setExtension(extension.CLOSED);
+//            }
+//
+//            if (gamepad1.square) {
+//                module_master.arm.ROTATION_PIDF = new PIDFCoefficients(0.0026, 0, 0.0019, -0.0182);
+//                module_master.arm.setRotation(rotation.CAMERA);
+//                module_master.arm.setExtension(extension.CAMERA);
+//                module_master.differential.openClaw();
+//                module_master.differential.setRoll(-10);
+//                module_master.differential.setPitch(73);
+//                module_master.differential.update();
+//            }
+//
+//            if (gamepad1.triangle) {
+//                module_master.arm.pidExtend(rememberDist);
+//            }
+//
+//            if(gamepad1.circle) {
+//                module_master.differential.pitchDown();
+//                sleep(300);
+//                module_master.differential.setRoll(differential.geomToDifAngle(rememberAng));
+//                module_master.differential.update();
+//                sleep(400);
+//                module_master.differential.closeClaw();
+//                sleep(200);
+//                module_master.differential.pitchUp();
+//                module_master.arm.setExtension(extension.CLOSED);
+//            }
+//
+//            module_master.update(dataStorage.telemetry);
+//        }
     }
 }

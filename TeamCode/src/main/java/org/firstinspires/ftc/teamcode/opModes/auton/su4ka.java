@@ -54,7 +54,7 @@ public class su4ka extends LinearOpMode {
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-        module_master.differential.pitchUp();
+        module_master.differential.pitchDown();
         module_master.differential.rollDefault();
         module_master.differential.closeClaw();
         module_master.differential.update();
@@ -127,7 +127,7 @@ public class su4ka extends LinearOpMode {
             module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
             module_master.arm.setRotation(arm.rotation.LIFT);
             module_master.differential.pitchForward();
-            path_follower.goToPosUnsafe(51.7, 48.8, -Math.PI * 3 / 4);
+            path_follower.goToPosUnsafe(52.2, 48.8, -Math.PI * 3 / 4);
             module_master.differential.pitchHalfDown();
             setExtensionAndWait(arm.extension.EXTENDED);
             //logger.writeLn("----------STARTING SCORING THIRD------------");

@@ -53,7 +53,7 @@ public class auto_0plus5_afkbot extends LinearOpMode {
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-        module_master.differential.pitchUp();
+        module_master.differential.pitchDown();
         module_master.differential.rollDefault();
         module_master.differential.closeClaw();
         module_master.differential.update();

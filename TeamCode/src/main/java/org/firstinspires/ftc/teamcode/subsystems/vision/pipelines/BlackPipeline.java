@@ -9,6 +9,7 @@ import org.firstinspires.ftc.robotcore.external.function.Consumer;
 import org.firstinspires.ftc.robotcore.external.function.Continuation;
 import org.firstinspires.ftc.robotcore.external.stream.CameraStreamSource;
 import org.firstinspires.ftc.robotcore.internal.camera.calibration.CameraCalibration;
+import org.firstinspires.ftc.teamcode.subsystems.vision.Sample;
 import org.firstinspires.ftc.vision.VisionProcessor;
 import org.opencv.android.Utils;
 import org.opencv.core.*;
@@ -21,8 +22,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class BlackPipeline implements VisionProcessor, CameraStreamSource {
 
     private final AtomicReference<Bitmap> lastFrame = new AtomicReference<>(Bitmap.createBitmap(1, 1, Bitmap.Config.RGB_565));
-    private double nearestAng = 0;
-    private Point nearestCenter = new Point();
+    private Sample nearestSample = new Sample(-1, -1, new Point(0, 0), -1, Sample.SampleColor.UNDETECTED);
     public static Scalar lower = new Scalar(0, 0, 160);
     public static Scalar upper = new Scalar(0, 0, 250);
     public Mat findCorners(Mat image) {
@@ -37,58 +37,32 @@ public class BlackPipeline implements VisionProcessor, CameraStreamSource {
         Imgproc.findContours(edges, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 //        Imgproc.drawContours(image, contours, -1, new Scalar(255, 0, 255));
 
+        nearestSample = new Sample(-1, -1, new Point(0, 0), -1, Sample.SampleColor.UNDETECTED);
         Mat result = image.clone();
         double maxArea = 0;
         for (MatOfPoint cnt : contours) {
             double area = Imgproc.contourArea(cnt);
-            if (area < 100 || area > 50000) continue;
+            if (area < 1000 || area > 100000) continue;
 
             RotatedRect box = Imgproc.minAreaRect(new MatOfPoint2f(cnt.toArray()));
 
-            Point rightmost = null, leftmost = null, topmost = null, bottommost = null;
-            for (Point point : cnt.toArray()) {
-                if (rightmost == null || point.x > rightmost.x) rightmost = point;
-                if (leftmost == null || point.x < leftmost.x) leftmost = point;
-                if (topmost == null || point.y < topmost.y) topmost = point;
-                if (bottommost == null || point.y > bottommost.y) bottommost = point;
+            double width = box.size.width;
+            double height = box.size.height;
+            double angle = box.angle;
+
+            if (width > height) {
+                angle += 90;
             }
 
-            if (rightmost != null && leftmost != null && topmost != null && bottommost != null) {
-                double minDistance = 0.0;
-                if (getDistance(rightmost, leftmost) > minDistance &&
-                        getDistance(rightmost, topmost) > minDistance &&
-                        getDistance(rightmost, bottommost) > minDistance &&
-                        getDistance(topmost, leftmost) > minDistance &&
-                        getDistance(bottommost, leftmost) > minDistance &&
-                        getDistance(topmost, bottommost) > minDistance) {
+            if (area > maxArea) {
+                maxArea = area;
+                this.nearestSample = new Sample(width, height, new Point(320 - box.center.x, box.center.y - 240), angle, Sample.SampleColor.YELLOW);
 
-                    Imgproc.circle(result, rightmost, 2, new Scalar(0, 0, 255), -1);
-                    Imgproc.circle(result, leftmost, 2, new Scalar(0, 255, 0), -1);
-                    Imgproc.circle(result, topmost, 2, new Scalar(255, 0, 0), -1);
-                    Imgproc.circle(result, bottommost, 2, new Scalar(255, 255, 0), -1);
+                Point[] boxPoints = new Point[4];
+                box.points(boxPoints);
 
-                    Imgproc.line(result, rightmost, leftmost, new Scalar(0, 255, 255), 1);
-                    Imgproc.line(result, bottommost, topmost, new Scalar(255, 0, 255), 1);
-
-                    double tg = (bottommost.y - topmost.y) / (bottommost.x - topmost.x);
-                    double ang = Math.toDegrees(Math.atan(tg));
-
-
-                    double width = box.size.width;
-                    double height = box.size.height;
-                    double angle = box.angle;
-                    double length = -box.center.x + 320;
-
-                    if (width > height) {
-                        angle += 90;
-                    }
-
-                    if (area > maxArea) {
-                        maxArea = area;
-                        this.nearestAng = angle;
-                        this.nearestCenter = new Point(320 - box.center.x, box.center.y - 240);
-                    }
-
+                for (int j = 0; j < 4; ++j) {
+                    Imgproc.line(result, boxPoints[j], boxPoints[(j + 1) % 4], new Scalar(255, 0, 0), 5);
                 }
             }
         }
@@ -98,12 +72,8 @@ public class BlackPipeline implements VisionProcessor, CameraStreamSource {
         return result;
     }
 
-    public double getNearestAng() {
-        return nearestAng;
-    }
-
-    public Point getNearestCenter() {
-        return nearestCenter;
+    public Sample getNearestSample() {
+        return nearestSample;
     }
 
     static double getDistance(Point p1, Point p2) {
@@ -149,6 +119,18 @@ public class BlackPipeline implements VisionProcessor, CameraStreamSource {
         hsv.release();
         mask.release();
         filtered.release();
+
+        Imgproc.circle(image, new Point(-nearestSample.getCenter().x + 320, nearestSample.getCenter().y + 240), 25, new Scalar(255, 0, 0));
+
+        Imgproc.putText(
+                image,
+                String.format("%s", nearestSample.getArea()),
+                new Point(60, 90),
+                Imgproc.FONT_HERSHEY_COMPLEX,
+                1,
+                new Scalar(255, 255, 255),
+                2
+        );
 
         Bitmap b = Bitmap.createBitmap(image.width(), image.height(), Bitmap.Config.RGB_565);
         Utils.matToBitmap(image, b);

@@ -28,7 +28,7 @@ public class Smotritel {
 
     // width and height is shit do not believe!!!
     public Sample getNearestSample() {
-        return new Sample(-1, -1, pipeline.getNearestCenter(), pipeline.getNearestAng(), Sample.SampleColor.YELLOW);
+        return pipeline.getNearestSample();
     }
 
     public void startStream() {
