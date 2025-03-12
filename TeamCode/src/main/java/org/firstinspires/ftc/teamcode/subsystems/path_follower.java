@@ -23,9 +23,9 @@ public class path_follower {
     public FtcDashboard dashboard;
     public painter painter = new painter();
     double p_rotation_coef = 3.;
-    double p_trans_coef = 0.019;
-    double d_trans_coef = 0.18;
-    double i_trans_coef = 0.003;
+    public double p_trans_coef = 0.0027;
+    double d_trans_coef = 0.12;
+    double i_trans_coef = 0.001;
 
     public path_follower(drivetrain drivetrain){
         this.drivetrain = drivetrain;
@@ -184,6 +184,29 @@ public class path_follower {
         int tIndex = 0;
 
         while (t < 0.94 && dataStorage.OpMode.opModeIsActive()){
+            dataStorage.updateData();
+            module_master.update(dataStorage.telemetry);
+            t = velocity_calculator.getCurrentT(dataStorage.RobotPose);
+            if (tIndex < ts.length && t >= ts[tIndex])
+            {
+                module_master.doAction(actions[tIndex]);
+                tIndex++;
+            }
+            Vector2d transV = velocity_calculator.getTranslationalV(t, dataStorage.RobotPose, dataStorage.DSTelemetry);
+            double rotation = velocity_calculator.getRotationBackwards(t);
+            logData(Traj, t);
+            drivetrain.applyVectorFieldCentric(transV.rotated(Math.toRadians(90)), rotation);
+            //drivetrain.applyVectorFieldCentric(new Vector2d(0, 0), rotation);
+        }
+        drivetrain.applyVector(new Vector2d(0, 0), 0);
+    }
+
+    public void followTrajectoryBackwardsPercentage(curve Traj, double percentage, double[] ts, int[] actions){
+        velocity_calculator.setTrajectory(Traj);
+        double t = 0;
+        int tIndex = 0;
+
+        while (t < 0.94 && dataStorage.OpMode.opModeIsActive() && t < percentage / 100){
             dataStorage.updateData();
             module_master.update(dataStorage.telemetry);
             t = velocity_calculator.getCurrentT(dataStorage.RobotPose);
@@ -362,7 +385,7 @@ public class path_follower {
 
         dataStorage.updateData();
         module_master.update(dataStorage.telemetry);
-        while((dataStorage.RobotPose.distTo(finish) > 1 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.027 || dataStorage.RobotVelocity.norm() > 3) && dataStorage.OpMode.opModeIsActive()){
+        while((dataStorage.RobotPose.distTo(finish) > 1.9 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.1 || dataStorage.RobotVelocity.norm() > 4) && dataStorage.OpMode.opModeIsActive()){
             dataStorage.updateData();
             module_master.update(dataStorage.telemetry);
 
@@ -438,7 +461,7 @@ public class path_follower {
 
         dataStorage.updateData();
         module_master.update(dataStorage.telemetry);
-        while((dataStorage.RobotPose.distTo(finish) > 1 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.027 || dataStorage.RobotVelocity.norm() > 3) && dataStorage.OpMode.opModeIsActive()){
+        while((dataStorage.RobotPose.distTo(finish) > 1.9 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.05 || dataStorage.RobotVelocity.norm() > 4) && dataStorage.OpMode.opModeIsActive()){
             if (module_master.arm.rotationState == arm.rotation.RESET) {
                 module_master.arm.setExtension(arm.extension.YELLOW_3_PRO);
             }
@@ -459,8 +482,9 @@ public class path_follower {
 
         dataStorage.updateData();
         module_master.update(dataStorage.telemetry);
-        while((dataStorage.RobotPose.distTo(finish) > 3 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.14 || dataStorage.RobotVelocity.norm() > 25) && dataStorage.OpMode.opModeIsActive()/* && !module_master.arm.extensionReached()*/){
-            if (Math.abs(module_master.arm.targetRotationPos - module_master.arm.rotationMotor.getCurrentPosition()) < 480 && module_master.arm.rotationState == arm.rotation.LIFT)
+        module_master.arm.setRotation(arm.rotation.LIFT);
+        while((dataStorage.RobotPose.distTo(finish) > 3 || dataStorage.RobotVelocity.norm() > 25) && dataStorage.OpMode.opModeIsActive() && (!module_master.arm.extensionReached() || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.18)){
+            if (Math.abs(module_master.arm.targetRotationPos - module_master.arm.rotationMotor.getCurrentPosition()) < 200 && module_master.arm.rotationState == arm.rotation.LIFT)
                 module_master.arm.setExtension(arm.extension.EXTENDED);
             dataStorage.updateData();
             module_master.update(dataStorage.telemetry);
@@ -522,7 +546,7 @@ public class path_follower {
 
         dataStorage.updateData();
         module_master.update(dataStorage.telemetry);
-        while(((dataStorage.RobotPose.distTo(finish) > 2.5 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.3 || dataStorage.RobotVelocity.norm() > 15) && timer.milliseconds() < 1200) && dataStorage.OpMode.opModeIsActive()){
+        while(((dataStorage.RobotPose.distTo(finish) > 2.5 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.3 || dataStorage.RobotVelocity.norm() > 35) && timer.milliseconds() < 600) && dataStorage.OpMode.opModeIsActive()){
             dataStorage.updateData();
             module_master.update(dataStorage.telemetry);
 

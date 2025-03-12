@@ -76,6 +76,10 @@ public class tele_main extends LinearOpMode {
 
         waitForStart();
         //logger.writeLn("started teleop");
+        /* reset to init state */
+        differential.pitchUp();
+
+
         robot.drive.setPoseEstimate(new Pose2d(dataStorage.RobotWorldX, dataStorage.RobotWorldY, transfer.angle));
         differential.openClaw();
         while(opModeIsActive()) {
@@ -357,6 +361,14 @@ public class tele_main extends LinearOpMode {
                 arm.resetRotationEncoders();
             if (assistGamepad.isPressed("left_stick_button"))
                 arm.manuallyRotate(-0.5);
+
+            if (assistGamepad.isClicked("right_stick_button")) {
+                arm.manuallyRotate(-0.5);
+                arm.manuallyExtend(-0.5);
+                sleep(500);
+                arm.resetRotationEncoders();
+                arm.resetExtensionEncoders();
+            }
 
             dataStorage.telemetry.addLine("-----------TELEOP----------");
             dataStorage.telemetry.addLine(lastCall);

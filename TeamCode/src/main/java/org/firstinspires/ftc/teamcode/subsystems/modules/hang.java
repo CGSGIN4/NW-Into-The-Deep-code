@@ -94,11 +94,12 @@ public class hang {
 
     public void fold(){
         state = states.FOLDING;
-        goTo(target_2_hang);
+        pushDown();
     }
 
     public void pushDown(){
-        goTo(target_2_hang);
+        left.setPower(-1);
+        right.setPower(-1);
     }
     public void pushDownGently(){
         left.setPower(-0.4);
