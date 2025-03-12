@@ -29,22 +29,22 @@ public class arm {
 
     /* ------------------ CONSTANTS ------------------ */
     boolean teleop = false;
-    int EXTENSION_FULL = 975; //370
-    public int EXTENSION_FRONT_MAX = 522;
-    int EXTENSION_LOW_BASKET = 340;
-    int EXTENSION_LOW_CHAMBER = 129;
-    int EXTENSION_HIGH_CHAMBER = 375;
-    int EXTENSION_YELLOW_1 = 518;
-    int EXTENSION_YELLOW_2 = 500;
-    int EXTENSION_YELLOW_3 = 481;
-    int EXTENSION_YELLOW_1_PRO = 375;
-    int EXTENSION_YELLOW_2_PRO = 358;
-    int EXTENSION_YELLOW_3_PRO = 93;
-    int EXTENSION_DOBOR = 486;
-    int EXTENSION_YELLOW_AFKBOT = 375;
-    int EXTENSION_SUPPORT = 113;
-    int EXTENSION_CLOSED_AUTO = -50;
-    int EXTENSION_CAMERA = 429;
+    int EXTENSION_FULL = 1340; //370
+    public int EXTENSION_FRONT_MAX = 730;
+    int EXTENSION_LOW_BASKET = 475;
+    int EXTENSION_LOW_CHAMBER = 180;
+    int EXTENSION_HIGH_CHAMBER = 524;
+    int EXTENSION_YELLOW_1 = 725;
+    int EXTENSION_YELLOW_2 = 700;
+    int EXTENSION_YELLOW_3 = 673;
+    int EXTENSION_YELLOW_1_PRO = 525;
+    int EXTENSION_YELLOW_2_PRO = 500;
+    int EXTENSION_YELLOW_3_PRO = 130;
+    int EXTENSION_DOBOR = 680;
+    int EXTENSION_YELLOW_AFKBOT = 510;
+    int EXTENSION_SUPPORT = 158;
+    int EXTENSION_CLOSED_AUTO = -70;
+    int EXTENSION_CAMERA = 600;
     int ROTATION_FRONT = 0;
     int ROTATION_BACK_HANG1 = 487; //508
     int ROTATION_LIFT = 487; //498 //was 467 before stopper
@@ -74,8 +74,8 @@ public class arm {
     /* no load 1:4 */ //public PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.0069, 0, 0.0003, -0.0064);
     /* no load 1:1.17 *///final PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.009, 0, 0.019, 0.028);
     /* load 1:1.17 *///final PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.02, 0, 0.04, 0.052);
-    /* load 1:4 */ public PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.0026, 0, 0.0019, -0.0024);
-    public PIDFCoefficients EXTENSION_PIDF = new PIDFCoefficients(0.00475, 0, 0.00475, 0.0056);/*0.017*/
+    /* load 1:4 */ public PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.0026, 0, 0.0019, -0.0044);
+    public PIDFCoefficients EXTENSION_PIDF = new PIDFCoefficients(0.00685, 0, 0.00460, 0.0056);/*0.017*/ /*d: 0.00460 -> 0.00475*/
     int oldExtensionError = 0;
     public double oldRotationError = 0;
     double rotDeltaRaw = 0;
@@ -366,8 +366,8 @@ public class arm {
                 error = -modExponential / ROTATION_PIDF.p;
         }
 
-        if (targetPos == 0 && error < 30)
-            error *= (teleop ? 0.8 : 1.1);
+        if (targetPos == 0 && error < 40)
+            error *= (teleop ? 0.75 : 1.1);
 
         return (error * ROTATION_PIDF.p + delta * ROTATION_PIDF.d + ROTATION_PIDF.f * Math.sin(Math.toRadians(rotationAngle)) * (1 + ratio * ratio));
     }
@@ -379,7 +379,7 @@ public class arm {
 
         if (Math.abs(rotationPosToTicks(rotationState) - rotationMotor.getCurrentPosition() - rotOffset) >= 120 && targetExtensionPos != EXTENSION_SUPPORT && targetExtensionPos != EXTENSION_CLOSED_AUTO && teleop)
             return this.setExtensionMotorPower(-0.1);
-        else if (rotationState != rotation.LIFT || rotationReached() || Math.abs(rotationPosToTicks(rotationState) - rotationMotor.getCurrentPosition() - rotOffset) < 240/* || target == extension.CLOSED*/)
+        else if (rotationState != rotation.LIFT || rotationReached() || Math.abs(rotationPosToTicks(rotationState) - rotationMotor.getCurrentPosition() - rotOffset) < 360/* || target == extension.CLOSED*/)
             return this.setExtensionMotorPower(pidCalculateExtensionPower(targetExtensionPos));
         else
             return 0;
@@ -413,7 +413,7 @@ public class arm {
             resetRotationEncoders();
         }
 
-        if (target == rotation.PREASCEND || target == rotation.CHAMBER || target == rotation.BACK_HANG1 || rotationState == rotation.BACK_HANG1 || (extensionState == extension.CLOSED && extensionMotor.getCurrentPosition() + offset < 178) || (extensionMotor.getCurrentPosition() + offset < 178 && extensionState == extension.MANUAL) || (extensionState == extension.SUPPORT && extensionMotor.getCurrentPosition() + offset < 178) || (extensionState == extension.CLOSED_AUTO && extensionMotor.getCurrentPosition() + offset < 143) || (extensionState == extension.YELLOW_3_PRO && extensionMotor.getCurrentPosition() < EXTENSION_YELLOW_3_PRO + 64) || extensionState == extension.PID_MANUAL || extensionState == extension.CAMERA) {
+        if (target == rotation.PREASCEND || target == rotation.CHAMBER || target == rotation.BACK_HANG1 || rotationState == rotation.BACK_HANG1 || (extensionState == extension.CLOSED && extensionMotor.getCurrentPosition() + offset < 258) || (extensionMotor.getCurrentPosition() + offset < 178 && extensionState == extension.MANUAL) || (extensionState == extension.SUPPORT && extensionMotor.getCurrentPosition() + offset < 178) || (extensionState == extension.CLOSED_AUTO && extensionMotor.getCurrentPosition() + offset < 143) || (extensionState == extension.YELLOW_3_PRO && extensionMotor.getCurrentPosition() < EXTENSION_YELLOW_3_PRO + 64) || extensionState == extension.PID_MANUAL || extensionState == extension.CAMERA) {
             rotationState = wantedRotation;
             this.targetRotationPos = rotationPosToTicks(target);
         }
@@ -490,7 +490,7 @@ public class arm {
 
     public boolean extensionReached()
     {
-        return (extensionMotor.getCurrentPosition() + offset >= EXTENSION_FULL - 325 && extensionState == extension.EXTENDED) ||
+        return (extensionMotor.getCurrentPosition() + offset >= EXTENSION_FULL - 485 && extensionState == extension.EXTENDED) ||
                 (extensionMotor.getCurrentPosition() + offset < 16 && extensionState == extension.CLOSED) ||
                 (Math.abs(extDelta) <= 4 && Math.abs(targetExtensionPos - extensionMotor.getCurrentPosition() - offset) < 11);
     }
