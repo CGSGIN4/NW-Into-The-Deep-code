@@ -228,7 +228,7 @@ public class tele_main extends LinearOpMode {
                 if (foldingTimer.milliseconds() > TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING + 200 + extraWaitDiffyFlip)
                     pitch = 6;
                 if (foldingTimer.milliseconds() > TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING + 500 + extraWaitDiffyFlip) {
-                    if (arm.extensionMotor.getCurrentPosition() + arm.offset > 72) {
+                    if (arm.extensionMotor.getCurrentPosition() + arm.offset > 100) {
                         arm.setExtension(CLOSED);
                     }
                     else {
@@ -258,7 +258,7 @@ public class tele_main extends LinearOpMode {
                 if (zazhimTimer.milliseconds() > 1000 && scoring_mode == 0)
                     differential.closeClawSilno();
                 arm.setExtension(EXTENDED);
-                if (arm.extensionMotor.getCurrentPosition() + arm.offset > 944) {
+                if (arm.extensionMotor.getCurrentPosition() + arm.offset > 1320) {
                     unfoldingSequence = false;
                     if (scoring_mode == 0)
                         differential.closeClawSilno();
@@ -276,7 +276,7 @@ public class tele_main extends LinearOpMode {
                 else
                     pitch = 125;
                 arm.setExtension(LOW_BASKET);
-                if (arm.extensionMotor.getCurrentPosition() + arm.offset > 333) {
+                if (arm.extensionMotor.getCurrentPosition() + arm.offset > 465) {
                     unfoldingSequenceLowBasket = false;
                     //logger.writeLn("unfolding sequenceLowBasket finished as planned");
                 }
