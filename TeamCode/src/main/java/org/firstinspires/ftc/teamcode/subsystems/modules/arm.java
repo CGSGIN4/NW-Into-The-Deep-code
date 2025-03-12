@@ -29,7 +29,7 @@ public class arm {
 
     /* ------------------ CONSTANTS ------------------ */
     boolean teleop = false;
-    int EXTENSION_FULL = 1340; //370
+    int EXTENSION_FULL = 1380; //370
     public int EXTENSION_FRONT_MAX = 730;
     int EXTENSION_LOW_BASKET = 475;
     int EXTENSION_LOW_CHAMBER = 180;
@@ -174,7 +174,7 @@ public class arm {
             rotOffset = 0;
         else {
             rotOffset = 487;
-            offset = -42;
+            offset = -70;
         }
         //logger.writeLn("offset: " + offset);
 
@@ -245,7 +245,7 @@ public class arm {
             case LOW_BASKET:
                 return EXTENSION_LOW_BASKET;
             case CLOSED:
-                return (int)(-(94.8 / 928) * (rotationMotor.getCurrentPosition() + rotOffset));
+                return (int)(-(132.57 / 928) * (rotationMotor.getCurrentPosition() + rotOffset));
             case LOW_CHAMBER:
                 return EXTENSION_LOW_CHAMBER;
             case HIGH_CHAMBER:
@@ -323,7 +323,7 @@ public class arm {
         int error = targetPos - extensionMotor.getCurrentPosition() - offset;
         extDelta = error - oldExtensionError;
 
-        if (Math.abs(error) < 28)
+        if (Math.abs(error) < 40)
             extensionSum += error;
 
         if (error * oldExtensionError <= 0)
@@ -331,7 +331,7 @@ public class arm {
 
         oldExtensionError = error;
 
-        if (rotationState == rotation.LIFT && extensionState == extension.CLOSED && Math.abs(error) < 43 && Math.abs(error) > 7) {
+        if (rotationState == rotation.LIFT && extensionState == extension.CLOSED && Math.abs(error) < 60 && Math.abs(error) > 10) {
             error /= 2;
         }
 
@@ -413,7 +413,7 @@ public class arm {
             resetRotationEncoders();
         }
 
-        if (target == rotation.PREASCEND || target == rotation.CHAMBER || target == rotation.BACK_HANG1 || rotationState == rotation.BACK_HANG1 || (extensionState == extension.CLOSED && extensionMotor.getCurrentPosition() + offset < 258) || (extensionMotor.getCurrentPosition() + offset < 178 && extensionState == extension.MANUAL) || (extensionState == extension.SUPPORT && extensionMotor.getCurrentPosition() + offset < 178) || (extensionState == extension.CLOSED_AUTO && extensionMotor.getCurrentPosition() + offset < 143) || (extensionState == extension.YELLOW_3_PRO && extensionMotor.getCurrentPosition() < EXTENSION_YELLOW_3_PRO + 64) || extensionState == extension.PID_MANUAL || extensionState == extension.CAMERA) {
+        if (target == rotation.PREASCEND || target == rotation.CHAMBER || target == rotation.BACK_HANG1 || rotationState == rotation.BACK_HANG1 || (extensionState == extension.CLOSED && extensionMotor.getCurrentPosition() + offset < 360) || (extensionMotor.getCurrentPosition() + offset < 240 && extensionState == extension.MANUAL) || (extensionState == extension.SUPPORT && extensionMotor.getCurrentPosition() + offset < 240) || (extensionState == extension.CLOSED_AUTO && extensionMotor.getCurrentPosition() + offset < 193) || (extensionState == extension.YELLOW_3_PRO && extensionMotor.getCurrentPosition() < EXTENSION_YELLOW_3_PRO + 86) || extensionState == extension.PID_MANUAL || extensionState == extension.CAMERA) {
             rotationState = wantedRotation;
             this.targetRotationPos = rotationPosToTicks(target);
         }
@@ -467,21 +467,21 @@ public class arm {
 
     public double getExtensionLength(){
         double pos = extensionMotor.getCurrentPosition() + offset;
-        double k = 0.715 / 1874;
+        double k = 0.715 / 1340;
         double b = 0.3;
 
         l_1 = 0.180 + k * pos;
         //l_1 = 0.135 + 0.0018 * pos;
-        if (pos > 241)
-            l_2 = 0.135 + k * (pos - 241);
+        if (pos > 337)
+            l_2 = 0.135 + k * (pos - 337);
         else
             l_2 = 0.135;
-        if (pos > 241 * 2)
-            l_3 = 0.135 + k * (pos - 241 * 2);
+        if (pos > 674)
+            l_3 = 0.135 + k * (pos - 674);
         else
             l_3 = 0.135;
-        if (pos > 241 * 3)
-            l_4 = 0.135 + k * (pos - 241 * 3);
+        if (pos > 1011)
+            l_4 = 0.135 + k * (pos - 1011);
         else
             l_4 = 0.135;
 
@@ -490,9 +490,9 @@ public class arm {
 
     public boolean extensionReached()
     {
-        return (extensionMotor.getCurrentPosition() + offset >= EXTENSION_FULL - 485 && extensionState == extension.EXTENDED) ||
-                (extensionMotor.getCurrentPosition() + offset < 16 && extensionState == extension.CLOSED) ||
-                (Math.abs(extDelta) <= 4 && Math.abs(targetExtensionPos - extensionMotor.getCurrentPosition() - offset) < 11);
+        return (extensionMotor.getCurrentPosition() + offset >= EXTENSION_FULL - 455 && extensionState == extension.EXTENDED) ||
+                (extensionMotor.getCurrentPosition() + offset < 23 && extensionState == extension.CLOSED) ||
+                (Math.abs(extDelta) <= 5 && Math.abs(targetExtensionPos - extensionMotor.getCurrentPosition() - offset) < 15);
     }
 
     public boolean rotationReached()
