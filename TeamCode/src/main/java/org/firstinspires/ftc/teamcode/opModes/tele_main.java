@@ -30,14 +30,14 @@ import org.firstinspires.ftc.teamcode.utils.logger;
 
 import java.io.IOException;
 
-@TeleOp
+@TeleOp(name = "!tele_main")
 @Config
 public class tele_main extends LinearOpMode {
     double TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING = 0;
     /** 0 - fast, 1 - slow **/
     int scoring_mode = 0;
     double scored = 0;
-    public static double pitch = 6;
+    public static double pitch = 176;
     public static double roll = -11;
     Vector2d gamepad = new Vector2d();
     double turn = 0;
@@ -77,11 +77,11 @@ public class tele_main extends LinearOpMode {
         waitForStart();
         //logger.writeLn("started teleop");
         /* reset to init state */
+        differential.closeClaw();
         differential.pitchUp();
 
 
         robot.drive.setPoseEstimate(new Pose2d(dataStorage.RobotWorldX, dataStorage.RobotWorldY, transfer.angle));
-        differential.openClaw();
         while(opModeIsActive()) {
             driverGamepad.update();
             assistGamepad.update();
@@ -142,7 +142,7 @@ public class tele_main extends LinearOpMode {
                 else
                     turn = (gamepad1.left_trigger - gamepad1.right_trigger);
 
-                if (arm.extensionMotor.getCurrentPosition() > arm.EXTENSION_FRONT_MAX && arm.rotationState == LIFT)
+                if ((arm.extensionMotor.getCurrentPosition() > arm.EXTENSION_FRONT_MAX || arm.extensionState == LOW_BASKET && arm.extensionReached()) && arm.rotationState == LIFT)
                     turn *= 0.4;
 
                 if (Math.abs(gamepad1.right_stick_y) > 0.05 || Math.abs(gamepad1.right_stick_x) > 0.05)
@@ -330,7 +330,7 @@ public class tele_main extends LinearOpMode {
                 differential.openClaw();
                 if (hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.ASCEND2COMPLETE || hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.FOLDING)
                     hang.prepare3();
-                else if (hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.PREPARE3)
+                else if (hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.PREPARE3 || hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.READY3)
                     hang.standby3();
                 else if (hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.STANDBY3)
                     hang.fold3();
@@ -346,6 +346,8 @@ public class tele_main extends LinearOpMode {
                 arm.setRotation(LIFT);
                 hang.prepare();
             }
+            if (hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.PREPARE3)
+                pitch = 93;
 
             if (Math.abs(gamepad2.left_stick_y) > 0.05) {
                 hang.setPower(-gamepad2.left_stick_y);
@@ -362,10 +364,9 @@ public class tele_main extends LinearOpMode {
             if (assistGamepad.isPressed("left_stick_button"))
                 arm.manuallyRotate(-0.5);
 
-            if (assistGamepad.isClicked("right_stick_button")) {
+            if (assistGamepad.isPressed("right_stick_button")) {
                 arm.manuallyRotate(-0.5);
                 arm.manuallyExtend(-0.5);
-                sleep(500);
                 arm.resetRotationEncoders();
                 arm.resetExtensionEncoders();
             }

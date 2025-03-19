@@ -74,8 +74,8 @@ public class arm {
     /* no load 1:4 */ //public PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.0069, 0, 0.0003, -0.0064);
     /* no load 1:1.17 *///final PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.009, 0, 0.019, 0.028);
     /* load 1:1.17 *///final PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.02, 0, 0.04, 0.052);
-    /* load 1:4 */ public PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.0026, 0, 0.0019, -0.0044);
-    public PIDFCoefficients EXTENSION_PIDF = new PIDFCoefficients(0.00685, 0, 0.00460, 0.0056);/*0.017*/ /*d: 0.00460 -> 0.00475*/
+    /* load 1:4 */ public PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.0023, 0, 0.0022, -0.0044);
+    public PIDFCoefficients EXTENSION_PIDF = new PIDFCoefficients(0.0034, 0, 0.0034, 0.004);/*0.017*/ /*d: 0.00460 -> 0.00475*/
     int oldExtensionError = 0;
     public double oldRotationError = 0;
     double rotDeltaRaw = 0;
@@ -225,9 +225,9 @@ public class arm {
         if (extensionState.equals(extension.PID_MANUAL))
             pidExtend(targetExtensionPos);
 
-        if (rotationMotor.getCurrentPosition() + rotOffset < 100 && rotationBtn.getVoltage() < 0.4 && (rotationState == rotation.FRONT || rotationState == rotation.MANUAL)) /* pressed */ {
+        if (rotationMotor.getCurrentPosition() + rotOffset < 20 && rotationBtn.getVoltage() < 0.4 && (rotationState == rotation.FRONT || rotationState == rotation.MANUAL)) /* pressed */ {
             rotationState = rotation.RESET;
-            setRotationMotorPower(0 - (teleop ? 0 : 1) * 0.01);
+            setRotationMotorPower(0 + (teleop ? 0 : 1) * (-0.1));
         }
         //telemetry.update();
     }
@@ -366,8 +366,8 @@ public class arm {
                 error = -modExponential / ROTATION_PIDF.p;
         }
 
-        if (targetPos == 0 && error < 40)
-            error *= (teleop ? 0.75 : 1.1);
+        if (targetPos == 0 && error < 10)
+            error *= (teleop ? 0.75 : 20);
 
         return (error * ROTATION_PIDF.p + delta * ROTATION_PIDF.d + ROTATION_PIDF.f * Math.sin(Math.toRadians(rotationAngle)) * (1 + ratio * ratio));
     }
@@ -379,7 +379,7 @@ public class arm {
 
         if (Math.abs(rotationPosToTicks(rotationState) - rotationMotor.getCurrentPosition() - rotOffset) >= 120 && targetExtensionPos != EXTENSION_SUPPORT && targetExtensionPos != EXTENSION_CLOSED_AUTO && teleop)
             return this.setExtensionMotorPower(-0.1);
-        else if (rotationState != rotation.LIFT || rotationReached() || Math.abs(rotationPosToTicks(rotationState) - rotationMotor.getCurrentPosition() - rotOffset) < 360/* || target == extension.CLOSED*/)
+        else if (rotationState != rotation.LIFT || rotationReached() || Math.abs(rotationPosToTicks(rotationState) - rotationMotor.getCurrentPosition() - rotOffset) < 420/* || target == extension.CLOSED*/)
             return this.setExtensionMotorPower(pidCalculateExtensionPower(targetExtensionPos));
         else
             return 0;
@@ -403,7 +403,7 @@ public class arm {
             wantedRotation = rotation.RESET;
 
         if (wantedRotation == rotation.RESET && rotationState == rotation.RESET)
-            return setRotationMotorPower(0);
+            return setRotationMotorPower(0 + (teleop ? 0 : 1) * (-0.1));
 
         if (rotationState == rotation.FRONT && wantedRotation == rotation.FRONT && rotationMotor.getCurrentPosition() + rotOffset < 20)
             return setRotationMotorPower(0);
@@ -419,7 +419,7 @@ public class arm {
         }
 
         if (target == rotation.LIFT && rotationMotor.getCurrentPosition() + rotOffset > ROTATION_LIFT - 20)
-            return setRotationMotorPower(0.01 + (teleop ? 0 : 1) * 0.06);
+            return setRotationMotorPower(0.01 + (teleop ? 0 : 1) * 0.15);
 
         return this.setRotationMotorPower(pidCalculateRotationPower(targetRotationPos));
     }
@@ -441,7 +441,8 @@ public class arm {
     public void pidExtend(int target){
         extensionState = extension.PID_MANUAL;
         targetExtensionPos = target;
-        setExtensionMotorPower(pidCalculateExtensionPower(target));
+        if (target < EXTENSION_FRONT_MAX)
+            setExtensionMotorPower(pidCalculateExtensionPower(target));
     }
 
     public void manuallyRotate(double speed){
@@ -490,7 +491,7 @@ public class arm {
 
     public boolean extensionReached()
     {
-        return (extensionMotor.getCurrentPosition() + offset >= EXTENSION_FULL - 455 && extensionState == extension.EXTENDED) ||
+        return (extensionMotor.getCurrentPosition() + offset >= EXTENSION_FULL - 515 && extensionState == extension.EXTENDED) ||
                 (extensionMotor.getCurrentPosition() + offset < 23 && extensionState == extension.CLOSED) ||
                 (Math.abs(extDelta) <= 5 && Math.abs(targetExtensionPos - extensionMotor.getCurrentPosition() - offset) < 15);
     }
