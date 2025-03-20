@@ -255,7 +255,7 @@ public class path_follower {
 
         //dataStorage.DSTelemetry.addData("PID", "1");
 
-        while (plannedPos.distTo(finish) > 1){
+        while (plannedPos.distTo(finish) > 1 && dataStorage.OpMode.opModeIsActive()){
             dataStorage.updateData();
             module_master.update(dataStorage.telemetry);
             t = velocity_calculator.getCurrentT(dataStorage.RobotPose);
@@ -281,7 +281,7 @@ public class path_follower {
 
         drivetrain.applyVector(new Vector2d(0, 0), 0);
 
-        while (dataStorage.RobotVelocity.norm() > 1)
+        while (dataStorage.RobotVelocity.norm() > 1 && dataStorage.OpMode.opModeIsActive())
         {
             dataStorage.updateData();
             module_master.update(dataStorage.telemetry);
@@ -413,7 +413,7 @@ public class path_follower {
 
         dataStorage.updateData();
         module_master.update(dataStorage.telemetry);
-        while((dataStorage.RobotPose.distTo(finish) > 0.5 || (Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.05 && Math.abs(dataStorage.RobotWorldHeading - Heading) - 6.28 > 0.05) || dataStorage.RobotVelocity.norm() > 1) && dataStorage.OpMode.opModeIsActive()){
+        while((Math.abs(dataStorage.RobotWorldY - Y) > 0.8 || (Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.09 && Math.abs(dataStorage.RobotWorldHeading - Heading) - 6.28 > 0.09) || dataStorage.RobotVelocity.norm() > 2) && dataStorage.OpMode.opModeIsActive()){
             dataStorage.updateData();
             dataStorage.telemetry.addLine("--------PID FOLLOWER--------");
             dataStorage.telemetry.addData("target X", X);
@@ -499,7 +499,7 @@ public class path_follower {
 
         dataStorage.updateData();
         module_master.update(dataStorage.telemetry);
-        while((dataStorage.RobotPose.distTo(finish) > 1.9 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.05 || dataStorage.RobotVelocity.norm() > 4) && dataStorage.OpMode.opModeIsActive()){
+        while((dataStorage.RobotPose.distTo(finish) > 1 || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.05 || dataStorage.RobotVelocity.norm() > 4) && dataStorage.OpMode.opModeIsActive()){
             if (module_master.arm.rotationState == arm.rotation.RESET) {
                 module_master.arm.setExtension(arm.extension.YELLOW_3_PRO);
             }
@@ -521,7 +521,7 @@ public class path_follower {
         dataStorage.updateData();
         module_master.update(dataStorage.telemetry);
         module_master.arm.setRotation(arm.rotation.LIFT);
-        while((dataStorage.RobotPose.distTo(finish) > 3 || dataStorage.RobotVelocity.norm() > 25) && dataStorage.OpMode.opModeIsActive() && (!module_master.arm.extensionReached() || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.18)){
+        while((dataStorage.RobotPose.distTo(finish) > 2.5 || dataStorage.RobotVelocity.norm() > 10 || !module_master.arm.extensionReached() || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.08) && dataStorage.OpMode.opModeIsActive()){
             if (Math.abs(module_master.arm.targetRotationPos - module_master.arm.rotationMotor.getCurrentPosition()) < 420 && module_master.arm.rotationState == arm.rotation.LIFT)
                 module_master.arm.setExtension(arm.extension.EXTENDED);
             dataStorage.updateData();
@@ -536,14 +536,36 @@ public class path_follower {
         return new Pose2d(X, Y, Heading);
     }
 
-    public Pose2d goToPosWithArmToBasketThirdSample(double X, double Y, double Heading){
+    public Pose2d goToPosWithArmToBasketSu4ka(double X, double Y, double Heading){
         Pose2d pid;
         Vector2d finish = new Vector2d(X, Y);
 
         dataStorage.updateData();
         module_master.update(dataStorage.telemetry);
         module_master.arm.setRotation(arm.rotation.LIFT);
-        while((dataStorage.RobotPose.distTo(finish) > 3 || dataStorage.RobotVelocity.norm() > 25) && dataStorage.OpMode.opModeIsActive() && (!module_master.arm.extensionReached() || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.18)){
+        while((dataStorage.RobotPose.distTo(finish) > 2.5 || dataStorage.RobotVelocity.norm() > 10 || !module_master.arm.extensionReached() || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.12) && dataStorage.OpMode.opModeIsActive()){
+            if (Math.abs(module_master.arm.targetRotationPos - module_master.arm.rotationMotor.getCurrentPosition()) < 420 && module_master.arm.rotationState == arm.rotation.LIFT)
+                module_master.arm.setExtension(arm.extension.EXTENDED);
+            dataStorage.updateData();
+            module_master.update(dataStorage.telemetry);
+
+            pid = velocity_calculator.getPIDpower(finish, Heading);
+            //dataStorage.telemetry.addData("HeadingBuffer", velocity_calculator.IHeading);
+
+            drivetrain.applyVectorFieldCentric(pid.vec().rotated(Math.toRadians(90)), pid.getHeading());
+        }
+        drivetrain.applyVector(new Vector2d(0, 0), 0);
+        return new Pose2d(X, Y, Heading);
+    }
+
+    public Pose2d goToPosWithArmToBasketEasy(double X, double Y, double Heading){
+        Pose2d pid;
+        Vector2d finish = new Vector2d(X, Y);
+
+        dataStorage.updateData();
+        module_master.update(dataStorage.telemetry);
+        module_master.arm.setRotation(arm.rotation.LIFT);
+        while((dataStorage.RobotPose.distTo(finish) > 3 || dataStorage.RobotVelocity.norm() > 25) && dataStorage.OpMode.opModeIsActive() && (!module_master.arm.extensionReached() || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.16)){
             if (Math.abs(module_master.arm.targetRotationPos - module_master.arm.rotationMotor.getCurrentPosition()) < 420 && module_master.arm.rotationState == arm.rotation.LIFT)
                 module_master.arm.setExtension(arm.extension.EXTENDED);
             dataStorage.updateData();

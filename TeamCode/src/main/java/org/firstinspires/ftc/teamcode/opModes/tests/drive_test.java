@@ -44,14 +44,14 @@ public class drive_test extends LinearOpMode {
         waitForStart();
         painter painter = new painter();
 
-        robot.drive.setPoseEstimate(new Pose2d(-48, 48, 0));
+        robot.drive.setPoseEstimate(new Pose2d(39.9, 64.93, Math.PI));
         while (opModeIsActive()) {
             dataStorage.updateData();
 
             if (Math.abs(gamepad1.left_stick_x) > 0.01 || Math.abs(gamepad1.left_stick_y) > 0.01 || gamepad1.left_trigger > 0.01 || gamepad1.right_trigger > 0.01 || turn != 0)
             {
                 gamepad = new Vector2d(gamepad1.left_stick_x, -gamepad1.left_stick_y);
-                //turn = (gamepad1.left_trigger - gamepad1.right_trigger) * 0.8;
+                turn = (gamepad1.left_trigger - gamepad1.right_trigger) * 0.8;
 
                 robot.drivetrain.applyVector(gamepad, turn);
             }

@@ -25,6 +25,7 @@ import org.firstinspires.ftc.teamcode.subsystems.modules.differential;
 import org.firstinspires.ftc.teamcode.subsystems.modules.hang;
 import org.firstinspires.ftc.teamcode.subsystems.path_follower;
 import org.firstinspires.ftc.teamcode.subsystems.velocity_calculator;
+import org.firstinspires.ftc.teamcode.subsystems.vision.LLSmotritel;
 import org.firstinspires.ftc.teamcode.utils.GamepadNW;
 import org.firstinspires.ftc.teamcode.utils.logger;
 
@@ -59,6 +60,9 @@ public class tele_main extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         //logger.init();
+        LLSmotritel smotritel = new LLSmotritel(hardwareMap, 0);
+        smotritel.startStreaming();
+        smotritel.stopStreaming();
         Robot robot = new Robot(hardwareMap);
         path_follower = new path_follower(robot.drivetrain);
         velocity_calculator velocity_calculator = new velocity_calculator();
@@ -78,6 +82,8 @@ public class tele_main extends LinearOpMode {
         //logger.writeLn("started teleop");
         /* reset to init state */
         differential.closeClaw();
+        zazhimTimer.reset();
+        while(zazhimTimer.milliseconds() < 700);
         differential.pitchUp();
 
 
@@ -256,12 +262,12 @@ public class tele_main extends LinearOpMode {
                     pitch = 125;
                 }
                 if (zazhimTimer.milliseconds() > 1000 && scoring_mode == 0)
-                    differential.closeClawSilno();
+                    differential.closeClawVerySilno();
                 arm.setExtension(EXTENDED);
                 if (arm.extensionMotor.getCurrentPosition() + arm.offset > 1320) {
                     unfoldingSequence = false;
                     if (scoring_mode == 0)
-                        differential.closeClawSilno();
+                        differential.closeClawVerySilno();
                     //logger.writeLn("unfolding sequence finished as planned");
                 }
             }
@@ -366,7 +372,7 @@ public class tele_main extends LinearOpMode {
 
             if (assistGamepad.isPressed("right_stick_button")) {
                 arm.manuallyRotate(-0.5);
-                arm.manuallyExtend(-0.5);
+                arm.manuallyExtend(-1);
                 arm.resetRotationEncoders();
                 arm.resetExtensionEncoders();
             }

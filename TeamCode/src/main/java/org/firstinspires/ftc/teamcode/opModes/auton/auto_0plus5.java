@@ -98,7 +98,7 @@ public class auto_0plus5 extends LinearOpMode {
             module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
             module_master.arm.setRotation(arm.rotation.LIFT);
 
-            path_follower.followTrajectoryBackwardsPercentage(curves[3], 70, new double[]{0.4, 0.4}, new int[]{PITCH_DOWN, SET_EXTENSION_LIFT});
+            path_follower.followTrajectoryBackwards(curves[3], new double[]{0.4, 0.4}, new int[]{PITCH_DOWN, SET_EXTENSION_LIFT});
             path_follower.goToPosWithArmToBasket(52.4, 50.4, -Math.PI * 3 / 4);
             waitArmExtension();
             scoreHighBasket(); /* score dobor */

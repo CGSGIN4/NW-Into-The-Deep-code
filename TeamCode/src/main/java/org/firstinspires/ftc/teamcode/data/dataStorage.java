@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public enum dataStorage {;
-    private static SampleMecanumDrive drive;
+    public static SampleMecanumDrive drive;
     public static Vector2d RobotPose;
     /* stores X coordinate of the robot */
     public static double RobotWorldX;
@@ -90,6 +90,9 @@ public enum dataStorage {;
         poseHistory.add(RobotPose);
 
         timer.reset();
+        telemetry.addData("ROBOT X", RobotWorldX);
+        telemetry.addData("ROBOT Y", RobotWorldY);
+        telemetry.addData("ROBOT HEADING", RobotWorldHeading);
         //telemetry.addData("heading", RobotWorldHeading);
         telemetry.update();
         //RobotVelocity = new Vector2d(drive.getPoseVelocity().getX(), drive.getPoseVelocity().getY());

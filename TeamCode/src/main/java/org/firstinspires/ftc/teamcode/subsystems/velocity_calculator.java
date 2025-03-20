@@ -335,10 +335,12 @@ public class velocity_calculator {
         x_error = finish.minus(dataStorage.RobotPose).getX();
         y_error = finish.minus(dataStorage.RobotPose).getY();
 
+        /*
         dataStorage.telemetry.addData("xerr", x_error);
         dataStorage.telemetry.addData("yerr", y_error);
         dataStorage.telemetry.addData("integralx", sum_x_error);
         dataStorage.telemetry.addData("integraly", sum_y_error);
+        */
         //dataStorage.telemetry.addData("err", Math.sqrt(x_error * x_error + y_error * y_error));
         //dataStorage.telemetry.update();
 

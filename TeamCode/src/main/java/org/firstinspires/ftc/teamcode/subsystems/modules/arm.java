@@ -227,6 +227,7 @@ public class arm {
 
         if (rotationMotor.getCurrentPosition() + rotOffset < 20 && rotationBtn.getVoltage() < 0.4 && (rotationState == rotation.FRONT || rotationState == rotation.MANUAL)) /* pressed */ {
             rotationState = rotation.RESET;
+            resetRotationEncoders();
             setRotationMotorPower(0 + (teleop ? 0 : 1) * (-0.1));
         }
         //telemetry.update();
@@ -378,7 +379,7 @@ public class arm {
         this.extensionState = target;
 
         if (Math.abs(rotationPosToTicks(rotationState) - rotationMotor.getCurrentPosition() - rotOffset) >= 120 && targetExtensionPos != EXTENSION_SUPPORT && targetExtensionPos != EXTENSION_CLOSED_AUTO && teleop)
-            return this.setExtensionMotorPower(-0.1);
+            return this.setExtensionMotorPower(-0.1 + (teleop ? 0 : 1) * (-0.2));
         else if (rotationState != rotation.LIFT || rotationReached() || Math.abs(rotationPosToTicks(rotationState) - rotationMotor.getCurrentPosition() - rotOffset) < 420/* || target == extension.CLOSED*/)
             return this.setExtensionMotorPower(pidCalculateExtensionPower(targetExtensionPos));
         else
@@ -491,7 +492,7 @@ public class arm {
 
     public boolean extensionReached()
     {
-        return (extensionMotor.getCurrentPosition() + offset >= EXTENSION_FULL - 515 && extensionState == extension.EXTENDED) ||
+        return (extensionMotor.getCurrentPosition() + offset >= EXTENSION_FULL - 655 && extensionState == extension.EXTENDED) ||
                 (extensionMotor.getCurrentPosition() + offset < 23 && extensionState == extension.CLOSED) ||
                 (Math.abs(extDelta) <= 5 && Math.abs(targetExtensionPos - extensionMotor.getCurrentPosition() - offset) < 15);
     }

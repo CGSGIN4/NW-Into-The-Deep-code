@@ -34,6 +34,7 @@ import java.util.function.BooleanSupplier;
 
 @Autonomous
 public class su4ka_pro_blue extends LinearOpMode {
+    boolean willGoToLast = true;
 
     Robot robot;
     path_follower path_follower;
@@ -85,7 +86,7 @@ public class su4ka_pro_blue extends LinearOpMode {
 
         while (opModeIsActive()) {
             prepareToScoreHighBasket();
-            poseToHold = path_follower.goToPosWithArmToBasket(53.356, 49.35, -Math.PI * 3 / 4);
+            poseToHold = path_follower.goToPosWithArmToBasketSu4ka(53.356, 49.35, -Math.PI * 3 / 4);
             //logger.writeLn("----------STARTING SCORING PRELOAD------------");
             scoreHighBasket(sample1);
 
@@ -100,7 +101,7 @@ public class su4ka_pro_blue extends LinearOpMode {
             module_master.arm.setRotation(arm.rotation.LIFT);
             module_master.differential.pitchHalfDown();
             module_master.arm.setExtension(arm.extension.EXTENDED);
-            poseToHold = path_follower.goToPosWithArmToBasket(54.9, 54.9, -Math.PI * 3 / 4 + Math.toRadians(3));
+            poseToHold = path_follower.goToPosWithArmToBasketSu4ka(52.5, 52.5, -Math.PI * 3 / 4 + Math.toRadians(3));
             //logger.writeLn("----------STARTING SCORING FIRST------------");
             scoreHighBasket(sample2);
 
@@ -113,7 +114,7 @@ public class su4ka_pro_blue extends LinearOpMode {
             module_master.arm.setRotation(arm.rotation.LIFT);
             module_master.differential.pitchHalfDown();
             module_master.arm.setExtension(arm.extension.EXTENDED);
-            poseToHold = path_follower.goToPosWithArmToBasket(52.5, 52.5, -Math.PI * 3 / 4 + Math.toRadians(10));
+            poseToHold = path_follower.goToPosWithArmToBasketSu4ka(54.5, 50.5, -Math.PI * 3 / 4 + Math.toRadians(12));
             //logger.writeLn("----------STARTING SCORING SECOND------------");
             scoreHighBasket(sample3);
             module_master.differential.setPitch(6);
@@ -138,7 +139,7 @@ public class su4ka_pro_blue extends LinearOpMode {
             module_master.differential.pitchHalfDown();
             path_follower.velocity_calculator.setThirdSampleRotationCoeffs();
             module_master.arm.setExtension(arm.extension.EXTENDED);
-            poseToHold = path_follower.goToPosWithArmToBasketThirdSample(54.7, 50.7, -Math.PI * 3 / 4 - Math.toRadians(4));
+            poseToHold = path_follower.goToPosWithArmToBasketSu4ka(53.7, 49.7, -Math.PI * 3 / 4 - Math.toRadians(4));
             path_follower.velocity_calculator.setDefaultRotationCoeffs();
             //logger.writeLn("----------STARTING SCORING THIRD------------");
             scoreHighBasket(new Pose2d(28, 0, -Math.PI * 3 / 4 - Math.toRadians(8)));
@@ -152,8 +153,8 @@ public class su4ka_pro_blue extends LinearOpMode {
                 instapark();
             module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
             /* go to score dobor1 */
-            path_follower.followTrajectoryBackwards(curves[5], new double[]{0.02, 0.06, 0.2, 0.3}, new int[]{SET_EXTENSION_CLOSED, SET_ROTATION_LIFT, SET_EXTENSION_LIFT, PITCH_DOWN});
-            path_follower.goToPosWithArmToBasket(56.5, 44.7, -Math.PI * 3 / 4 + Math.toRadians(9));
+            path_follower.followTrajectoryBackwardsPercentage(curves[5], 50, new double[]{0.02, 0.06, 0.2, 0.3}, new int[]{SET_EXTENSION_CLOSED, SET_ROTATION_LIFT, SET_EXTENSION_LIFT, PITCH_DOWN});
+            path_follower.goToPosWithArmToBasketSu4ka(56.5, 46.7, -Math.PI * 3 / 4 + Math.toRadians(9));
             waitArmExtension();
             scoreHighBasket(new Pose2d(32, 0, -Math.PI * 3 / 4 - Math.toRadians(13)));
 
@@ -166,8 +167,8 @@ public class su4ka_pro_blue extends LinearOpMode {
                 instapark();
             module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
             /* go to score dobor2 */
-            path_follower.followTrajectoryBackwards(curves[5], new double[]{0.02, 0.06, 0.2, 0.3}, new int[]{SET_EXTENSION_CLOSED, SET_ROTATION_LIFT, SET_EXTENSION_LIFT, PITCH_DOWN});
-            path_follower.goToPosWithArmToBasket(53.7, 47.3, -Math.PI * 3 / 4 - Math.toRadians(1));
+            path_follower.followTrajectoryBackwardsPercentage(curves[5], 50, new double[]{0.02, 0.06, 0.2, 0.3}, new int[]{SET_EXTENSION_CLOSED, SET_ROTATION_LIFT, SET_EXTENSION_LIFT, PITCH_DOWN});
+            path_follower.goToPosWithArmToBasketSu4ka(52.7, 49.3, -Math.PI * 3 / 4 - Math.toRadians(1));
             waitArmExtension();
             scoreHighBasket(new Pose2d(36, 0, -Math.PI * 3 / 4 + Math.toRadians(10)));
 
@@ -179,18 +180,18 @@ public class su4ka_pro_blue extends LinearOpMode {
             if (!takeFromSubmersible(smotritel, 2))
                 instapark();
             module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
-            /* go to score dobor3 */
-            path_follower.followTrajectoryBackwards(curves[5], new double[]{0.02, 0.06, 0.2, 0.3}, new int[]{SET_EXTENSION_CLOSED, SET_ROTATION_LIFT, SET_EXTENSION_LIFT, PITCH_DOWN});
-            path_follower.goToPosWithArmToBasket(56.7, 43.3, -Math.PI * 3 / 4 - Math.toRadians(2));
-            waitArmExtension();
-            scoreHighBasket(new Pose2d(36, 0, -Math.PI * 3 / 4 + Math.toRadians(10)));
+            if (willGoToLast) {
+                /* go to score dobor3 */
+                path_follower.followTrajectoryBackwardsPercentage(curves[5], 50, new double[]{0.02, 0.06, 0.2, 0.3}, new int[]{SET_EXTENSION_CLOSED, SET_ROTATION_LIFT, SET_EXTENSION_LIFT, PITCH_DOWN});
+                path_follower.goToPosWithArmToBasketSu4ka(52.7, 47.3, -Math.PI * 3 / 4);
+                waitArmExtension();
+                scoreHighBasket(new Pose2d(36, 0, -Math.PI * 3 / 4));
 
-            /* go to park */
-            path_follower.followTrajectoryForwardsPercentageHypeAngleControl(curves[4], 90, 42, -Math.PI, new double[]{0.2, 0.2, 0.8, 0.8}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT, SET_EXTENSION_CHAMBER, SET_ROTATION_CHAMBER});
-            path_follower.goToPosVeryUnsafe(20, 3, -Math.PI);
-
-            module_master.arm.setRotation(arm.rotation.CHAMBER);
-
+                /* go to park */
+                path_follower.followTrajectoryForwardsPercentageHypeAngleControl(curves[4], 90, 42, -Math.PI, new double[]{0.2, 0.2, 0.8, 0.8}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT, SET_EXTENSION_CHAMBER, SET_ROTATION_CHAMBER});
+                path_follower.goToPosVeryUnsafe(20, 3, -Math.PI);
+                module_master.arm.setRotation(arm.rotation.CHAMBER);
+            }
             while (opModeIsActive()) {
                 module_master.arm.update();
                 module_master.arm.manuallyExtend(0);
@@ -308,14 +309,14 @@ public class su4ka_pro_blue extends LinearOpMode {
 
         /* SCORE SAMPLE */
         module_master.differential.pitchScoringBasket();
-        delay(75);
+        delay(155);
         poseToHold = next;
-        delay(175);
+        delay(20);
 
         //waitArmRotation();
         module_master.differential.openClaw();
         poseToHold = next;
-        delay(100);
+        delay(175);
 
         module_master.differential.pitchHalfDown();
         //delay(100);
@@ -331,9 +332,10 @@ public class su4ka_pro_blue extends LinearOpMode {
         boolean nevidel = false;
         smotritel.startStreaming();
         robot.drivetrain.applyVectorFieldCentric(new Vector2d(-1, 0).rotated(Math.toRadians(90)), 0);
-        delay(300);
+        delay(100);
         smotritel.startSnapshot();
         Pose2d offsets = smotritel.getSampleOffsets(1);
+        delay(50);
         Pose2d snapshotPos = new Pose2d(dataStorage.RobotPose, dataStorage.RobotWorldHeading);
 
         if ((offsets.getX() == -100 || Math.abs(LLSmotritel.getTicks(offsets)) > module_master.arm.EXTENSION_FRONT_MAX) && opModeIsActive())
@@ -346,6 +348,7 @@ public class su4ka_pro_blue extends LinearOpMode {
             nevidel = true;
         }
         if (nevidel) {
+            willGoToLast = false;
             if (offsets.getX() == -100)
                 return false;
             robot.drivetrain.applyVectorFieldCentric(new Vector2d(-1, 0).rotated(Math.toRadians(90)), 0);
@@ -357,6 +360,7 @@ public class su4ka_pro_blue extends LinearOpMode {
         dataStorage.telemetry.addData("angle", dataStorage.RobotWorldHeading);
 
         while (Math.abs(offsets.getX()) > 15 && opModeIsActive()) {
+            willGoToLast = false;
             if (offsets.getX() == -100) {
                 offsets = rememberedOffsets;
                 break;
