@@ -34,6 +34,10 @@ public class LLSmotritel {
         ll.captureSnapshot("snap " + timestamp.toString());
     }
 
+    public void deleteSnapshots() {
+        ll.deleteSnapshots();
+    }
+
     public void stopStreaming() {
         ll.pause();
     }

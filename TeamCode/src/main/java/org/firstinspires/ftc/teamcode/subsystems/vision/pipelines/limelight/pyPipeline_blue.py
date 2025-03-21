@@ -6,8 +6,8 @@ import math
 YELLOW_MIN = np.array([15, 150, 245])
 YELLOW_MAX = np.array([36, 255, 255])
 
-BLUE_MIN = np.array([90, 110, 130])
-BLUE_MAX = np.array([140, 255, 255])
+BLUE_MIN = np.array([95, 81, 94])
+BLUE_MAX = np.array([132, 255, 255])
 
 TOLERANCE = 0.4
 
@@ -53,7 +53,7 @@ def runPipeline(image, llrobot):
         perimeter = cv2.arcLength(contour, True)
         
         # # Filter small contours to reduce false positives
-        if area < 3000 or area > 11000:
+        if area < 3000:
             continue
 
         
@@ -64,7 +64,9 @@ def runPipeline(image, llrobot):
             cx = int(M["m10"] / M["m00"])
             cy = int(M["m01"] / M["m00"])
             dist = np.sqrt((421 - cx)**2 + (121 - cy)**2) 
-            if(cy > 220 or cy < 75 or cx < 300):
+            if area * cy > 1500000: 
+                continue
+            if(cy > 250 or cy < 60 or cx < 300):
                 continue
             else:        
                 yellow_rectangles.append(contour)

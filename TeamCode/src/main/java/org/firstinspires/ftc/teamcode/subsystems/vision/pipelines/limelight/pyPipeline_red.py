@@ -6,10 +6,10 @@ import math
 YELLOW_MIN = np.array([15, 150, 245])
 YELLOW_MAX = np.array([36, 255, 255])
 
-RED_MIN = np.array([0, 160, 211])
+RED_MIN = np.array([0, 160, 200])
 RED_MAX = np.array([6, 255, 255])
 
-RED_MIN1 = np.array([167, 160, 211])
+RED_MIN1 = np.array([167, 160, 200])
 RED_MAX1 = np.array([180, 255, 255])
 
 TOLERANCE = 0.4
@@ -45,6 +45,7 @@ def runPipeline(image, llrobot):
     largest_area = 0
     nearest_dist = 9999999
     bestest = 0
+    hui = 0
 
     largest_contour = np.array([[]])
     nearest_contour = np.array([[]])
@@ -59,7 +60,7 @@ def runPipeline(image, llrobot):
         perimeter = cv2.arcLength(contour, True)
         
         # # Filter small contours to reduce false positives
-        if area < 3000 or area > 11000:
+        if area < 3000:
             continue
         
         rect = cv2.minAreaRect(contour)
@@ -68,11 +69,15 @@ def runPipeline(image, llrobot):
         if M["m00"] != 0:
             cx = int(M["m10"] / M["m00"])
             cy = int(M["m01"] / M["m00"])
-            dist = np.sqrt((421 - cx)**2 + (121 - cy)**2) 
-            if(cy > 230 or cy < 75 or cx < 300):
+            if area * cy > 1500000: 
+                continue
+            dist = np.sqrt((421 - cx)**2 + (121 - cy)**2)
+            if(cy > 250 or cy < 60 or cx < 300):
                 continue
             else:        
                 yellow_rectangles.append(contour)
+        
+
         
         box = np.int0(cv2.boxPoints(rect))
         cv2.drawContours(image, [box], 0, (0, 0, 0), 20)
@@ -91,6 +96,9 @@ def runPipeline(image, llrobot):
         if best > bestest:
             bestest = best
             bestest_contour = contour
+            hui = area * cy
+        
+
 
             
 
@@ -133,7 +141,7 @@ def runPipeline(image, llrobot):
             #drawDecorations(image, w + h)
             #drawDecorations(image, rect)
             # drawDecorations(image, ang)
-            drawDecorations(image, cy)
+            drawDecorations(image, hui)
             #cv2.putText(image, f'Yellow Rectangles: {-80 + ang * 8.0 / 9.0}', 
             #(10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 4)
             

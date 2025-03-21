@@ -36,6 +36,7 @@ public class afkbot_pro_blue extends LinearOpMode {
     path_follower path_follower;
     ElapsedTime timer = new ElapsedTime();
     Pose2d poseToHold = new Pose2d();
+    boolean willGoToLast = true;
     public static Pose2d scoring_preload = new Pose2d(54.356, 48.35, -Math.PI * 3 / 4);
     public static Pose2d scoring_afk = new Pose2d(54.9, 49.61, -Math.PI * 3 / 4);
     public static Pose2d scoring_1 = new Pose2d(53, 50.86, -Math.PI * 3 / 4);
@@ -85,8 +86,9 @@ public class afkbot_pro_blue extends LinearOpMode {
         /* INIT */
 
         while (opModeIsActive()) {
+            smotritel.deleteSnapshots();
             prepareToScoreHighBasket();
-            poseToHold = path_follower.goToPosWithArmToBasket(scoring_preload.getX(), scoring_preload.getY(), scoring_preload.getHeading());
+            poseToHold = path_follower.goToPosWithArmToBasketSu4ka(scoring_preload.getX(), scoring_preload.getY(), scoring_preload.getHeading());
             //logger.writeLn("----------STARTING SCORING PRELOAD------------");
             scoreHighBasket(afk);
             module_master.differential.setPitch(25);
@@ -111,12 +113,13 @@ public class afkbot_pro_blue extends LinearOpMode {
             module_master.differential.pitchHalfDown();
             module_master.differential.rollDefault();
             module_master.arm.setExtension(arm.extension.EXTENDED);
-            poseToHold = path_follower.goToPosWithArmToBasket(scoring_afk.getX(), scoring_afk.getY(), scoring_afk.getHeading());
+            poseToHold = path_follower.goToPosWithArmToBasketSu4ka(scoring_afk.getX(), scoring_afk.getY(), scoring_afk.getHeading());
             scoreHighBasket(sample1); /* score dobor */
 
             path_follower.goToPosWithArm(sample1.getX(), sample1.getY(), sample1.getHeading()); /* sample 1 */
             //path_follower.goToPosUnsafe(51.4, 51.4, -Math.PI / 2 - Math.toRadians(11.5)); /* sample 1 */
-            waitArmRotation();
+            while (module_master.arm.rotationState != arm.rotation.RESET)
+                module_master.arm.update();
             waitArmExtension();
             takeSample(false);
 
@@ -124,7 +127,7 @@ public class afkbot_pro_blue extends LinearOpMode {
             module_master.arm.setRotation(arm.rotation.LIFT);
             module_master.differential.pitchHalfDown();
             module_master.arm.setExtension(arm.extension.EXTENDED);
-            poseToHold = path_follower.goToPosWithArmToBasket(scoring_1.getX(), scoring_1.getY(), scoring_1.getHeading());
+            poseToHold = path_follower.goToPosWithArmToBasketSu4ka(scoring_1.getX(), scoring_1.getY(), scoring_1.getHeading());
             //logger.writeLn("----------STARTING SCORING FIRST------------");
             scoreHighBasket(sample2);
 
@@ -137,7 +140,7 @@ public class afkbot_pro_blue extends LinearOpMode {
             module_master.arm.setRotation(arm.rotation.LIFT);
             module_master.differential.pitchHalfDown();
             module_master.arm.setExtension(arm.extension.EXTENDED);
-            poseToHold = path_follower.goToPosWithArmToBasket(scoring_2.getX(), scoring_2.getY(), scoring_2.getHeading());
+            poseToHold = path_follower.goToPosWithArmToBasketSu4ka(scoring_2.getX(), scoring_2.getY(), scoring_2.getHeading());
             //logger.writeLn("----------STARTING SCORING SECOND------------");
             scoreHighBasket(sample3);
             module_master.differential.setPitch(6);
@@ -160,10 +163,10 @@ public class afkbot_pro_blue extends LinearOpMode {
             module_master.arm.setRotation(arm.rotation.LIFT);
             module_master.differential.pitchHalfDown();
             path_follower.velocity_calculator.setThirdSampleRotationCoeffs();
-            poseToHold = path_follower.goToPosWithArmToBasket(scoring_3.getX(), scoring_3.getY(), scoring_3.getHeading());
+            poseToHold = path_follower.goToPosWithArmToBasketSu4kaThirdSample(scoring_3.getX(), scoring_3.getY(), scoring_3.getHeading());
             path_follower.velocity_calculator.setDefaultRotationCoeffs();
             //logger.writeLn("----------STARTING SCORING THIRD------------");
-            scoreHighBasket(new Pose2d(24, 0, scoring_3.getHeading()));
+            scoreHighBasket(new Pose2d(24, 0, scoring_3.getHeading()), true);
 
             /* go to dobor1 */
             path_follower.followTrajectoryForwardsPercentageHypeAngleControl(curves[4], 90, 39,-Math.PI, new double[]{0.3, 0.3}, new int[]{SET_ROTATION_CHAMBER, PITCH_UP});
@@ -174,8 +177,12 @@ public class afkbot_pro_blue extends LinearOpMode {
                 instapark();
             module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
             /* go to score dobor1 */
-            path_follower.followTrajectoryBackwards(curves[5], new double[]{0.02, 0.06, 0.2, 0.3}, new int[]{SET_EXTENSION_CLOSED, SET_ROTATION_LIFT, SET_EXTENSION_LIFT, PITCH_DOWN});
-            path_follower.goToPosWithArmToBasket(56.7, 44.26, -Math.PI * 3 / 4);
+            module_master.arm.setExtension(arm.extension.CLOSED);
+            module_master.arm.setRotation(arm.rotation.LIFT);
+            path_follower.followTrajectoryBackwardsPercentage(curves[5], 50, new double[]{0.02, 0.06, 0.2, 0.3}, new int[]{SET_EXTENSION_CLOSED, SET_ROTATION_LIFT, SET_EXTENSION_LIFT, PITCH_DOWN});
+            path_follower.velocity_calculator.d_trans_coef *= 1.3;
+            path_follower.goToPosWithArmToBasketSu4ka(56.7, 44.26, -Math.PI * 3 / 4);
+            path_follower.velocity_calculator.d_trans_coef /= 1.3;
             waitArmExtension();
             scoreHighBasket(new Pose2d(32, 0, -Math.PI * 3 / 4));
 
@@ -320,6 +327,30 @@ public class afkbot_pro_blue extends LinearOpMode {
 
         /* SCORE SAMPLE */
         module_master.differential.pitchScoringBasket();
+        delay(300);
+        poseToHold = next;
+        delay(20);
+
+        //waitArmRotation();
+        module_master.differential.openClaw();
+        poseToHold = next;
+        delay(125);
+
+        module_master.differential.pitchHalfDown();
+        //delay(100);
+
+        /* FOLD */
+        module_master.arm.setExtension(arm.extension.CLOSED);
+        module_master.arm.setRotation(arm.rotation.FRONT);
+        poseToHold = new Pose2d(-100, -100, 10);
+    }
+
+    private void scoreHighBasket(Pose2d next, boolean third) {
+        waitArmRotation();
+        waitArmExtension();
+
+        /* SCORE SAMPLE */
+        module_master.differential.pitchScoringBasket();
         delay(155);
         poseToHold = next;
         delay(20);
@@ -327,7 +358,7 @@ public class afkbot_pro_blue extends LinearOpMode {
         //waitArmRotation();
         module_master.differential.openClaw();
         poseToHold = next;
-        delay(100);
+        delay(125);
 
         module_master.differential.pitchHalfDown();
         //delay(100);
@@ -359,6 +390,7 @@ public class afkbot_pro_blue extends LinearOpMode {
             nevidel = true;
         }
         if (nevidel) {
+            willGoToLast = false;
             if (offsets.getX() == -100)
                 return false;
             robot.drivetrain.applyVectorFieldCentric(new Vector2d(-1, 0).rotated(Math.toRadians(90)), 0);
@@ -370,6 +402,7 @@ public class afkbot_pro_blue extends LinearOpMode {
         dataStorage.telemetry.addData("angle", dataStorage.RobotWorldHeading);
 
         while (Math.abs(offsets.getX()) > 15 && opModeIsActive()) {
+            willGoToLast = false;
             if (offsets.getX() == -100) {
                 offsets = rememberedOffsets;
                 break;
@@ -422,7 +455,7 @@ public class afkbot_pro_blue extends LinearOpMode {
         module_master.differential.closeClaw();
         timer.reset();
         delay(150);
-        module_master.differential.setPitch(135);
+        module_master.differential.setPitch(70);
         module_master.differential.setRoll(-11);
         module_master.differential.update();
 
