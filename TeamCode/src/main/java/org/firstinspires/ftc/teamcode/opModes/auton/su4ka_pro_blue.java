@@ -154,7 +154,7 @@ public class su4ka_pro_blue extends LinearOpMode {
             module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
             /* go to score dobor1 */
             path_follower.followTrajectoryBackwardsPercentage(curves[5], 50, new double[]{0.02, 0.06, 0.2, 0.3}, new int[]{SET_EXTENSION_CLOSED, SET_ROTATION_LIFT, SET_EXTENSION_LIFT, PITCH_DOWN});
-            path_follower.goToPosWithArmToBasketSu4ka(56.5, 46.7, -Math.PI * 3 / 4 + Math.toRadians(9));
+            path_follower.goToPosWithArmToBasketSu4ka(57.5, 47.7, -Math.PI * 3 / 4 + Math.toRadians(9));
             waitArmExtension();
             scoreHighBasket(new Pose2d(32, 0, -Math.PI * 3 / 4 - Math.toRadians(13)));
 
@@ -183,7 +183,7 @@ public class su4ka_pro_blue extends LinearOpMode {
             if (willGoToLast) {
                 /* go to score dobor3 */
                 path_follower.followTrajectoryBackwardsPercentage(curves[5], 50, new double[]{0.02, 0.06, 0.2, 0.3}, new int[]{SET_EXTENSION_CLOSED, SET_ROTATION_LIFT, SET_EXTENSION_LIFT, PITCH_DOWN});
-                path_follower.goToPosWithArmToBasketSu4ka(52.7, 47.3, -Math.PI * 3 / 4);
+                path_follower.goToPosWithArmToBasketSu4ka(53.7, 48.3, -Math.PI * 3 / 4);
                 waitArmExtension();
                 scoreHighBasket(new Pose2d(36, 0, -Math.PI * 3 / 4));
 
@@ -316,7 +316,7 @@ public class su4ka_pro_blue extends LinearOpMode {
         //waitArmRotation();
         module_master.differential.openClaw();
         poseToHold = next;
-        delay(175);
+        delay(125);
 
         module_master.differential.pitchHalfDown();
         //delay(100);

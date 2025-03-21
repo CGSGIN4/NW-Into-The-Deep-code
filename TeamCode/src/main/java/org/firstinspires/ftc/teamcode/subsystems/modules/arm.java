@@ -420,7 +420,7 @@ public class arm {
         }
 
         if (target == rotation.LIFT && rotationMotor.getCurrentPosition() + rotOffset > ROTATION_LIFT - 20)
-            return setRotationMotorPower(0.01 + (teleop ? 0 : 1) * 0.15);
+            return setRotationMotorPower(0.03 + (teleop ? 0 : 1) * 0.15);
 
         return this.setRotationMotorPower(pidCalculateRotationPower(targetRotationPos));
     }

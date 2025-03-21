@@ -189,6 +189,7 @@ public class tele_main extends LinearOpMode {
                         if (pitch == 6)
                             TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING = 500;
                         pitch = 125;
+                        lastCall = "folding seq";
                         foldingSequence = true;
                         foldingTimer.reset();
                         //logger.writeLn("activated folding sequence");
@@ -258,8 +259,9 @@ public class tele_main extends LinearOpMode {
                     pitch = 6;
                     lastCall = "unfolding seq";
                 }
-                else {
+                else if (!lastCall.equals("dpad_up")){
                     pitch = 125;
+                    lastCall = "unfolding seq";
                 }
                 if (zazhimTimer.milliseconds() > 1000 && scoring_mode == 0)
                     differential.closeClawVerySilno();
@@ -279,8 +281,10 @@ public class tele_main extends LinearOpMode {
 
                 if (scoring_mode == 1)
                     pitch = 6;
-                else
+                else {
                     pitch = 125;
+                    lastCall = "unfolding seq low";
+                }
                 arm.setExtension(LOW_BASKET);
                 if (arm.extensionMotor.getCurrentPosition() + arm.offset > 465) {
                     unfoldingSequenceLowBasket = false;
@@ -306,7 +310,7 @@ public class tele_main extends LinearOpMode {
                     //differential.openClaw();
             }
             else {
-                if (arm.extensionState == MANUAL) {
+                if (arm.extensionState == MANUAL && !assistGamepad.isPressed("right_stick_button")) {
                     arm.extensionMotor.setPower(0);
                 }
             }

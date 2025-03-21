@@ -41,7 +41,7 @@ public class su4ka_pro_red extends LinearOpMode {
     ElapsedTime timer = new ElapsedTime();
     Pose2d poseToHold = new Pose2d();
     Pose2d sample1 = new Pose2d(48.1, 35.25, -Math.PI / 2);
-    Pose2d sample2 = new Pose2d(57.5, 34.65, -Math.PI / 2);
+    Pose2d sample2 = new Pose2d(57.8, 34.65, -Math.PI / 2);
     Pose2d sample3 = new Pose2d(59.7, 32.5, -Math.PI / 2 + Math.toRadians(42.3));
 
     //SampleDetectionProcessor sampleDetection = new SampleDetectionProcessor();
@@ -154,7 +154,7 @@ public class su4ka_pro_red extends LinearOpMode {
             module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
             /* go to score dobor1 */
             path_follower.followTrajectoryBackwardsPercentage(curves[5], 50, new double[]{0.02, 0.06, 0.2, 0.3}, new int[]{SET_EXTENSION_CLOSED, SET_ROTATION_LIFT, SET_EXTENSION_LIFT, PITCH_DOWN});
-            path_follower.goToPosWithArmToBasketSu4ka(56.5, 46.7, -Math.PI * 3 / 4 + Math.toRadians(9));
+            path_follower.goToPosWithArmToBasketSu4ka(56, 49, -Math.PI * 3 / 4 + Math.toRadians(9));
             waitArmExtension();
             scoreHighBasket(new Pose2d(32, 0, -Math.PI * 3 / 4 - Math.toRadians(13)));
 
@@ -183,7 +183,7 @@ public class su4ka_pro_red extends LinearOpMode {
             if (willGoToLast) {
                 /* go to score dobor3 */
                 path_follower.followTrajectoryBackwardsPercentage(curves[5], 50, new double[]{0.02, 0.06, 0.2, 0.3}, new int[]{SET_EXTENSION_CLOSED, SET_ROTATION_LIFT, SET_EXTENSION_LIFT, PITCH_DOWN});
-                path_follower.goToPosWithArmToBasketSu4ka(52.7, 47.3, -Math.PI * 3 / 4);
+                path_follower.goToPosWithArmToBasketSu4ka(53.7, 48.3, -Math.PI * 3 / 4);
                 waitArmExtension();
                 scoreHighBasket(new Pose2d(36, 0, -Math.PI * 3 / 4));
 
@@ -316,7 +316,7 @@ public class su4ka_pro_red extends LinearOpMode {
         //waitArmRotation();
         module_master.differential.openClaw();
         poseToHold = next;
-        delay(175);
+        delay(125);
 
         module_master.differential.pitchHalfDown();
         //delay(100);
@@ -342,7 +342,7 @@ public class su4ka_pro_red extends LinearOpMode {
         {
             dataStorage.updateData();
             module_master.update(dataStorage.telemetry);
-            path_follower.goToPos(snapshotPos.getX(), dataStorage.RobotWorldY - 4, -Math.PI);
+            path_follower.goToPos(snapshotPos.getX(), dataStorage.RobotWorldY - 7, -Math.PI);
             smotritel.startSnapshot();
             offsets = smotritel.getSampleOffsets(0);
             nevidel = true;
