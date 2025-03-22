@@ -4,6 +4,7 @@ import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.ac
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.CLAW_OPEN;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.PITCH_DOWN;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.PITCH_FRONT;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.PITCH_SCORING_BASKET;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.PITCH_UP;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_CAMERA;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_CHAMBER;
@@ -48,6 +49,8 @@ public class module_master {
         public static final int SET_ROTATION_CAMERA = 16;
         public static final int SET_EXTENSION_CAMERA = 17;
         public static final int PITCH_UP = 18;
+        public static final int PITCH_SCORING_BASKET = 19;
+        public static final int CLOSE_CLAW_VERY_SILNO = 20;
     }
 
     enum cmdType{
@@ -118,6 +121,12 @@ public class module_master {
                 break;
             case PITCH_UP:
                 differential.pitchUp();
+                break;
+            case PITCH_SCORING_BASKET:
+                differential.pitchScoringBasketDobor();
+                break;
+            case module_master.action.CLOSE_CLAW_VERY_SILNO:
+                differential.closeClawVerySilno();
                 break;
             default:
                 break;

@@ -66,17 +66,17 @@ def runPipeline(image, llrobot):
             dist = np.sqrt((421 - cx)**2 + (121 - cy)**2) 
             if area * cy > 1500000: 
                 continue
-            if(cy > 250 or cy < 60 or cx < 300):
+            if(cy > 250 or cy < 60 or cx < 300 or (cx < 900 and cx > 600 and cy > 0 and cy < 200)):
                 continue
-            else:        
+            else:
                 yellow_rectangles.append(contour)
-        
+
         box = np.int0(cv2.boxPoints(rect))
         cv2.drawContours(image, [box], 0, (0, 0, 0), 20)
 
         best = area / dist
-        
-        
+
+
         # Keep track of the largest contour
         if area > largest_area:
             largest_area = area
@@ -89,15 +89,15 @@ def runPipeline(image, llrobot):
         if best > bestest:
             bestest = best
             bestest_contour = contour
-            
 
-    
+
+
     # Draw all detected yellow rectangles
     # cv2.drawContours(image, yellow_rectangles, -1, (0, 255, 0), 2)
     if len(yellow_rectangles) == 0:
         return nearest_contour, image, [0, 0, 0, 0, 0, 0, 0, 0]
-    
-    rect = cv2.minAreaRect(nearest_contour)
+
+    rect = cv2.minAreaRect(bestest_contour)
     box = np.int0(cv2.boxPoints(rect))
     center, size, ang = rect
     w, h = size

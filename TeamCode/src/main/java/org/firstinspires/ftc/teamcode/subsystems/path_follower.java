@@ -543,7 +543,7 @@ public class path_follower {
         dataStorage.updateData();
         module_master.update(dataStorage.telemetry);
         module_master.arm.setRotation(arm.rotation.LIFT);
-        while((dataStorage.RobotPose.distTo(finish) > 2.5 || dataStorage.RobotVelocity.norm() > 15 || !module_master.arm.extensionReached() || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.22) && dataStorage.OpMode.opModeIsActive()){
+        while((dataStorage.RobotPose.distTo(finish) > 2.5 || dataStorage.RobotVelocity.norm() > 15 || !module_master.arm.extensionReached() || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.16) && dataStorage.OpMode.opModeIsActive()){
             if (Math.abs(module_master.arm.targetRotationPos - module_master.arm.rotationMotor.getCurrentPosition()) < 420 && module_master.arm.rotationState == arm.rotation.LIFT)
                 module_master.arm.setExtension(arm.extension.EXTENDED);
             dataStorage.updateData();
@@ -570,7 +570,7 @@ public class path_follower {
         dataStorage.updateData();
         module_master.update(dataStorage.telemetry);
         module_master.arm.setRotation(arm.rotation.LIFT);
-        while((dataStorage.RobotPose.distTo(finish) > 2.5 || dataStorage.RobotVelocity.norm() > 20 || !module_master.arm.extensionReached() || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.12) && dataStorage.OpMode.opModeIsActive()){
+        while((dataStorage.RobotPose.distTo(finish) > 2.5 || dataStorage.RobotVelocity.norm() > 20 || !module_master.arm.extensionReached() || Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.08) && dataStorage.OpMode.opModeIsActive()){
             if (Math.abs(module_master.arm.targetRotationPos - module_master.arm.rotationMotor.getCurrentPosition()) < 420 && module_master.arm.rotationState == arm.rotation.LIFT)
                 module_master.arm.setExtension(arm.extension.EXTENDED);
             dataStorage.updateData();
@@ -585,7 +585,7 @@ public class path_follower {
         return new Pose2d(X, Y, Heading);
     }
 
-    public Pose2d goToPosWithArmToBasketEasy(double X, double Y, double Heading){
+    public Pose2d goToPosWithArmToBasketDobor(double X, double Y, double Heading){
         Pose2d pid;
         Vector2d finish = new Vector2d(X, Y);
 

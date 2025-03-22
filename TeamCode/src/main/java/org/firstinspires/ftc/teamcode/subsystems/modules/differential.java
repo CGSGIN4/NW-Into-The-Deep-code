@@ -82,6 +82,12 @@ public class differential {
         update();
     }
 
+    public void pitchScoringBasketDobor()
+    {
+        setPitch(135);
+        update();
+    }
+
     public void pitchForward()
     {
         setPitch(99);

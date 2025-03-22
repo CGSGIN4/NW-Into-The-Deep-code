@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.opModes.auton;
 
+import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.CLOSE_CLAW_VERY_SILNO;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.PITCH_DOWN;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.PITCH_FRONT;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.PITCH_SCORING_BASKET;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.PITCH_UP;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_CHAMBER;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_CLOSED;
@@ -140,28 +142,27 @@ public class su4ka_pro_blue extends LinearOpMode {
             module_master.differential.pitchHalfDown();
             path_follower.velocity_calculator.setThirdSampleRotationCoeffs();
             module_master.arm.setExtension(arm.extension.EXTENDED);
-            poseToHold = path_follower.goToPosWithArmToBasketSu4kaThirdSample(53.7, 49.7, -Math.PI * 3 / 4 - Math.toRadians(4));
+            poseToHold = path_follower.goToPosWithArmToBasketSu4kaThirdSample(53.7, 49.7, -Math.PI * 3 / 4 - Math.toRadians(2));
             path_follower.velocity_calculator.setDefaultRotationCoeffs();
             //logger.writeLn("----------STARTING SCORING THIRD------------");
-            scoreHighBasket(new Pose2d(28, 0, -Math.PI * 3 / 4 - Math.toRadians(8)), true);
+            scoreHighBasket(new Pose2d(28, 0, -Math.PI * 3 / 4 - Math.toRadians(2)), true);
 
             /* go to dobor1 */
             path_follower.followTrajectoryForwardsPercentageHypeAngleControl(curves[4], 90, 39,-Math.PI, new double[]{0.3, 0.3}, new int[]{SET_ROTATION_CHAMBER, PITCH_UP});
             smotritel.startStreaming();
             path_follower.velocity_calculator.P_ROTATION_COEF /= 1.5;
-            path_follower.goToPosVeryUnsafe(16, 6, -Math.PI - Math.toRadians(2));
+            path_follower.goToPosVeryUnsafe(16, 6, -Math.PI);
             if (!takeFromSubmersible(smotritel, 1))
                 instapark();
             module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
             /* go to score dobor1 */
-            module_master.arm.setExtension(arm.extension.CLOSED);
             module_master.arm.setRotation(arm.rotation.LIFT);
-            path_follower.followTrajectoryBackwardsPercentage(curves[5], 85, new double[]{0.02, 0.06, 0.06, 0.3}, new int[]{SET_EXTENSION_CLOSED, SET_ROTATION_LIFT, SET_EXTENSION_LIFT, PITCH_DOWN});
-            path_follower.velocity_calculator.d_trans_coef *= 1.3;
-            path_follower.goToPosWithArmToBasketSu4kaThirdSample(56, 49, -Math.PI * 3 / 4 + Math.toRadians(9));
-            path_follower.velocity_calculator.d_trans_coef /= 1.3;
+            path_follower.followTrajectoryBackwardsPercentage(curves[5], 85, new double[]{0.02, 0.02, 0.3, 0.82}, new int[]{SET_EXTENSION_LIFT, PITCH_DOWN, CLOSE_CLAW_VERY_SILNO, PITCH_SCORING_BASKET});
+            path_follower.velocity_calculator.d_trans_coef *= 1.2;
+            path_follower.goToPosWithArmToBasketSu4kaThirdSample(57, 50, -Math.PI * 3 / 4 + Math.toRadians(9));
+            path_follower.velocity_calculator.d_trans_coef /= 1.2;
             waitArmExtension();
-            scoreHighBasket(new Pose2d(32, 0, -Math.PI * 3 / 4 - Math.toRadians(13)));
+            scoreHighBasketFast(new Pose2d(36, 0, -Math.PI * 3 / 4 + Math.toRadians(9)));
 
             /* go to dobor2 */
             path_follower.followTrajectoryForwardsPercentageHypeAngleControl(curves[4], 70,39, -Math.PI, new double[]{0.3, 0.3}, new int[]{SET_ROTATION_CHAMBER, PITCH_UP});
@@ -172,14 +173,13 @@ public class su4ka_pro_blue extends LinearOpMode {
                 instapark();
             module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
             /* go to score dobor2 */
-            module_master.arm.setExtension(arm.extension.CLOSED);
             module_master.arm.setRotation(arm.rotation.LIFT);
-            path_follower.followTrajectoryBackwardsPercentage(curves[5], 85, new double[]{0.02, 0.06, 0.06, 0.3}, new int[]{SET_EXTENSION_CLOSED, SET_ROTATION_LIFT, SET_EXTENSION_LIFT, PITCH_DOWN});
-            path_follower.velocity_calculator.d_trans_coef *= 1.3;
-            path_follower.goToPosWithArmToBasketSu4kaThirdSample(54.7, 47.7, -Math.PI * 3 / 4 - Math.toRadians(1));
-            path_follower.velocity_calculator.d_trans_coef /= 1.3;
+            path_follower.followTrajectoryBackwardsPercentage(curves[5], 85, new double[]{0.02, 0.02, 0.3, 0.82}, new int[]{SET_EXTENSION_LIFT, PITCH_DOWN, CLOSE_CLAW_VERY_SILNO, PITCH_SCORING_BASKET});
+            path_follower.velocity_calculator.d_trans_coef *= 1.2;
+            path_follower.goToPosWithArmToBasketSu4kaThirdSample(53.7, 50, -Math.PI * 3 / 4);
+            path_follower.velocity_calculator.d_trans_coef /= 1.2;
             waitArmExtension();
-            scoreHighBasket(new Pose2d(36, 0, -Math.PI * 3 / 4 + Math.toRadians(10)));
+            scoreHighBasketFast(new Pose2d(36, 0, -Math.PI * 3 / 4 + Math.toRadians(10)));
 
             /* go to dobor3 */
             path_follower.followTrajectoryForwardsPercentageHypeAngleControl(curves[4], 84,39, -Math.PI, new double[]{0.3, 0.3}, new int[]{SET_ROTATION_CHAMBER, PITCH_UP});
@@ -191,14 +191,13 @@ public class su4ka_pro_blue extends LinearOpMode {
             module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
             if (willGoToLast) {
                 /* go to score dobor3 */
-                module_master.arm.setExtension(arm.extension.CLOSED);
                 module_master.arm.setRotation(arm.rotation.LIFT);
-                path_follower.followTrajectoryBackwardsPercentage(curves[5], 85, new double[]{0.02, 0.06, 0.06, 0.3}, new int[]{SET_EXTENSION_CLOSED, SET_ROTATION_LIFT, SET_EXTENSION_LIFT, PITCH_DOWN});
-                path_follower.velocity_calculator.d_trans_coef *= 1.3;
+                path_follower.followTrajectoryBackwardsPercentage(curves[5], 65, new double[]{0.02, 0.02, 0.3, 0.62}, new int[]{SET_EXTENSION_LIFT, PITCH_DOWN, CLOSE_CLAW_VERY_SILNO, PITCH_SCORING_BASKET});
+                path_follower.velocity_calculator.d_trans_coef *= 1.2;
                 path_follower.goToPosWithArmToBasketSu4kaThirdSample(53.7, 48.3, -Math.PI * 3 / 4);
-                path_follower.velocity_calculator.d_trans_coef /= 1.3;
+                path_follower.velocity_calculator.d_trans_coef /= 1.2;
                 waitArmExtension();
-                scoreHighBasket(new Pose2d(36, 0, -Math.PI * 3 / 4));
+                scoreHighBasketFast(new Pose2d(36, 0, -Math.PI * 3 / 4));
 
                 /* go to park */
                 path_follower.followTrajectoryForwardsPercentageHypeAngleControl(curves[4], 90, 42, -Math.PI, new double[]{0.2, 0.2, 0.8, 0.8}, new int[]{SET_ROTATION_FRONT, PITCH_FRONT, SET_EXTENSION_CHAMBER, SET_ROTATION_CHAMBER});
@@ -295,17 +294,20 @@ public class su4ka_pro_blue extends LinearOpMode {
     }
 
     /** RAISE ELEVATOR, SCORE SAMPLE, FOLD EXTENSION **/
-    private void scoreHighBasket() {
+    private void scoreHighBasketFast(Pose2d next) {
         waitArmRotation();
         waitArmExtension();
 
         /* SCORE SAMPLE */
         module_master.differential.pitchScoringBasket();
-        delay(150);
+        delay(30);
+        poseToHold = next;
+        delay(20);
 
         //waitArmRotation();
         module_master.differential.openClaw();
-        delay(100);
+        poseToHold = next;
+        delay(125);
 
         module_master.differential.pitchHalfDown();
         //delay(100);
@@ -322,7 +324,7 @@ public class su4ka_pro_blue extends LinearOpMode {
 
         /* SCORE SAMPLE */
         module_master.differential.pitchScoringBasket();
-        delay(300);
+        delay(220);
         poseToHold = next;
         delay(20);
 
@@ -368,11 +370,11 @@ public class su4ka_pro_blue extends LinearOpMode {
         boolean smestilsya = false;
         boolean nevidel = false;
         smotritel.startStreaming();
-        robot.drivetrain.applyVectorFieldCentric(new Vector2d(-1, 0).rotated(Math.toRadians(90)), 0);
-        delay(200);
+        robot.drivetrain.applyVectorFieldCentric(new Vector2d(-0.45, 0).rotated(Math.toRadians(90)), 0);
+        delay(350);
         smotritel.startSnapshot();
         Pose2d offsets = smotritel.getSampleOffsets(1);
-        delay(50);
+        delay(20);
         Pose2d snapshotPos = new Pose2d(dataStorage.RobotPose, dataStorage.RobotWorldHeading);
 
         if ((offsets.getX() == -100 || Math.abs(LLSmotritel.getTicks(offsets)) > module_master.arm.EXTENSION_FRONT_MAX) && opModeIsActive())
@@ -388,7 +390,7 @@ public class su4ka_pro_blue extends LinearOpMode {
             willGoToLast = false;
             if (offsets.getX() == -100)
                 return false;
-            robot.drivetrain.applyVectorFieldCentric(new Vector2d(-1, 0).rotated(Math.toRadians(90)), 0);
+            robot.drivetrain.applyVectorFieldCentric(new Vector2d(-0.45, 0).rotated(Math.toRadians(90)), 0);
             delay(300);
         }
         Pose2d rememberedOffsets = offsets;
