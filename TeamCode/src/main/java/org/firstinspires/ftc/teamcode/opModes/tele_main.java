@@ -190,20 +190,22 @@ public class tele_main extends LinearOpMode {
                 gamepad = new Vector2d(gamepad1.left_stick_x, -gamepad1.left_stick_y).times(reversedDrive);
                 autoScoreSpec = false;
 
-                if (driverGamepad.isPressed("right_bumper"))
+                if (driverGamepad.isPressed("right_bumper") && scoring_samples)
                     turn = path_follower.velocity_calculator.getRotationCustomDirection(-Math.PI);
-                else if (driverGamepad.isPressed("left_bumper"))
+                else if (driverGamepad.isPressed("left_bumper") && scoring_samples)
                     turn = path_follower.velocity_calculator.getRotationCustomDirection(-Math.PI * 3 / 4);
+                else if ((Math.abs(gamepad1.right_stick_y) > 0.05 || Math.abs(gamepad1.right_stick_x) > 0.05) && !scoring_samples)
+                    turn = path_follower.velocity_calculator.getRotationCustomDirection(Math.PI / 2);
                 else
                     turn = (gamepad1.left_trigger - gamepad1.right_trigger);
 
                 if ((arm.extensionMotor.getCurrentPosition() > arm.EXTENSION_FRONT_MAX || arm.extensionState == LOW_BASKET && arm.extensionReached()) && arm.rotationState == LIFT)
                     turn *= 0.4;
 
-                if (Math.abs(gamepad1.right_stick_y) > 0.05 || Math.abs(gamepad1.right_stick_x) > 0.05)
-                    robot.drivetrain.applyVector(gamepad.div(2), turn / 2);
-                else
-                    robot.drivetrain.applyVector(gamepad, turn);
+                if ((Math.abs(gamepad1.right_stick_y) > 0.05 || Math.abs(gamepad1.right_stick_x) > 0.05) && scoring_samples)
+                    gamepad = gamepad.div(2);
+
+                robot.drivetrain.applyVector(gamepad, turn);
             }
             else if (!autoScoreSpec)
                 robot.drivetrain.applyVector(new Vector2d(0, 0), 0);
@@ -429,19 +431,18 @@ public class tele_main extends LinearOpMode {
 
 /* --------------------SCORING SPECIMENS KEYBINDS-----------------------*/
             if (assistGamepad.isClicked("right_bumper") && !scoring_samples/* || takeSpecAutoCall || prepSpecAutoCall || scoreSpecAutoCall*/) {
-                if (arm.rotationState == RESET || takeSpecAutoCall) {
-                    arm.setRotation(TAKE_SPEC);
-                    pitch = 80;
+                if (arm.rotationState == RESET && pitch != 30) {
+                    pitch = 30;
                     differential.openClaw();
                     takeSpecAutoCall = false;
                 }
-                else if (arm.rotationState == TAKE_SPEC || prepSpecAutoCall) {
+                else if (arm.rotationState == RESET && pitch == 30) {
                     differential.closeClawSilno();
                     takeSpecSequence = true;
                     takeSpecTimer.reset();
                     prepSpecAutoCall = false;
                 }
-                else if (arm.rotationState == LIFT && arm.extensionState == EXTENSION_SPEC_PREP || scoreSpecAutoCall) {
+                else if (arm.rotationState == LIFT && arm.extensionState == EXTENSION_SPEC_PREP) {
                     arm.setExtension(EXTENSION_SPEC_SCORE);
                     scoreSpecSequence = true;
                     scoreSpecAutoCall = false;
@@ -461,6 +462,7 @@ public class tele_main extends LinearOpMode {
             if (takeSpecSequence) {
                 if (takeSpecTimer.milliseconds() > 200) {
                     pitch = 176;
+                    arm.setExtension(CLOSED);
                 }
                 if (takeSpecTimer.milliseconds() > 450) {
                     arm.setRotation(LIFT);
@@ -477,6 +479,7 @@ public class tele_main extends LinearOpMode {
                 }
             }
 
+            /*
             if (scoreSpecSequence) {
                 differential.closeClawVerySilno();
                 if (arm.extensionMotor.getCurrentPosition() > 800) {
@@ -485,6 +488,17 @@ public class tele_main extends LinearOpMode {
                     arm.setExtension(CLOSED);
                     arm.setRotation(TAKE_SPEC);
                     pitch = 80;
+                }
+            }
+             */
+            if (scoreSpecSequence) {
+                differential.closeClawVerySilno();
+                if (arm.extensionMotor.getCurrentPosition() > 800) {
+                    differential.openClaw();
+                    scoreSpecSequence = false;
+                    arm.setExtension(CLOSED);
+                    arm.setRotation(FRONT);
+                    pitch = 30;
                 }
             }
 

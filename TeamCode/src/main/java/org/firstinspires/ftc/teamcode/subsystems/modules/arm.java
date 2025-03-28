@@ -504,7 +504,7 @@ public class arm {
 
     public boolean extensionReached()
     {
-        return (extensionMotor.getCurrentPosition() + offset >= EXTENSION_FULL - 955 && extensionState == extension.EXTENDED) ||
+        return (extensionMotor.getCurrentPosition() + offset >= EXTENSION_FULL - 755 && extensionState == extension.EXTENDED) ||
                 (extensionMotor.getCurrentPosition() + offset < 23 && extensionState == extension.CLOSED) ||
                 (Math.abs(extDelta) <= 5 && Math.abs(targetExtensionPos - extensionMotor.getCurrentPosition() - offset) < 15);
     }

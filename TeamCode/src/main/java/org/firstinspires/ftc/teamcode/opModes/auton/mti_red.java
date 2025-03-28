@@ -49,7 +49,7 @@ public class mti_red extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         //logger.init();
         LLSmotritel smotritel = new LLSmotritel(hardwareMap, 0);
-        smotritel.stopStreaming();
+        //smotritel.stopStreaming();
         robot = new Robot(hardwareMap);
         robot.init();
         parser parser = new parser("b19dotaMTI");
@@ -100,7 +100,7 @@ public class mti_red extends LinearOpMode {
             module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
             module_master.arm.setRotation(arm.rotation.LIFT);
             module_master.differential.pitchHalfDown();
-            module_master.arm.setExtension(arm.extension.EXTENDED);
+            //module_master.arm.setExtension(arm.extension.EXTENDED);
             poseToHold = path_follower.goToPosWithArmToBasketSu4ka12MTI(52.5, 52.5, -Math.PI * 3 / 4 + Math.toRadians(3));
             //logger.writeLn("----------STARTING SCORING FIRST------------");
             scoreHighBasket(sample2);
@@ -113,7 +113,7 @@ public class mti_red extends LinearOpMode {
             module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
             module_master.arm.setRotation(arm.rotation.LIFT);
             module_master.differential.pitchHalfDown();
-            module_master.arm.setExtension(arm.extension.EXTENDED);
+            //module_master.arm.setExtension(arm.extension.EXTENDED);
             poseToHold = path_follower.goToPosWithArmToBasketSu4ka12MTI(54.5, 50.5, -Math.PI * 3 / 4 + Math.toRadians(12));
             //logger.writeLn("----------STARTING SCORING SECOND------------");
             scoreHighBasket(sample3);
@@ -155,7 +155,7 @@ public class mti_red extends LinearOpMode {
             module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
             /* go to score dobor1 */
             module_master.arm.setRotation(arm.rotation.LIFT);
-            path_follower.followTrajectoryBackwardsPercentage(curves[5], 85, new double[]{0.1, 0.2, 0.6, 0.82}, new int[]{SET_EXTENSION_LIFT, PITCH_DOWN, CLOSE_CLAW_VERY_SILNO, PITCH_SCORING_BASKET});
+            path_follower.followTrajectoryBackwardsPercentage(curves[5], 85, new double[]{0.1, 0.15, 0.45, 0.82}, new int[]{SET_EXTENSION_LIFT, PITCH_DOWN, CLOSE_CLAW_VERY_SILNO, PITCH_SCORING_BASKET});
             path_follower.velocity_calculator.d_trans_coef *= 1.2;
             path_follower.goToPosWithArmToBasketSu4kaDoborMTI(53, 40, -Math.PI * 3 / 4 + Math.toRadians(10));
             path_follower.velocity_calculator.d_trans_coef /= 1.2;
@@ -172,7 +172,7 @@ public class mti_red extends LinearOpMode {
             module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
             /* go to score dobor2 */
             module_master.arm.setRotation(arm.rotation.LIFT);
-            path_follower.followTrajectoryBackwardsPercentage(curves[5], 85, new double[]{0.1, 0.2, 0.6, 0.82}, new int[]{SET_EXTENSION_LIFT, PITCH_DOWN, CLOSE_CLAW_VERY_SILNO, PITCH_SCORING_BASKET});
+            path_follower.followTrajectoryBackwardsPercentage(curves[5], 85, new double[]{0.1, 0.15, 0.45, 0.82}, new int[]{SET_EXTENSION_LIFT, PITCH_DOWN, CLOSE_CLAW_VERY_SILNO, PITCH_SCORING_BASKET});
             path_follower.velocity_calculator.d_trans_coef *= 1.2;
             path_follower.goToPosWithArmToBasketSu4kaDoborMTI(53.7, 40.4, -Math.PI * 3 / 4 + Math.toRadians(5));
             path_follower.velocity_calculator.d_trans_coef /= 1.2;
@@ -190,15 +190,15 @@ public class mti_red extends LinearOpMode {
             module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
             /* go to score dobor3 */
             module_master.arm.setRotation(arm.rotation.LIFT);
-            path_follower.followTrajectoryBackwardsPercentage(curves[5], 65, new double[]{0.1, 0.2, 0.6, 0.62}, new int[]{SET_EXTENSION_LIFT, PITCH_DOWN, CLOSE_CLAW_VERY_SILNO, PITCH_SCORING_BASKET});
+            path_follower.followTrajectoryBackwardsPercentage(curves[5], 65, new double[]{0.1, 0.15, 0.45, 0.62}, new int[]{SET_EXTENSION_LIFT, PITCH_DOWN, CLOSE_CLAW_VERY_SILNO, PITCH_SCORING_BASKET});
             path_follower.velocity_calculator.d_trans_coef *= 1.2;
-            path_follower.goToPosWithArmToBasketSu4kaDoborMTI(49.7, 41.3, -Math.PI * 3 / 4);
+            path_follower.goToPosWithArmToBasketSu4kaDoborMTI(49.7, 41.3, -Math.PI * 3 / 4 + Math.toRadians(7));
             path_follower.velocity_calculator.d_trans_coef /= 1.2;
             waitArmExtension();
             scoreHighBasketFast(new Pose2d(36, 0, -Math.PI * 3 / 4));
 
             /* go to dobor4 */
-            path_follower.followTrajectoryForwardsPercentageHypeAngleControl(curves[6], 90,39, -Math.PI, new double[]{0.3, 0.3}, new int[]{SET_ROTATION_CHAMBER, PITCH_UP});
+            path_follower.followTrajectoryForwardsPercentageHypeAngleControl(curves[4], 90,39, -Math.PI, new double[]{0.3, 0.3}, new int[]{SET_ROTATION_CHAMBER, PITCH_UP});
             smotritel.startStreaming();
             path_follower.velocity_calculator.P_ROTATION_COEF /= 1.5;
             //path_follower.goToPosVeryUnsafe(19, 2, -Math.PI);
@@ -208,9 +208,10 @@ public class mti_red extends LinearOpMode {
             module_master.arm.setExtension(arm.extension.CLOSED_AUTO);
             /* go to score dobor4 */
             module_master.arm.setRotation(arm.rotation.LIFT);
-            path_follower.followTrajectoryBackwardsPercentage(curves[5], 65, new double[]{0.1, 0.2, 0.6, 0.62}, new int[]{SET_EXTENSION_LIFT, PITCH_DOWN, CLOSE_CLAW_VERY_SILNO, PITCH_SCORING_BASKET});
+            path_follower.followTrajectoryBackwardsPercentage(curves[5], 65, new double[]{0.1, 0.15, 0.35, 0.52}, new int[]{SET_EXTENSION_LIFT, PITCH_DOWN, CLOSE_CLAW_VERY_SILNO, PITCH_SCORING_BASKET});
+            module_master.differential.pitchScoringBasketDobor();
             path_follower.velocity_calculator.d_trans_coef *= 1.2;
-            path_follower.goToPosWithArmToBasketSu4kaDoborMTI(51.7, 43.3, -Math.PI * 3 / 4);
+            path_follower.goToPosWithArmToBasketSu4kaDoborMTI(53.7, 43.3, -Math.PI * 3 / 4 + Math.toRadians(5));
             path_follower.velocity_calculator.d_trans_coef /= 1.2;
             waitArmExtension();
             scoreHighBasketFast(new Pose2d(36, 0, -Math.PI * 3 / 4));
@@ -385,14 +386,13 @@ public class mti_red extends LinearOpMode {
         boolean smestilsya = false;
         boolean nevidel = false;
         smotritel.startStreaming();
-        robot.drivetrain.applyVectorFieldCentric(new Vector2d(-0.1, 0).rotated(Math.toRadians(90)), 0);
+        robot.drivetrain.applyVectorFieldCentric(new Vector2d(-0.25, 0).rotated(Math.toRadians(90)), 0);
         dataStorage.updateData();
         while (dataStorage.RobotVelocity.norm() > 3)
             delay(1);
         dataStorage.photoVel = dataStorage.RobotVelocity.norm();
+        while (!smotritel.startSnapshot()) delay(1);
         Pose2d offsets = smotritel.getSampleOffsets(0);
-        smotritel.startSnapshot();
-        delay(15);
         Pose2d snapshotPos = new Pose2d(dataStorage.RobotPose, dataStorage.RobotWorldHeading);
 
         if ((offsets.getX() == -100 || Math.abs(LLSmotritel.getTicks(offsets)) > module_master.arm.EXTENSION_FRONT_MAX) && opModeIsActive())
@@ -400,7 +400,7 @@ public class mti_red extends LinearOpMode {
             dataStorage.updateData();
             module_master.update(dataStorage.telemetry);
             path_follower.goToPos(snapshotPos.getX(), dataStorage.RobotWorldY - 7, -Math.PI);
-            smotritel.startSnapshot();
+            while (!smotritel.startSnapshot()) delay(1);
             offsets = smotritel.getSampleOffsets(0);
             nevidel = true;
         }
@@ -410,11 +410,11 @@ public class mti_red extends LinearOpMode {
                 return false;
             robot.drivetrain.applyVectorFieldCentric(new Vector2d(-0.45, 0).rotated(Math.toRadians(90)), 0);
             delay(300);
+            while (!smotritel.startSnapshot()) delay(1);
+            offsets = smotritel.getSampleOffsets(0);
+            dataStorage.telemetry.addData("angle", dataStorage.RobotWorldHeading);
         }
         Pose2d rememberedOffsets = offsets;
-        offsets = smotritel.getSampleOffsets(0);
-        smotritel.startSnapshot();
-        dataStorage.telemetry.addData("angle", dataStorage.RobotWorldHeading);
 
         while (Math.abs(offsets.getX()) > 15 && opModeIsActive()) {
             willGoToLast = false;
@@ -424,14 +424,14 @@ public class mti_red extends LinearOpMode {
             }
             dataStorage.updateData();
             path_follower.goToPos(dataStorage.RobotWorldX, dataStorage.RobotWorldY + smotritel.getTranslationalOffset(offsets), -Math.PI);
+            while (!smotritel.startSnapshot()) delay(1);
             offsets = smotritel.getSampleOffsets(0);
-            smotritel.startSnapshot();
             smestilsya = true;
         }
         if (smestilsya) {
             delay(300);
+            while (!smotritel.startSnapshot()) delay(1);
             offsets = smotritel.getSampleOffsets(0);
-            smotritel.startSnapshot();
         }
 
         module_master.differential.setPitch(0);
@@ -474,7 +474,7 @@ public class mti_red extends LinearOpMode {
         module_master.differential.setRoll(-11);
         module_master.differential.update();
 
-        smotritel.stopStreaming();
+        //smotritel.stopStreaming();
         return true;
     }
 

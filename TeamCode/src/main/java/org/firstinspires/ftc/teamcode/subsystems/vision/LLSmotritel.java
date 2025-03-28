@@ -29,9 +29,9 @@ public class LLSmotritel {
         ll.start();
     }
 
-    public void startSnapshot() {
+    public boolean startSnapshot() {
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        ll.captureSnapshot("snap " + timestamp.toString());
+        return ll.captureSnapshot("snap " + timestamp.toString());
     }
 
     public void deleteSnapshots() {
@@ -88,7 +88,7 @@ public class LLSmotritel {
 
     private double angToDif(double ang)
     {
-        return -80 + ang * (8.0 / 9);
+        return -80 + ang * 8.0 / 9.0;
     }
 
     public double getTranslationalOffset(Pose2d offsets)
