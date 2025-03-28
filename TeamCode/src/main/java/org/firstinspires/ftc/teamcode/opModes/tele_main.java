@@ -2,12 +2,15 @@ package org.firstinspires.ftc.teamcode.opModes;
 
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.CLOSED;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.EXTENDED;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.EXTENSION_SPEC_PREP;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.EXTENSION_SPEC_SCORE;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.LOW_BASKET;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.MANUAL;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.SUPPORT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.FRONT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.LIFT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.RESET;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.TAKE_SPEC;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -20,6 +23,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.data.dataStorage;
 import org.firstinspires.ftc.teamcode.data.transfer;
+import org.firstinspires.ftc.teamcode.math.curve;
 import org.firstinspires.ftc.teamcode.subsystems.modules.arm;
 import org.firstinspires.ftc.teamcode.subsystems.modules.differential;
 import org.firstinspires.ftc.teamcode.subsystems.modules.hang;
@@ -28,6 +32,7 @@ import org.firstinspires.ftc.teamcode.subsystems.velocity_calculator;
 import org.firstinspires.ftc.teamcode.subsystems.vision.LLSmotritel;
 import org.firstinspires.ftc.teamcode.utils.GamepadNW;
 import org.firstinspires.ftc.teamcode.utils.logger;
+import org.firstinspires.ftc.teamcode.utils.parser;
 
 import java.io.IOException;
 
@@ -37,6 +42,7 @@ public class tele_main extends LinearOpMode {
     double TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING = 0;
     /** 0 - fast, 1 - slow **/
     int scoring_mode = 0;
+    boolean scoring_samples = true;
     double scored = 0;
     public static double pitch = 176;
     public static double roll = -11;
@@ -48,13 +54,38 @@ public class tele_main extends LinearOpMode {
     boolean unfoldingSequence = false;
     boolean unfoldingSequenceLowBasket = false;
     boolean intakingSequence = false;
+    boolean takeSpecSequence = false;
+    boolean scoreSpecSequence = false;
     boolean fast_pitch_swap = false;
     boolean hang_called = false;
+    boolean artemAutistReset = false;
+    boolean autoScoreSpec = false;
+    boolean takeSpecAutoCall = false;
+    boolean scoreSpecAutoCall = false;
+    boolean prepSpecAutoCall = false;
+    boolean takeSpecAutoCallerReset = false;
+    boolean scoreSpecAutoCallerReset = false;
+    int reversedDrive = 1;
+
+    public enum autoScoring {
+        TAKE_SPEC,
+        GO_TO_SUB_BEZIER,
+        PREPARE_SPEC,
+        GO_TO_SUB_PID,
+        SCORE_SPEC,
+        RESET_ARM,
+        GO_TO_SPEC_BEZIER,
+        GO_TO_SPEC_PID
+    }
+    autoScoring autoScoringState = autoScoring.TAKE_SPEC;
     String lastCall;
     ElapsedTime foldingTimer = new ElapsedTime();
     ElapsedTime intakingTimer = new ElapsedTime();
     ElapsedTime hangTimer = new ElapsedTime();
     ElapsedTime zazhimTimer = new ElapsedTime();
+    ElapsedTime takeSpecTimer = new ElapsedTime();
+    ElapsedTime artemAutist = new ElapsedTime();
+    ElapsedTime autoScoringTimer = new ElapsedTime();
     path_follower path_follower;
 
     @Override
@@ -64,15 +95,22 @@ public class tele_main extends LinearOpMode {
         smotritel.startStreaming();
         smotritel.stopStreaming();
         Robot robot = new Robot(hardwareMap);
+        robot.init();
+        parser parser = new parser("speciOp");
+        dataStorage.init(robot.drive, telemetry, this);
         path_follower = new path_follower(robot.drivetrain);
-        velocity_calculator velocity_calculator = new velocity_calculator();
+
+        curve[] curves;
+        try {
+            curves = parser.getCurves();
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
 
         differential differential = new differential(hardwareMap);
         arm arm = new arm(hardwareMap, true);
         hang hang = new hang(hardwareMap);
 
-        robot.init();
-        dataStorage.init(robot.drive, telemetry, this);
         dataStorage.opModeIsAutonomous = false;
 
         GamepadNW driverGamepad = new GamepadNW(gamepad1);
@@ -88,6 +126,7 @@ public class tele_main extends LinearOpMode {
 
 
         robot.drive.setPoseEstimate(new Pose2d(dataStorage.RobotWorldX, dataStorage.RobotWorldY, transfer.angle));
+/* -----------------------MAINLOOP----------------------- */
         while(opModeIsActive()) {
             driverGamepad.update();
             assistGamepad.update();
@@ -96,7 +135,7 @@ public class tele_main extends LinearOpMode {
             hang.update(dataStorage.telemetry);
             differential.update(dataStorage.telemetry);
 
-            /* DIFFERENTIAL SECTION */
+/* -----------------------DIFFERENTIAL CONTROL SECTION----------------------- */
             if (assistGamepad.isClicked("dpad_down")) {
                 lastCall = "dpad";
                 pitch = 6;
@@ -134,12 +173,22 @@ public class tele_main extends LinearOpMode {
             if (assistGamepad.isClicked("x"))
                 differential.clawSwitch();
 
+/* ------------------------DRIVE SECTION------------------------ */
+
+            /* HYRO RESET */
             if (driverGamepad.isClicked("start"))
                 robot.drive.setPoseEstimate(new Pose2d(dataStorage.RobotWorldX, dataStorage.RobotWorldY, -Math.PI));
 
-            /* DRIVE SECTION */
+            /* INVERT DRIVE */
+            if (driverGamepad.isClicked("touchpad")) {
+                reversedDrive *= -1;
+                gamepad1.rumble(200);
+            }
+
+            /* DRIVE PROCESSING */
             if (Math.abs(gamepad1.left_stick_x) > 0.01 || Math.abs(gamepad1.left_stick_y) > 0.01 || gamepad1.left_trigger > 0.01 || gamepad1.right_trigger > 0.01) {
-                gamepad = new Vector2d(gamepad1.left_stick_x, -gamepad1.left_stick_y);
+                gamepad = new Vector2d(gamepad1.left_stick_x, -gamepad1.left_stick_y).times(reversedDrive);
+                autoScoreSpec = false;
 
                 if (driverGamepad.isPressed("right_bumper"))
                     turn = path_follower.velocity_calculator.getRotationCustomDirection(-Math.PI);
@@ -155,12 +204,67 @@ public class tele_main extends LinearOpMode {
                     robot.drivetrain.applyVector(gamepad.div(2), turn / 2);
                 else
                     robot.drivetrain.applyVector(gamepad, turn);
-            } else
+            }
+            else if (!autoScoreSpec)
                 robot.drivetrain.applyVector(new Vector2d(0, 0), 0);
 
+/* ---------------------AUTO SCORING-------------------------*/
 
-            /* ARM SECTION */
-            if (assistGamepad.isClicked("a")) {
+            /* AUTO SCORING EXECUTION */
+            if (driverGamepad.isClicked("a")) {
+                robot.drive.setPoseEstimate(new Pose2d(-41.237, 64.214, Math.PI / 2));
+                autoScoreSpec = true;
+                autoScoringState = autoScoring.TAKE_SPEC;
+            }
+/*
+            if (autoScoreSpec) {
+                if (autoScoringState == autoScoring.TAKE_SPEC) {
+                    if (path_follower.goToPosTeleop(-41.237, 64.214, Math.PI / 2, false)) {
+                        if (!takeSpecAutoCallerReset) {
+                            prepSpecAutoCall = true;
+                            takeSpecAutoCallerReset = true;
+                            autoScoringTimer.reset();
+                        }
+                        if (autoScoringTimer.milliseconds() > 450) {
+                            autoScoringState = autoScoring.GO_TO_SUB_PID;
+                            takeSpecAutoCallerReset = false;
+                        }
+                    }
+                }
+                if (autoScoringState == autoScoring.GO_TO_SUB_PID)
+                {
+                    if (path_follower.goToPosTeleop(-0.926, 38.681, Math.PI / 2, false)) {
+                        if (!scoreSpecAutoCallerReset) {
+                            autoScoringTimer.reset();
+                            scoreSpecAutoCall = true;
+                            scoreSpecAutoCallerReset = true;
+                        }
+                        if (autoScoringTimer.milliseconds() > 450)
+                        {
+                            scoreSpecAutoCallerReset = false;
+                            autoScoringState = autoScoring.GO_TO_SPEC_PID;
+                        }
+                    }
+                }
+                if (autoScoringState == autoScoring.GO_TO_SPEC_PID)
+                    if (path_follower.goToPosTeleopBeforeIntake(-41.237, 64.214, Math.PI / 2, false))
+                        autoScoringState = autoScoring.TAKE_SPEC;
+            }
+*/
+
+/* --------------------SCORING SAMPLES-----------------------*/
+
+            /* SWITCH MODES */
+            if (assistGamepad.isClicked("touchpad")) {
+                scoring_samples = !scoring_samples;
+                if (scoring_samples)
+                    gamepad2.rumble(500);
+                else
+                    gamepad2.rumble(200);
+            }
+
+/* --------------------SCORING SAMPLES KEYBINDS-----------------------*/
+            if (assistGamepad.isClicked("a") && scoring_samples) {
                 if (arm.rotationState == LIFT) {
                     if (arm.extensionMotor.getCurrentPosition() + arm.offset < 435) {
                         arm.setRotation(FRONT);
@@ -178,7 +282,8 @@ public class tele_main extends LinearOpMode {
                 }
                 //tele.addData("rotation power", arm.setRotation(LIFT));
             }
-            if (assistGamepad.isClicked("right_bumper")) {
+
+            if (assistGamepad.isClicked("right_bumper") && scoring_samples) {
                 if (arm.rotationState == LIFT) {
                     if (arm.extensionMotor.getCurrentPosition() + arm.offset < 280) {
                         unfoldingSequenceLowBasket = false;
@@ -201,13 +306,13 @@ public class tele_main extends LinearOpMode {
                 }
             }
 
-            if (assistGamepad.isClicked("left_bumper") && arm.rotationState == LIFT) {
+            if (assistGamepad.isClicked("left_bumper") && arm.rotationState == LIFT && scoring_samples) {
                 unfoldingSequenceLowBasket = true;
                 unfoldingSequence = false;
                 //logger.writeLn("activated unfoldingLowBasket sequence");
             }
 
-            if (assistGamepad.isClicked("b")) {
+            if (assistGamepad.isClicked("b") && scoring_samples) {
                 scoring_mode = (scoring_mode == 1 ? 0 : 1);
                 //logger.writeLn("scoring mode set to " + scoring_mode);
                 if (scoring_mode == 1)
@@ -216,7 +321,7 @@ public class tele_main extends LinearOpMode {
                     TIME_BETWEEN_DIFF_FLIP_AND_CLAW_OPENING = 0;
             }
 
-            /* TELEOP AUTOMATIONS SECTION */
+/* --------------------SCORING SAMPLES SEQUENCES-----------------------*/
             if (foldingSequence) {
                 unfoldingSequenceLowBasket = false;
                 unfoldingSequence = false;
@@ -303,12 +408,9 @@ public class tele_main extends LinearOpMode {
                 }
             }
 
-            if (Math.abs(gamepad2.right_stick_y) > 0.01) {
-                //logger.writeLn("gamepad2.right_stick_y triggered");
+/* --------------------ARM MANUAL CONTROL-------------------- */
+            if (Math.abs(gamepad2.right_stick_y) > 0.01)
                 arm.manuallyExtend(-gamepad2.right_stick_y);
-                //if (gamepad2.right_stick_y < -0.1 && arm.rotationState == RESET)
-                    //differential.openClaw();
-            }
             else {
                 if (arm.extensionState == MANUAL && !assistGamepad.isPressed("right_stick_button")) {
                     arm.extensionMotor.setPower(0);
@@ -323,7 +425,70 @@ public class tele_main extends LinearOpMode {
                     arm.pidExtend(arm.targetExtensionPos - 5);
                 }
             }
+/* --------------------SCORING SPECIMENS-----------------------*/
 
+/* --------------------SCORING SPECIMENS KEYBINDS-----------------------*/
+            if (assistGamepad.isClicked("right_bumper") && !scoring_samples/* || takeSpecAutoCall || prepSpecAutoCall || scoreSpecAutoCall*/) {
+                if (arm.rotationState == RESET || takeSpecAutoCall) {
+                    arm.setRotation(TAKE_SPEC);
+                    pitch = 80;
+                    differential.openClaw();
+                    takeSpecAutoCall = false;
+                }
+                else if (arm.rotationState == TAKE_SPEC || prepSpecAutoCall) {
+                    differential.closeClawSilno();
+                    takeSpecSequence = true;
+                    takeSpecTimer.reset();
+                    prepSpecAutoCall = false;
+                }
+                else if (arm.rotationState == LIFT && arm.extensionState == EXTENSION_SPEC_PREP || scoreSpecAutoCall) {
+                    arm.setExtension(EXTENSION_SPEC_SCORE);
+                    scoreSpecSequence = true;
+                    scoreSpecAutoCall = false;
+                }
+            }
+
+            if (assistGamepad.isClicked("a") && !scoring_samples) {
+                arm.setExtension(CLOSED);
+                arm.setRotation(FRONT);
+                pitch = 176;
+                takeSpecSequence = false;
+                scoreSpecSequence = false;
+            }
+
+
+/* --------------------SCORING SPECIMENS SEQUENCES-----------------------*/
+            if (takeSpecSequence) {
+                if (takeSpecTimer.milliseconds() > 200) {
+                    pitch = 176;
+                }
+                if (takeSpecTimer.milliseconds() > 450) {
+                    arm.setRotation(LIFT);
+                    arm.setExtension(EXTENSION_SPEC_PREP);
+                }
+                if (arm.rotationReached() && arm.rotationState == LIFT && !artemAutistReset) {
+                    artemAutist.reset();
+                    artemAutistReset = true;
+                }
+                if (artemAutistReset && artemAutist.milliseconds() > 300) {
+                    differential.closeClawVerySilno();
+                    takeSpecSequence = false;
+                    artemAutistReset = false;
+                }
+            }
+
+            if (scoreSpecSequence) {
+                differential.closeClawVerySilno();
+                if (arm.extensionMotor.getCurrentPosition() > 800) {
+                    differential.openClaw();
+                    scoreSpecSequence = false;
+                    arm.setExtension(CLOSED);
+                    arm.setRotation(TAKE_SPEC);
+                    pitch = 80;
+                }
+            }
+
+/* ---------------------------HANG-----------------------------*/
             if (assistGamepad.isClicked("y")) {
                 unfoldingSequence = false;
                 unfoldingSequenceLowBasket = false;
@@ -367,6 +532,8 @@ public class tele_main extends LinearOpMode {
             else if (hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.SLEEPING)
                 hang.setPower(0);
 
+/* ----------------------FAILSAFETY---------------------- */
+
             if (assistGamepad.isClicked("start"))
                 arm.resetExtensionEncoders();
             if (assistGamepad.isClicked("back"))
@@ -381,6 +548,7 @@ public class tele_main extends LinearOpMode {
                 arm.resetExtensionEncoders();
             }
 
+/* ----------------------TELEMETRY---------------------- */
             dataStorage.telemetry.addLine("-----------TELEOP----------");
             dataStorage.telemetry.addLine(lastCall);
             dataStorage.telemetry.addData("folding", foldingSequence);

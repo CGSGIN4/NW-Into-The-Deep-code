@@ -11,6 +11,7 @@ import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.CHA
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.FRONT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.LIFT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.RESET;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.TAKE_SPEC;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
@@ -40,6 +41,7 @@ public class armTest extends LinearOpMode {
 
     Vector2d gamepad;
     arm arm;
+    public static int take_spec_pos = 50;
     public static double p = 0.0026, i = 0, d = 0.0019, f = -0.002;
 
     @Override
@@ -64,18 +66,13 @@ public class armTest extends LinearOpMode {
             previousGamepad2.copy(currentGamepad2);
             currentGamepad1.copy(gamepad1);
             currentGamepad2.copy(gamepad2);
+            arm.ROTATION_TAKE_SPEC = take_spec_pos;
 
             arm.update(tele);
 
             if (currentGamepad1.a && !previousGamepad1.a)
             {
-                    //tele.addData("rotation power", arm.setRotation(BACK));
-                if (arm.rotationState == RESET) {
-                    arm.setRotation(CAMERA);
-                    arm.setExtension(org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.CAMERA);
-                }
-                else
-                    arm.setRotation(FRONT);
+                arm.setRotation(TAKE_SPEC);
                     //tele.addData("rotation power", arm.setRotation(LIFT));
             }
 

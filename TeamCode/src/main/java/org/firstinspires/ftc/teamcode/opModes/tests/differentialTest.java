@@ -17,6 +17,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.SwitchableLight;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.subsystems.modules.arm;
 import org.firstinspires.ftc.teamcode.subsystems.modules.differential;
 import org.firstinspires.ftc.teamcode.utils.GamepadNW;
 
@@ -28,9 +29,11 @@ public class differentialTest extends LinearOpMode {
     public static double clawPos = 0.32;
     Servo claw;
 
+
     @Override
     public void runOpMode() throws InterruptedException {
         differential differential = new differential(hardwareMap);
+        arm arm = new arm(hardwareMap, true);
         GamepadNW driverGamepad = new GamepadNW(gamepad1);
         GamepadNW assistGamepad = new GamepadNW(gamepad2);
         claw = hardwareMap.get(Servo.class, "claw");
@@ -39,6 +42,8 @@ public class differentialTest extends LinearOpMode {
         waitForStart();
         MultipleTelemetry tele = new MultipleTelemetry(telemetry);
         while(opModeIsActive()){
+            arm.update();
+            arm.setRotation(org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.TAKE_SPEC);
             driverGamepad.update();
             assistGamepad.update();
 

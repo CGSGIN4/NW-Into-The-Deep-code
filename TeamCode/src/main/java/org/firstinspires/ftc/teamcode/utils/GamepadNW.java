@@ -24,7 +24,7 @@ public class GamepadNW {
 
         List<String> buttons = Arrays.asList(
                 "a", "x", "y", "b", "dpad_down", "dpad_left", "dpad_right", "dpad_up",
-                "right_bumper", "left_bumper", "back", "start", "right_stick_button", "left_stick_button"
+                "right_bumper", "left_bumper", "back", "start", "right_stick_button", "left_stick_button", "touchpad"
         );
 
         clicked.clear();

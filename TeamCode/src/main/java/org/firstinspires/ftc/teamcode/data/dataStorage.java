@@ -59,6 +59,7 @@ public enum dataStorage {;
 
     public static ring_buffer<Vector2d> lastPoses = new ring_buffer<>(3);
     public static boolean opModeIsAutonomous = true;
+    public static double photoVel = 0;
 
     public static void updateData()
     {
@@ -93,6 +94,7 @@ public enum dataStorage {;
         telemetry.addData("ROBOT X", RobotWorldX);
         telemetry.addData("ROBOT Y", RobotWorldY);
         telemetry.addData("ROBOT HEADING", RobotWorldHeading);
+        telemetry.addData("photoVel", photoVel);
         //telemetry.addData("heading", RobotWorldHeading);
         telemetry.update();
         //RobotVelocity = new Vector2d(drive.getPoseVelocity().getX(), drive.getPoseVelocity().getY());

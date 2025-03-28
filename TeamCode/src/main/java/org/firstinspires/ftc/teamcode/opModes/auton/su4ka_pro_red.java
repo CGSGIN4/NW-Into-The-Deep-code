@@ -176,7 +176,7 @@ public class su4ka_pro_red extends LinearOpMode {
             module_master.arm.setRotation(arm.rotation.LIFT);
             path_follower.followTrajectoryBackwardsPercentage(curves[5], 85, new double[]{0.02, 0.02, 0.3, 0.82}, new int[]{SET_EXTENSION_LIFT, PITCH_DOWN, CLOSE_CLAW_VERY_SILNO, PITCH_SCORING_BASKET});
             path_follower.velocity_calculator.d_trans_coef *= 1.2;
-            path_follower.goToPosWithArmToBasketSu4kaThirdSample(53.7, 50, -Math.PI * 3 / 4);
+            path_follower.goToPosWithArmToBasketSu4kaThirdSample(54.7, 51, -Math.PI * 3 / 4);
             path_follower.velocity_calculator.d_trans_coef /= 1.2;
             waitArmExtension();
             scoreHighBasketFast(new Pose2d(36, 0, -Math.PI * 3 / 4 + Math.toRadians(10)));
@@ -194,7 +194,7 @@ public class su4ka_pro_red extends LinearOpMode {
                 module_master.arm.setRotation(arm.rotation.LIFT);
                 path_follower.followTrajectoryBackwardsPercentage(curves[5], 65, new double[]{0.02, 0.02, 0.3, 0.62}, new int[]{SET_EXTENSION_LIFT, PITCH_DOWN, CLOSE_CLAW_VERY_SILNO, PITCH_SCORING_BASKET});
                 path_follower.velocity_calculator.d_trans_coef *= 1.2;
-                path_follower.goToPosWithArmToBasketSu4kaThirdSample(53.7, 48.3, -Math.PI * 3 / 4);
+                path_follower.goToPosWithArmToBasketSu4kaThirdSample(54.7, 49.3, -Math.PI * 3 / 4);
                 path_follower.velocity_calculator.d_trans_coef /= 1.2;
                 waitArmExtension();
                 scoreHighBasketFast(new Pose2d(36, 0, -Math.PI * 3 / 4));

@@ -45,12 +45,15 @@ public class arm {
     int EXTENSION_SUPPORT = 158;
     int EXTENSION_CLOSED_AUTO = -70;
     int EXTENSION_CAMERA = 600;
+    int EXTENSION_SPEC_PREP = 550;
+    int EXTENSION_SPEC_SCORE = 900;
     int ROTATION_FRONT = 0;
     int ROTATION_BACK_HANG1 = 487; //508
     int ROTATION_LIFT = 487; //498 //was 467 before stopper
     int ROTATION_CHAMBER = 258;
     int ROTATION_PREASCEND = 110;
     int ROTATION_CAMERA = 130;
+    public int ROTATION_TAKE_SPEC = 95;
 
     /* ------------------ ON-FLY ------------------ */
     public int targetRotationPos;
@@ -128,7 +131,9 @@ public class arm {
         PID_MANUAL,
         CLOSED_AUTO,
         DOBOR,
-        CAMERA
+        CAMERA,
+        EXTENSION_SPEC_PREP,
+        EXTENSION_SPEC_SCORE
     }
 
     public enum rotation {
@@ -140,7 +145,8 @@ public class arm {
         RESET,
         MANUAL,
         PREASCEND,
-        CAMERA
+        CAMERA,
+        TAKE_SPEC
     }
     public arm(HardwareMap HM){
         rotationMotor = HM.get(DcMotorEx.class, "armRotationMotor");
@@ -275,6 +281,10 @@ public class arm {
                 return EXTENSION_CLOSED_AUTO;
             case CAMERA:
                 return EXTENSION_CAMERA;
+            case EXTENSION_SPEC_PREP:
+                return EXTENSION_SPEC_PREP;
+            case EXTENSION_SPEC_SCORE:
+                return EXTENSION_SPEC_SCORE;
         }
         return -1;
     }
@@ -295,6 +305,8 @@ public class arm {
                 return ROTATION_FRONT;
             case CAMERA:
                 return ROTATION_CAMERA;
+            case TAKE_SPEC:
+                return ROTATION_TAKE_SPEC;
             default:
                 return -1;
         }
@@ -380,7 +392,7 @@ public class arm {
 
         if (Math.abs(rotationPosToTicks(rotationState) - rotationMotor.getCurrentPosition() - rotOffset) >= 120 && targetExtensionPos != EXTENSION_SUPPORT && targetExtensionPos != EXTENSION_CLOSED_AUTO && teleop)
             return this.setExtensionMotorPower(-0.1 + (teleop ? 0 : 1) * (-0.2));
-        else if (rotationState != rotation.LIFT || rotationReached() || Math.abs(rotationPosToTicks(rotationState) - rotationMotor.getCurrentPosition() - rotOffset) < 420/* || target == extension.CLOSED*/)
+        else if (rotationState != rotation.LIFT || rotationReached() || Math.abs(rotationPosToTicks(rotationState) - rotationMotor.getCurrentPosition() - rotOffset) < 460/* || target == extension.CLOSED*/)
             return this.setExtensionMotorPower(pidCalculateExtensionPower(targetExtensionPos));
         else
             return 0;
