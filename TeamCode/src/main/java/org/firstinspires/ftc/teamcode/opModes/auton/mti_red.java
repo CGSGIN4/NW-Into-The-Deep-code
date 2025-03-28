@@ -198,7 +198,7 @@ public class mti_red extends LinearOpMode {
             scoreHighBasketFast(new Pose2d(36, 0, -Math.PI * 3 / 4));
 
             /* go to dobor4 */
-            path_follower.followTrajectoryForwardsPercentageHypeAngleControl(curves[4], 90,39, -Math.PI, new double[]{0.3, 0.3}, new int[]{SET_ROTATION_CHAMBER, PITCH_UP});
+            path_follower.followTrajectoryForwardsPercentageHypeAngleControl(curves[7], 90,39, -Math.PI, new double[]{0.3, 0.3}, new int[]{SET_ROTATION_CHAMBER, PITCH_UP});
             smotritel.startStreaming();
             path_follower.velocity_calculator.P_ROTATION_COEF /= 1.5;
             //path_follower.goToPosVeryUnsafe(19, 2, -Math.PI);
@@ -388,10 +388,14 @@ public class mti_red extends LinearOpMode {
         smotritel.startStreaming();
         robot.drivetrain.applyVectorFieldCentric(new Vector2d(-0.25, 0).rotated(Math.toRadians(90)), 0);
         dataStorage.updateData();
-        while (dataStorage.RobotVelocity.norm() > 3)
+        while (dataStorage.RobotVelocity.norm() > 2)
             delay(1);
         dataStorage.photoVel = dataStorage.RobotVelocity.norm();
-        while (!smotritel.startSnapshot()) delay(1);
+        while (!smotritel.startSnapshot())
+        {
+            delay(1);
+            dataStorage.telemetry.addData("alllo", "alllooo");
+        }
         Pose2d offsets = smotritel.getSampleOffsets(0);
         Pose2d snapshotPos = new Pose2d(dataStorage.RobotPose, dataStorage.RobotWorldHeading);
 

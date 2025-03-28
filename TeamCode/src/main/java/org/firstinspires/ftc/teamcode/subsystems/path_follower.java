@@ -513,12 +513,14 @@ public class path_follower {
 
         dataStorage.updateData();
         module_master.update(dataStorage.telemetry);
-        while((Math.abs(dataStorage.RobotWorldY - Y) > 0.6 || (Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.04 && Math.abs(dataStorage.RobotWorldHeading - Heading) - 6.28 > 0.04) || dataStorage.RobotVelocity.norm() > 3) && dataStorage.OpMode.opModeIsActive()){
+        while((Math.abs(dataStorage.RobotWorldY - Y) > 0.4 || (Math.abs(dataStorage.RobotWorldHeading - Heading) > 0.04 && Math.abs(dataStorage.RobotWorldHeading - Heading) - 6.28 > 0.04) || dataStorage.RobotVelocity.norm() > 3) && dataStorage.OpMode.opModeIsActive()){
             dataStorage.updateData();
 
             pid = velocity_calculator.getPIDpower(finish, Heading);
             pid = new Pose2d(pid.getX(), pid.getY() * 1.7, pid.getHeading());
             module_master.update(dataStorage.telemetry);
+            if (pid.vec().norm() < 0.1 && pid.vec().norm() > 0.001)
+                pid = (pid.times(0.1 / pid.vec().norm()));
             //dataStorage.telemetry.addData("HeadingBuffer", velocity_calculator.IHeading);
 
             drivetrain.applyVectorFieldCentric(pid.vec().rotated(Math.toRadians(90)), pid.getHeading());
