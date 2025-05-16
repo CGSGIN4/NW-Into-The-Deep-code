@@ -32,11 +32,14 @@ public class hang {
         READY,
         ASCEND2COMPLETE,
         READY3, FOLDING, ASCEND3COMPLETE, FOLDING3,
-        STANDBY3
+        STANDBY3,
+        EXTENDED_SPEC,
+        SMOT
     }
     PIDCoefficients pid = new PIDCoefficients(0.003, 0, 0.001);
     public static int target_2_extended = 1985;
     public static int target_3_extended = 2890;
+    public static int target_spec_extended = 1500;
     public static int target_2_hang = -20;
     int oldErrLeft = 0;
     int oldErrRight = 0;
@@ -92,6 +95,18 @@ public class hang {
         goTo(target_3_extended);
     }
 
+    public void extendSpec(){
+        state = states.EXTENDED_SPEC;
+        goTo(target_spec_extended);
+    }
+
+    public void foldSpec(){
+        state = states.SMOT;
+        goTo(0);
+        if (left.getCurrentPosition() <= 70 && right.getCurrentPosition() <= 70)
+            state = states.SLEEPING;
+    }
+
     public void fold(){
         state = states.FOLDING;
         pushDown();
@@ -144,6 +159,8 @@ public class hang {
         telemetry.addData("min pitch", minPitch);
         switch (state)
         {
+            case SLEEPING:
+                break;
             case PREPARE:
                 startPitch = imu.getRobotYawPitchRollAngles().getPitch(AngleUnit.DEGREES);
                 if (left.getCurrentPosition() > target_2_extended - 20 && right.getCurrentPosition() > target_2_extended - 20) {
@@ -195,6 +212,12 @@ public class hang {
                 break;
             case ASCEND3COMPLETE:
                 pushDownGently();
+                break;
+            case SMOT:
+                foldSpec();
+                break;
+            case EXTENDED_SPEC:
+                extendSpec();
                 break;
         }
     }

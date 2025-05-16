@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opModes.tests;
 
+import static org.firstinspires.ftc.teamcode.data.dataStorage.timer;
+
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -10,21 +12,22 @@ import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.data.dataStorage;
 import org.firstinspires.ftc.teamcode.subsystems.modules.arm;
 import org.firstinspires.ftc.teamcode.subsystems.modules.differential;
+import org.firstinspires.ftc.teamcode.subsystems.modules.module_master;
 import org.firstinspires.ftc.teamcode.subsystems.path_follower;
 import org.firstinspires.ftc.teamcode.subsystems.vision.LLSmotritel;
 
+import java.util.function.BooleanSupplier;
+
 @TeleOp
 public class LLGrabTest extends LinearOpMode {
-
+    ElapsedTime delayTimer = new ElapsedTime();
     @Override
     public void runOpMode() throws InterruptedException {
         Robot bot = new Robot(hardwareMap);
-        differential differential = new differential(hardwareMap);
         bot.init();
 
         dataStorage.init(bot.drive, telemetry, this);
         dataStorage.opModeIsAutonomous = false;
-        arm arm = new arm(hardwareMap, true);
         bot.drive.setPoseEstimate(new Pose2d(39.9, 64.93, Math.PI));
         path_follower follower = new path_follower(bot.drivetrain);
 
@@ -33,96 +36,171 @@ public class LLGrabTest extends LinearOpMode {
 
         waitForStart();
 
-        arm.stop();
-        differential.setPitch(180);
+        module_master.arm.stop();
+        module_master.differential.setPitch(180);
         smotritel.startStreaming();
-        arm.setRotation(org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.LIFT);
-        differential.openClaw();
+        module_master.arm.setRotation(org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.LIFT);
+        module_master.differential.openClaw();
         while (opModeIsActive())
         {
-            arm.update();
+            module_master.differential.setPitch(90);
+            module_master.differential.setRoll(-11);
+            module_master.differential.update();
+            module_master.arm.update(dataStorage.telemetry);
+            dataStorage.updateData();
             Pose2d offsets = smotritel.getSampleOffsets(0);
 
-            telemetry.addData("cam x offset", offsets.getX());
-            telemetry.addData("cam y offset", offsets.getY());
-            telemetry.addData("sample rotation", offsets.getHeading());
-            telemetry.addData("ticks", smotritel.getTicks(offsets));
-            telemetry.addData("actual ticks", arm.extensionMotor.getCurrentPosition());
-            telemetry.addData("robot heading", dataStorage.RobotWorldHeading);
-            telemetry.addData("target heading", Math.PI + Math.toRadians(offsets.getX()));
-            telemetry.addData("heading err", Math.abs(dataStorage.RobotWorldHeading - (Math.PI + Math.toRadians(offsets.getX()))));
-            telemetry.addData("y offset in inches", smotritel.getTranslationalOffset(offsets));
-            telemetry.update();
+            dataStorage.telemetry.addData("cam x offset", offsets.getX());
+            dataStorage.telemetry.addData("cam y offset", offsets.getY());
+            dataStorage.telemetry.addData("sample rotation", offsets.getHeading());
+            dataStorage.telemetry.addData("ticks", smotritel.getTicks(offsets));
+            dataStorage.telemetry.addData("actual ticks", module_master.arm.extensionMotor.getCurrentPosition());
+            dataStorage.telemetry.addData("robot heading", dataStorage.RobotWorldHeading);
+            dataStorage.telemetry.addData("target heading", Math.PI + Math.toRadians(offsets.getX()));
+            dataStorage.telemetry.addData("heading err", Math.abs(dataStorage.RobotWorldHeading - (Math.PI + Math.toRadians(offsets.getX()))));
+            dataStorage.telemetry.addData("y offset in inches", smotritel.getTranslationalOffset(offsets));
             if (gamepad1.a && offsets.getX() != -100)
             {
+                boolean smestilsya = false;
+                boolean nevidel = false;
+                bot.drivetrain.applyVectorFieldCentric(new Vector2d(-0.45, 0).rotated(Math.toRadians(90)), 0);
                 dataStorage.updateData();
+                delay(100, "Holyshit");
+                while (dataStorage.RobotVelocity.norm() > 2)
+                    delay(1, "Fuckingshit");
+
+                dataStorage.photoVel = dataStorage.RobotVelocity.norm();
+                while (!smotritel.startSnapshot())
+                {
+                    delay(1);
+                    dataStorage.telemetry.addData("alllo", "alllooo");
+                }
                 offsets = smotritel.getSampleOffsets(0);
-                while (Math.abs(offsets.getX()) > 15) {
+                Pose2d snapshotPos = new Pose2d(dataStorage.RobotPose, dataStorage.RobotWorldHeading);
+
+                if ((offsets.getX() == -100 || Math.abs(LLSmotritel.getTicks(offsets)) > module_master.arm.EXTENSION_FRONT_MAX) && opModeIsActive())
+                {
                     dataStorage.updateData();
-                    smotritel.startSnapshot();
+                    module_master.arm.update(dataStorage.telemetry);
+                    follower.goToPos(snapshotPos.getX(), dataStorage.RobotWorldY - 7, -Math.PI);
+                    while (!smotritel.startSnapshot()) delay(1);
+                    offsets = smotritel.getSampleOffsets(0);
+                    nevidel = true;
+                }
+                if (nevidel) {
+                    if (offsets.getX() == -100) {
+                        continue;
+                    }
+                    bot.drivetrain.applyVectorFieldCentric(new Vector2d(-0.45, 0).rotated(Math.toRadians(90)), 0);
+                    delay(100);
+                    while (dataStorage.RobotVelocity.norm() > 2)
+                        delay(1);
+                    while (!smotritel.startSnapshot()) {
+                        delay(1);
+                        dataStorage.telemetry.addData("alllo", "alllooo");
+                    }
+                    offsets = smotritel.getSampleOffsets(0);
+                    dataStorage.telemetry.addData("angle", dataStorage.RobotWorldHeading);
+                }
+                Pose2d rememberedOffsets = offsets;
+
+                while (Math.abs(offsets.getX()) > 15 && opModeIsActive()) {
+                    if (offsets.getX() == -100) {
+                        offsets = rememberedOffsets;
+                        break;
+                    }
+                    dataStorage.updateData();
                     follower.goToPos(dataStorage.RobotWorldX, dataStorage.RobotWorldY + smotritel.getTranslationalOffset(offsets), -Math.PI);
+                    while (!smotritel.startSnapshot()) {
+                        delay(1);
+                        dataStorage.telemetry.addData("alllo", "alllooo");
+                    }
+                    offsets = smotritel.getSampleOffsets(0);
+                    smestilsya = true;
+                }
+                if (smestilsya) {
+                    bot.drivetrain.applyVectorFieldCentric(new Vector2d(-0.45, 0).rotated(Math.toRadians(90)), 0);
+                    delay(100);
+                    while (dataStorage.RobotVelocity.norm() > 2)
+                        delay(1);
+                    while (!smotritel.startSnapshot()) {
+                        delay(1);
+                        dataStorage.telemetry.addData("alllo", "alllooo");
+                    }
                     offsets = smotritel.getSampleOffsets(0);
                 }
-                follower.goToPosPrecise(dataStorage.RobotWorldX, dataStorage.RobotWorldY + smotritel.getTranslationalOffset(offsets), -Math.PI);
 
-                telemetry.addData("cam x offset", offsets.getX());
-                telemetry.addData("cam y offset", offsets.getY());
-                telemetry.addData("sample rotation", offsets.getHeading());
-                telemetry.addData("ticks", smotritel.getTicks(offsets));
-                telemetry.addData("actual ticks", arm.extensionMotor.getCurrentPosition());
-                telemetry.addData("robot heading", dataStorage.RobotWorldHeading);
-                telemetry.addData("target heading", Math.PI + Math.toRadians(offsets.getX()));
-                telemetry.addData("heading err", Math.abs(dataStorage.RobotWorldHeading - (Math.PI + Math.toRadians(offsets.getX()))));
-                telemetry.addData("y offset in inches", smotritel.getTranslationalOffset(offsets));
-                telemetry.update();
+                module_master.differential.setPitch(0);
+                module_master.differential.setRoll(offsets.getHeading());
+                module_master.differential.update();
 
-                if (offsets.getX() == -100)
+                module_master.arm.setRotation(org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.FRONT);
+                module_master.arm.pidExtend(LLSmotritel.getTicks(offsets));
+                //dataStorage.drive.setPoseEstimate(new Pose2d(22, dataStorage.RobotWorldY, dataStorage.RobotWorldHeading));
+                dataStorage.updateData();
+                if (dataStorage.RobotWorldY + smotritel.getTranslationalOffset(offsets) < -8)
                     continue;
+                follower.goToPosPreciseMTI(dataStorage.RobotWorldX, dataStorage.RobotWorldY + smotritel.getTranslationalOffset(offsets), -Math.PI);
 
-                arm.setRotation(org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.FRONT);
-                while (Math.abs(arm.extensionMotor.getCurrentPosition() - smotritel.getTicks(offsets)) > 13) {
-                    telemetry.addData("cam x offset", offsets.getX());
-                    telemetry.addData("cam y offset", offsets.getY());
-                    telemetry.addData("sample rotation", offsets.getHeading());
-                    telemetry.addData("ticks", smotritel.getTicks(offsets));
-                    telemetry.addData("actual ticks", arm.extensionMotor.getCurrentPosition());
-                    telemetry.addData("robot heading", dataStorage.RobotWorldHeading);
-                    telemetry.addData("target heading", Math.PI + Math.toRadians(offsets.getX()));
-                    telemetry.addData("heading err", Math.abs(dataStorage.RobotWorldHeading - (Math.PI + Math.toRadians(offsets.getX()))));
-                    telemetry.addData("y offset in inches", smotritel.getTranslationalOffset(offsets));
-                    telemetry.update();
-
-                    if (arm.rotationReached())
-                        arm.pidExtend(smotritel.getTicks(offsets));
-                    arm.update();
+                while (Math.abs(module_master.arm.extensionMotor.getCurrentPosition() - LLSmotritel.getTicks(offsets)) + module_master.arm.offset > 13 && opModeIsActive()) {
+                    if (module_master.arm.rotationReached())
+                        module_master.arm.pidExtend(LLSmotritel.getTicks(offsets));
+                    module_master.arm.update(dataStorage.telemetry);
                 }
-                differential.setPitch(0);
-                differential.update();
-                timer.reset();
-                while (timer.milliseconds() < 300) arm.update();
-                differential.setRoll(offsets.getHeading());
-                differential.update();
-                timer.reset();
-                while (timer.milliseconds() < 300) arm.update();
-                differential.closeClaw();
-                timer.reset();
-                while (timer.milliseconds() < 300) arm.update();
-                differential.setPitch(135);
-                differential.update();
-                arm.setExtension(org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.CLOSED);
-
-                bot.drivetrain.applyVector(new Vector2d(0, 0), 0);
+                waitArmRotation();
+                waitArmExtension();
+                delay(0);
+                module_master.differential.closeClaw();
+                delay(125);
+                module_master.differential.setPitch(70);
+                module_master.differential.setRoll(-11);
+                module_master.differential.update();
+                module_master.arm.setExtension(arm.extension.CLOSED);
             }
             else
                 bot.drivetrain.applyVector(new Vector2d(0, 0), 0);
             if (gamepad1.b)
             {
-                differential.openClaw();
-                differential.setPitch(160);
-                differential.setRoll(-11);
-                differential.update();
-                arm.setRotation(org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.LIFT);
+                module_master.differential.openClaw();
+                module_master.differential.setPitch(160);
+                module_master.differential.setRoll(-11);
+                module_master.differential.update();
+                module_master.arm.setRotation(org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.CHAMBER);
             }
+        }
+    }
+    private void delay(long milliseconds) {
+        delayTimer.reset();
+        module_master.arm.update(dataStorage.telemetry);
+        dataStorage.updateData();
+        while (delayTimer.milliseconds() < milliseconds && opModeIsActive()) {
+            module_master.arm.update(dataStorage.telemetry);
+            dataStorage.updateData();
+        }
+    }
+    private void delay(long milliseconds, String tele) {
+        delayTimer.reset();
+        module_master.arm.update(dataStorage.telemetry);
+        dataStorage.updateData();
+        while (delayTimer.milliseconds() < milliseconds && opModeIsActive()) {
+            dataStorage.telemetry.addLine(tele);
+            module_master.arm.update(dataStorage.telemetry);
+            dataStorage.updateData();
+        }
+    }
+
+    private void waitArmExtension(){
+        waitForCondition(() -> module_master.arm.extensionReached());
+    }
+
+    private void waitArmRotation(){
+        waitForCondition(() -> module_master.arm.rotationReached());
+    }
+    private void waitForCondition(BooleanSupplier condition) {
+        delayTimer.reset();
+        while (!condition.getAsBoolean() && opModeIsActive() && timer.milliseconds() < 5000) {
+            module_master.update(dataStorage.telemetry);
+            dataStorage.updateData();
         }
     }
 }

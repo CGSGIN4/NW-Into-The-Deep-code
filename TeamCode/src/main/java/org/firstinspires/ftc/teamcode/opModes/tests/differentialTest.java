@@ -42,8 +42,8 @@ public class differentialTest extends LinearOpMode {
         waitForStart();
         MultipleTelemetry tele = new MultipleTelemetry(telemetry);
         while(opModeIsActive()){
-            arm.update();
-            arm.setRotation(org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.TAKE_SPEC);
+            //arm.update();
+            //arm.setRotation(org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.TAKE_SPEC);
             driverGamepad.update();
             assistGamepad.update();
 

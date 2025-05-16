@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.RR.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.Robot;
 import org.firstinspires.ftc.teamcode.subsystems.modules.module_master;
 import org.firstinspires.ftc.teamcode.utils.MultipleTelemetry;
 import org.firstinspires.ftc.teamcode.utils.painter;
@@ -90,14 +91,16 @@ public enum dataStorage {;
         RobotPose = new Vector2d(RobotWorldX, RobotWorldY);
         poseHistory.add(RobotPose);
 
+        telemetry.addData("cycletime", timer.milliseconds());
         timer.reset();
+        /*
         telemetry.addData("ROBOT X", RobotWorldX);
         telemetry.addData("ROBOT Y", RobotWorldY);
         telemetry.addData("ROBOT HEADING", RobotWorldHeading);
         telemetry.addData("photoVel", photoVel);
-        //telemetry.addData("heading", RobotWorldHeading);
+        telemetry.addData("robotVel", RobotVelocity.norm());
+        */
         telemetry.update();
-        //RobotVelocity = new Vector2d(drive.getPoseVelocity().getX(), drive.getPoseVelocity().getY());
     }
 
     public static void init(SampleMecanumDrive drive, Telemetry telemetryy, LinearOpMode linearOpMode){
@@ -123,6 +126,7 @@ public enum dataStorage {;
         double v2 = v * v;
         double v3 = v2 * v;
         //return 0.0006579582449 * v3 - 0.1265954365481 * v2 + 8.8226496330171 * v - 88.7730817754054;
-        return -0.001485206174316 * v3 + 0.229578434273549 * v2 - 10.423935051483568 * v + 236.497982889413834;
+        //return -0.001485206174316 * v3 + 0.229578434273549 * v2 - 10.423935051483568 * v + 236.497982889413834;
+        return 0.00033138758692 * v3 - 0.05761399398939 * v2 + 3.61984297668369 * v - 0.07047640661767;
     }
 }

@@ -60,7 +60,7 @@ public class differential {
 
     public void pitchUp()
     {
-        setPitch(176);
+        setPitch(168);
         update();
     }
 
@@ -126,22 +126,22 @@ public class differential {
 
     public void openClaw(){
         clawState = 1;
-        claw.setPosition(0.89);
+        claw.setPosition(0.95);
     }
 
     public void closeClaw(){
         clawState = 0;
-        claw.setPosition(0.435);
+        claw.setPosition(0.56);
     }
 
     public void closeClawSilno(){
         clawState = 0;
-        claw.setPosition(0.42);
+        claw.setPosition(0.55);
     }
 
     public void closeClawVerySilno(){
         clawState = 0;
-        claw.setPosition(0.36);
+        claw.setPosition(0.535);
     }
 
     public void clawSwitch(){

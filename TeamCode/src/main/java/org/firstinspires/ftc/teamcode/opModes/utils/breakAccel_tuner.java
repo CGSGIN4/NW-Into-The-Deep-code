@@ -41,7 +41,7 @@ public class breakAccel_tuner extends LinearOpMode {
         while (cnt < 16 && opModeIsActive()){
             dataStorage.updateData();
             start = dataStorage.RobotPose;
-            robot.drivetrain.applyVector(new Vector2d(0, 1.0 * Math.signum(cnt % 2 - 0.5)), 0);
+            robot.drivetrain.applyVector(new Vector2d(0, 0.3 * Math.signum(cnt % 2 - 0.5)), 0);
             while (start.distTo(dataStorage.RobotPose) < 72 && opModeIsActive()) {
                 dataStorage.updateData();
                 TelemetryPacket packet = new TelemetryPacket(true);

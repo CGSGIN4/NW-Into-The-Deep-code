@@ -13,6 +13,7 @@ import java.util.List;
 
 public class LLSmotritel {
     private Limelight3A ll;
+    Pose2d secondOffsets = new Pose2d(-100, -100, 0);
 
     public LLSmotritel(HardwareMap hardwareMap, int defaultPPL) {
         ll = hardwareMap.get(Limelight3A.class, "limelight");
@@ -42,6 +43,41 @@ public class LLSmotritel {
         ll.pause();
     }
 
+    public Pose2d getSampleOffsets_beta(int pipeline, double robotX, double robotY) {
+        /* Fuck this shit */
+        ll.pipelineSwitch(pipeline);
+        ll.pipelineSwitch(pipeline);
+        ll.pipelineSwitch(pipeline);
+        double[] inputs = {robotX, robotY};
+        ll.updatePythonInputs(inputs);
+        ll.updatePythonInputs(inputs);
+        ll.updatePythonInputs(inputs);
+        /* Stop fucking this shit */
+
+        LLResult result = ll.getLatestResult();
+        double w = 0;
+        double h = 0;
+        double ang = 90;
+
+        if (result != null) {
+            /* !!! llpython = [1, cx, cy, w, h, ang, 0, 0] !!! */
+            double[] pyRes = result.getPythonOutput();
+
+            if (pyRes != null && pyRes[0] != 0) {
+                w = pyRes[3];
+                h = pyRes[4];
+                ang = pyRes[5];
+                if (pyRes[6] == 1)
+                    secondOffsets = new Pose2d(pyRes[7], 68.29 - pyRes[8], pyRes[11]);
+                else
+                    secondOffsets = new Pose2d(-100, -100, 0);
+                return new Pose2d(result.getTx(), 70.29 - result.getTy(), angToDif(ang));
+            }
+            return new Pose2d(-100, -100, 90);
+        }
+        return new Pose2d(-100, -100, 90);
+    }
+
     public Pose2d getSampleOffsets(int pipeline) {
         /* Fuck this shit */
         ll.pipelineSwitch(pipeline);
@@ -62,12 +98,18 @@ public class LLSmotritel {
                 w = pyRes[3];
                 h = pyRes[4];
                 ang = pyRes[5];
+                if (pyRes[6] == 1)
+                    secondOffsets = new Pose2d(pyRes[7], 68.29 - pyRes[8], pyRes[11]);
+                else
+                    secondOffsets = new Pose2d(-100, -100, 0);
                 return new Pose2d(result.getTx(), 68.29 - result.getTy(), angToDif(ang));
             }
             return new Pose2d(-100, -100, 90);
         }
         return new Pose2d(-100, -100, 90);
     }
+
+    public Pose2d getSecondOffsets() {return secondOffsets;}
 
     private static double calculateDistance(List<Double> p1, List<Double> p2) {
         return Math.sqrt(Math.pow(p1.get(0) - p2.get(0), 2) + Math.pow(p1.get(1) - p2.get(1), 2));

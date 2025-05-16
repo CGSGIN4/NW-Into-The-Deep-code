@@ -7,6 +7,7 @@ import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.EX
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.LOW_BASKET;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.MANUAL;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.SUPPORT;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.YELLOW_AFKBOT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.FRONT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.LIFT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.arm.rotation.RESET;
@@ -18,6 +19,8 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Robot;
@@ -44,7 +47,7 @@ public class tele_main extends LinearOpMode {
     int scoring_mode = 0;
     boolean scoring_samples = true;
     double scored = 0;
-    public static double pitch = 176;
+    public static double pitch = 168;
     public static double roll = -11;
     Vector2d gamepad = new Vector2d();
     double turn = 0;
@@ -66,8 +69,12 @@ public class tele_main extends LinearOpMode {
     boolean takeSpecAutoCallerReset = false;
     boolean scoreSpecAutoCallerReset = false;
     int reversedDrive = 1;
+    int specTaken = 0;
+    double angToControl = 2.6584;
+    boolean needToControlAngle = false;
 
     public enum autoScoring {
+        TAKE_SPEC_FIRST,
         TAKE_SPEC,
         GO_TO_SUB_BEZIER,
         PREPARE_SPEC,
@@ -77,7 +84,7 @@ public class tele_main extends LinearOpMode {
         GO_TO_SPEC_BEZIER,
         GO_TO_SPEC_PID
     }
-    autoScoring autoScoringState = autoScoring.TAKE_SPEC;
+    autoScoring autoScoringState = autoScoring.TAKE_SPEC_FIRST;
     String lastCall;
     ElapsedTime foldingTimer = new ElapsedTime();
     ElapsedTime intakingTimer = new ElapsedTime();
@@ -87,6 +94,7 @@ public class tele_main extends LinearOpMode {
     ElapsedTime artemAutist = new ElapsedTime();
     ElapsedTime autoScoringTimer = new ElapsedTime();
     path_follower path_follower;
+    public static PIDFCoefficients extPidf = new PIDFCoefficients(0.003, 0, 0.001, 0.004);
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -98,6 +106,7 @@ public class tele_main extends LinearOpMode {
         robot.init();
         parser parser = new parser("speciOp");
         dataStorage.init(robot.drive, telemetry, this);
+        dataStorage.telemetry.setMsTransmissionInterval(11);
         path_follower = new path_follower(robot.drivetrain);
 
         curve[] curves;
@@ -124,10 +133,12 @@ public class tele_main extends LinearOpMode {
         while(zazhimTimer.milliseconds() < 700);
         differential.pitchUp();
 
-
+        arm.extensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         robot.drive.setPoseEstimate(new Pose2d(dataStorage.RobotWorldX, dataStorage.RobotWorldY, transfer.angle));
 /* -----------------------MAINLOOP----------------------- */
         while(opModeIsActive()) {
+            dataStorage.telemetry.addData("pidf", arm.EXTENSION_PIDF.toString());
+            dataStorage.telemetry.addData("targetExtPos", arm.targetExtensionPos);
             driverGamepad.update();
             assistGamepad.update();
             dataStorage.updateData();
@@ -139,11 +150,10 @@ public class tele_main extends LinearOpMode {
             if (assistGamepad.isClicked("dpad_down")) {
                 lastCall = "dpad";
                 pitch = 6;
-                if (arm.rotationState == RESET)
-                    differential.openClaw();
+                differential.openClaw();
             }
             if (assistGamepad.isClicked("dpad_up")) {
-                pitch = 176;
+                pitch = 168;
                 lastCall = "dpad_up";
             }
             if (assistGamepad.isClicked("dpad_left")) {
@@ -189,13 +199,14 @@ public class tele_main extends LinearOpMode {
             if (Math.abs(gamepad1.left_stick_x) > 0.01 || Math.abs(gamepad1.left_stick_y) > 0.01 || gamepad1.left_trigger > 0.01 || gamepad1.right_trigger > 0.01) {
                 gamepad = new Vector2d(gamepad1.left_stick_x, -gamepad1.left_stick_y).times(reversedDrive);
                 autoScoreSpec = false;
+                dataStorage.telemetry.addLine("------SHIIIIIIIIIIIIIIII----------");
 
                 if (driverGamepad.isPressed("right_bumper") && scoring_samples)
                     turn = path_follower.velocity_calculator.getRotationCustomDirection(-Math.PI);
                 else if (driverGamepad.isPressed("left_bumper") && scoring_samples)
                     turn = path_follower.velocity_calculator.getRotationCustomDirection(-Math.PI * 3 / 4);
                 else if ((Math.abs(gamepad1.right_stick_y) > 0.05 || Math.abs(gamepad1.right_stick_x) > 0.05) && !scoring_samples)
-                    turn = path_follower.velocity_calculator.getRotationCustomDirection(Math.PI / 2);
+                    turn = path_follower.velocity_calculator.getRotationCustomDirection(angToControl);
                 else
                     turn = (gamepad1.left_trigger - gamepad1.right_trigger);
 
@@ -213,29 +224,31 @@ public class tele_main extends LinearOpMode {
 /* ---------------------AUTO SCORING-------------------------*/
 
             /* AUTO SCORING EXECUTION */
+            /*
             if (driverGamepad.isClicked("a")) {
                 robot.drive.setPoseEstimate(new Pose2d(-41.237, 64.214, Math.PI / 2));
                 autoScoreSpec = true;
-                autoScoringState = autoScoring.TAKE_SPEC;
+                autoScoringState = autoScoring.TAKE_SPEC_FIRST;
+                path_follower.velocity_calculator.p_trans_coef /= 1.4;
+                path_follower.velocity_calculator.d_trans_coef /= 1.4;
             }
-/*
+            */
+
             if (autoScoreSpec) {
-                if (autoScoringState == autoScoring.TAKE_SPEC) {
-                    if (path_follower.goToPosTeleop(-41.237, 64.214, Math.PI / 2, false)) {
-                        if (!takeSpecAutoCallerReset) {
-                            prepSpecAutoCall = true;
-                            takeSpecAutoCallerReset = true;
-                            autoScoringTimer.reset();
-                        }
-                        if (autoScoringTimer.milliseconds() > 450) {
-                            autoScoringState = autoScoring.GO_TO_SUB_PID;
-                            takeSpecAutoCallerReset = false;
-                        }
+                if (autoScoringState == autoScoring.TAKE_SPEC_FIRST) {
+                    if (!takeSpecAutoCallerReset) {
+                        prepSpecAutoCall = true;
+                        takeSpecAutoCallerReset = true;
+                        autoScoringTimer.reset();
+                    }
+                    if (autoScoringTimer.milliseconds() > 450) {
+                        autoScoringState = autoScoring.GO_TO_SUB_PID;
+                        takeSpecAutoCallerReset = false;
                     }
                 }
                 if (autoScoringState == autoScoring.GO_TO_SUB_PID)
                 {
-                    if (path_follower.goToPosTeleop(-0.926, 38.681, Math.PI / 2, false)) {
+                    if (path_follower.goToPosTeleop(-0.926, 38.981 + specTaken / 1.2, Math.PI / 2, false)) {
                         if (!scoreSpecAutoCallerReset) {
                             autoScoringTimer.reset();
                             scoreSpecAutoCall = true;
@@ -245,33 +258,60 @@ public class tele_main extends LinearOpMode {
                         {
                             scoreSpecAutoCallerReset = false;
                             autoScoringState = autoScoring.GO_TO_SPEC_PID;
+                            autoScoringTimer.reset();
                         }
                     }
                 }
-                if (autoScoringState == autoScoring.GO_TO_SPEC_PID)
-                    if (path_follower.goToPosTeleopBeforeIntake(-41.237, 64.214, Math.PI / 2, false))
+                if (autoScoringState == autoScoring.GO_TO_SPEC_PID && autoScoringTimer.milliseconds() > 300) {
+                    if (path_follower.goToPosTeleopAsync(-36, 48, Math.PI * 3 / 4) && arm.extensionReached())
                         autoScoringState = autoScoring.TAKE_SPEC;
+                }
+
+                if (autoScoringState == autoScoring.TAKE_SPEC) {
+                    arm.setExtension(YELLOW_AFKBOT);
+                    if (arm.extensionReached()) {
+                        if (!takeSpecAutoCallerReset) {
+                            prepSpecAutoCall = true;
+                            takeSpecAutoCallerReset = true;
+                            autoScoringTimer.reset();
+                            specTaken++;
+                        }
+                        if (autoScoringTimer.milliseconds() > 450) {
+                            autoScoringState = autoScoring.GO_TO_SUB_PID;
+                            takeSpecAutoCallerReset = false;
+                        }
+                    }
+                }
             }
-*/
 
 /* --------------------SCORING SAMPLES-----------------------*/
 
             /* SWITCH MODES */
             if (assistGamepad.isClicked("touchpad")) {
+                roll = -11;
                 scoring_samples = !scoring_samples;
-                if (scoring_samples)
+                if (scoring_samples) {
                     gamepad2.rumble(500);
-                else
+                    hang.state = org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.SMOT;
+                }
+                else {
                     gamepad2.rumble(200);
+                    pitch = 30;
+                    differential.openClaw();
+                    takeSpecAutoCall = false;
+                    angToControl = Math.PI / 2;
+                    hang.state = org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.EXTENDED_SPEC;
+                }
             }
 
 /* --------------------SCORING SAMPLES KEYBINDS-----------------------*/
             if (assistGamepad.isClicked("a") && scoring_samples) {
+                arm.EXTENSION_PIDF = new PIDFCoefficients(0.0038, 0, 0.0034, 0.004);
                 if (arm.rotationState == LIFT) {
                     if (arm.extensionMotor.getCurrentPosition() + arm.offset < 435) {
                         arm.setRotation(FRONT);
                         arm.setExtension(CLOSED);
-                        pitch = 176;
+                        pitch = 168;
                         lastCall = "gamepad a";
                     }
                 }
@@ -325,6 +365,7 @@ public class tele_main extends LinearOpMode {
 
 /* --------------------SCORING SAMPLES SEQUENCES-----------------------*/
             if (foldingSequence) {
+                arm.extensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
                 unfoldingSequenceLowBasket = false;
                 unfoldingSequence = false;
                 intakingSequence = false;
@@ -346,9 +387,10 @@ public class tele_main extends LinearOpMode {
                         arm.setExtension(CLOSED);
                     }
                     else {
+                        arm.extensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                         arm.setRotation(FRONT);
                         foldingSequence = false;
-                        pitch = 176;
+                        pitch = 168;
                         extraWaitDiffyFlip = 0;
                         fast_pitch_swap = true;
                         //logger.writeLn("folding sequence finished as planned");
@@ -411,12 +453,26 @@ public class tele_main extends LinearOpMode {
             }
 
 /* --------------------ARM MANUAL CONTROL-------------------- */
-            if (Math.abs(gamepad2.right_stick_y) > 0.01)
+            if (Math.abs(gamepad2.right_stick_y) > 0.01) {
                 arm.manuallyExtend(-gamepad2.right_stick_y);
+                arm.extensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            }
             else {
-                if (arm.extensionState == MANUAL && !assistGamepad.isPressed("right_stick_button")) {
+                if (arm.extensionState == MANUAL && !assistGamepad.isPressed("right_stick_button"))
                     arm.extensionMotor.setPower(0);
+                /*
+                if (arm.extensionState == MANUAL && !assistGamepad.isPressed("right_stick_button")) {
+                    if (arm.rotationState == RESET && arm.targetExtensionPos > 350) {
+                        dataStorage.telemetry.addLine("SECRETLY_PID_CONTROLLED");
+                        arm.EXTENSION_PIDF = extPidf;
+                        arm.manuallyExtend(arm.pidCalculateExtensionPower(arm.targetExtensionPos));
+                    }
+                    else {
+                        arm.manuallyExtend(0);
+                        arm.EXTENSION_PIDF = new PIDFCoefficients(0.0038, 0, 0.0034, 0.004);
+                    }
                 }
+                 */
             }
 
             if (arm.rotationState == RESET) {
@@ -430,49 +486,64 @@ public class tele_main extends LinearOpMode {
 /* --------------------SCORING SPECIMENS-----------------------*/
 
 /* --------------------SCORING SPECIMENS KEYBINDS-----------------------*/
-            if (assistGamepad.isClicked("right_bumper") && !scoring_samples/* || takeSpecAutoCall || prepSpecAutoCall || scoreSpecAutoCall*/) {
+            if (assistGamepad.isClicked("right_bumper") && !scoring_samples || takeSpecAutoCall || prepSpecAutoCall || scoreSpecAutoCall) {
+                arm.EXTENSION_PIDF = new PIDFCoefficients(0.0038, 0, 0.0034, 0.004);
                 if (arm.rotationState == RESET && pitch != 30) {
                     pitch = 30;
                     differential.openClaw();
                     takeSpecAutoCall = false;
+                    angToControl = Math.PI / 2;
                 }
-                else if (arm.rotationState == RESET && pitch == 30) {
+                else if (arm.rotationState == RESET && pitch == 30 || arm.rotationState == TAKE_SPEC || prepSpecAutoCall) {
                     differential.closeClawSilno();
                     takeSpecSequence = true;
                     takeSpecTimer.reset();
                     prepSpecAutoCall = false;
+                    angToControl = Math.PI / 2;
                 }
-                else if (arm.rotationState == LIFT && arm.extensionState == EXTENSION_SPEC_PREP) {
+                else if (arm.rotationState == LIFT && arm.extensionState == EXTENSION_SPEC_PREP || scoreSpecAutoCall) {
                     arm.setExtension(EXTENSION_SPEC_SCORE);
+                    differential.closeClawVerySilno();
                     scoreSpecSequence = true;
                     scoreSpecAutoCall = false;
+                    angToControl = 2.6584;
                 }
+            }
+
+            if (assistGamepad.isClicked("left_bumper") && !scoring_samples) {
+                pitch = 6;
+                differential.openClaw();
+                arm.setRotation(TAKE_SPEC);
+                takeSpecAutoCall = false;
             }
 
             if (assistGamepad.isClicked("a") && !scoring_samples) {
                 arm.setExtension(CLOSED);
                 arm.setRotation(FRONT);
-                pitch = 176;
+                pitch = 30;
+                differential.openClaw();
                 takeSpecSequence = false;
                 scoreSpecSequence = false;
             }
 
-
 /* --------------------SCORING SPECIMENS SEQUENCES-----------------------*/
             if (takeSpecSequence) {
-                if (takeSpecTimer.milliseconds() > 200) {
-                    pitch = 176;
+                if (takeSpecTimer.milliseconds() > 200 && takeSpecTimer.milliseconds() < 450) {
+                    pitch = 168;
                     arm.setExtension(CLOSED);
                 }
                 if (takeSpecTimer.milliseconds() > 450) {
                     arm.setRotation(LIFT);
-                    arm.setExtension(EXTENSION_SPEC_PREP);
+                    if (arm.extensionReached() && arm.rotationState == LIFT) {
+                        arm.EXTENSION_PIDF.d = 0.0017;
+                        arm.setExtension(EXTENSION_SPEC_PREP);
+                    }
                 }
                 if (arm.rotationReached() && arm.rotationState == LIFT && !artemAutistReset) {
                     artemAutist.reset();
                     artemAutistReset = true;
                 }
-                if (artemAutistReset && artemAutist.milliseconds() > 300) {
+                if (artemAutistReset && artemAutist.milliseconds() > 500) {
                     differential.closeClawVerySilno();
                     takeSpecSequence = false;
                     artemAutistReset = false;
@@ -492,8 +563,8 @@ public class tele_main extends LinearOpMode {
             }
              */
             if (scoreSpecSequence) {
-                differential.closeClawVerySilno();
-                if (arm.extensionMotor.getCurrentPosition() > 800) {
+                arm.extensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+                if (arm.extensionMotor.getCurrentPosition() > 900) {
                     differential.openClaw();
                     scoreSpecSequence = false;
                     arm.setExtension(CLOSED);
@@ -509,9 +580,9 @@ public class tele_main extends LinearOpMode {
                 intakingSequence = false;
                 foldingSequence = false;
                 hang_called = true;
-                if (hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.SLEEPING && pitch != 176) {
+                if (hang.state == org.firstinspires.ftc.teamcode.subsystems.modules.hang.states.SLEEPING && pitch != 168) {
                     hangTimer.reset();
-                    pitch = 176;
+                    pitch = 168;
                     roll = -11;
                     lastCall = "hang";
                 }
@@ -574,6 +645,9 @@ public class tele_main extends LinearOpMode {
             dataStorage.telemetry.addData("folding timer", foldingTimer);
             dataStorage.telemetry.addData("intaking timer", intakingTimer);
             dataStorage.telemetry.addData("scoring mode", scoring_mode);
+            dataStorage.telemetry.addData("auto scoring state", autoScoringState);
+            dataStorage.telemetry.addData("auto scoring enabled", autoScoreSpec);
+            dataStorage.telemetry.addData("auto scoring timer", autoScoringTimer.milliseconds());
         }
     }
 }

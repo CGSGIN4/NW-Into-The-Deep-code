@@ -13,6 +13,7 @@ import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.ac
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_LIFT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_LIMIT;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_LOW_CHAMBER;
+import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_PREP_SPEC;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_EXTENSION_YELLOW2;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_ROTATION_CAMERA;
 import static org.firstinspires.ftc.teamcode.subsystems.modules.module_master.action.SET_ROTATION_CHAMBER;
@@ -51,6 +52,7 @@ public class module_master {
         public static final int PITCH_UP = 18;
         public static final int PITCH_SCORING_BASKET = 19;
         public static final int CLOSE_CLAW_VERY_SILNO = 20;
+        public static final int SET_EXTENSION_PREP_SPEC = 21;
     }
 
     enum cmdType{
@@ -60,10 +62,12 @@ public class module_master {
 
     public static differential differential;
     public static arm arm;
+    public static hang hang;
 
     public static void init(HardwareMap HM){
         arm = new arm(HM, false);
         differential = new differential(HM);
+        hang = new hang(HM);
     }
     public static void doAction(int action){
         switch (action)
@@ -128,6 +132,9 @@ public class module_master {
             case module_master.action.CLOSE_CLAW_VERY_SILNO:
                 differential.closeClawVerySilno();
                 break;
+            case SET_EXTENSION_PREP_SPEC:
+                arm.setExtension(org.firstinspires.ftc.teamcode.subsystems.modules.arm.extension.EXTENSION_SPEC_PREP);
+                break;
             default:
                 break;
         }
@@ -135,6 +142,7 @@ public class module_master {
 
     public static void update(MultipleTelemetry telemetry){
         arm.update(telemetry);
+        //hang.update();
     }
 
     public static void stop(MultipleTelemetry telemetry){

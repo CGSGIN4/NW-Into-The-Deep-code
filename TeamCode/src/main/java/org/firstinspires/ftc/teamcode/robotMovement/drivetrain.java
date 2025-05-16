@@ -13,6 +13,10 @@ public class drivetrain {
     private DcMotor LeftRearMotor = null;
     private DcMotor RightFrontMotor = null;
     private DcMotor RightRearMotor = null;
+    double leftFrontMotorPower = 0;
+    double leftRearMotorPower = 0;
+    double rightFrontMotorPower = 0;
+    double rightRearMotorPower = 0;
 
     public drivetrain(HardwareMap HM){
         LeftFrontMotor = HM.get(DcMotor.class, "MotorLF");
@@ -47,20 +51,56 @@ public class drivetrain {
 
         double max_power = Math.max(Math.abs(front_left), Math.max(Math.abs(front_right), Math.max(Math.abs(back_left), Math.abs(back_right))));
         if (max_power > 1){
-            LeftRearMotor.setPower(back_left / max_power);
-            LeftFrontMotor.setPower(front_left / max_power);
-            RightFrontMotor.setPower(front_right / max_power);
-            RightRearMotor.setPower(back_right / max_power);
+            setLeftRearMotorPower(back_left / max_power);
+            setLeftFrontMotorPower(front_left / max_power);
+            setRightFrontMotorPower(front_right / max_power);
+            setRightRearMotorPower(back_right / max_power);
         }
         else {
-            LeftRearMotor.setPower(back_left);
-            LeftFrontMotor.setPower(front_left);
-            RightFrontMotor.setPower(front_right);
-            RightRearMotor.setPower(back_right);
+            setLeftRearMotorPower(back_left);
+            setLeftFrontMotorPower(front_left);
+            setRightFrontMotorPower(front_right);
+            setRightRearMotorPower(back_right);
         }
     }
 
     public void applyVectorFieldCentric(Vector2d trans, double rotation){
         applyVector(trans.rotated(-dataStorage.RobotWorldHeading), rotation);
+    }
+
+    void setLeftFrontMotorPower(double power)
+    {
+        if (Math.abs(leftFrontMotorPower - power) > 0.01)
+        {
+            leftFrontMotorPower = power;
+            LeftFrontMotor.setPower(power);
+        }
+    }
+
+    void setRightFrontMotorPower(double power)
+    {
+        if (Math.abs(rightFrontMotorPower - power) > 0.01)
+        {
+            rightFrontMotorPower = power;
+            RightFrontMotor.setPower(power);
+        }
+    }
+
+    void setLeftRearMotorPower(double power)
+    {
+        if (Math.abs(leftRearMotorPower - power) > 0.01)
+        {
+            leftRearMotorPower = power;
+            LeftRearMotor.setPower(power);
+        }
+    }
+
+    void setRightRearMotorPower(double power)
+    {
+        if (Math.abs(rightRearMotorPower - power) > 0.01)
+        {
+            rightRearMotorPower = power;
+            RightRearMotor.setPower(power);
+        }
     }
 }

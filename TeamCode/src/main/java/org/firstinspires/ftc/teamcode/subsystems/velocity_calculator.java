@@ -61,7 +61,7 @@ public class velocity_calculator {
 
     double p_rotation_coef = 3.;
     public double p_trans_coef = 0.15;
-    public double d_trans_coef = 0.35;
+    public double d_trans_coef = 0.28;
     public double i_trans_coef = 0.005;
 
     double x_error = 0;

@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystems.modules;
 
 import com.acmerobotics.dashboard.config.Config;
 
+import org.firstinspires.ftc.teamcode.data.dataStorage;
 import org.firstinspires.ftc.teamcode.data.transfer;
 import org.firstinspires.ftc.teamcode.utils.MultipleTelemetry;
 import com.arcrobotics.ftclib.controller.wpilibcontroller.ArmFeedforward;
@@ -31,6 +32,7 @@ public class arm {
     boolean teleop = false;
     int EXTENSION_FULL = 1380; //370
     public int EXTENSION_FRONT_MAX = 730;
+    int EXTENSION_TAKE_SPEC_FROM_FLOOR = 316;
     int EXTENSION_LOW_BASKET = 475;
     int EXTENSION_LOW_CHAMBER = 180;
     int EXTENSION_HIGH_CHAMBER = 524;
@@ -45,15 +47,15 @@ public class arm {
     int EXTENSION_SUPPORT = 158;
     int EXTENSION_CLOSED_AUTO = -70;
     int EXTENSION_CAMERA = 600;
-    int EXTENSION_SPEC_PREP = 550;
-    int EXTENSION_SPEC_SCORE = 900;
+    int EXTENSION_SPEC_PREP = 595;
+    int EXTENSION_SPEC_SCORE = 1000;
     int ROTATION_FRONT = 0;
     int ROTATION_BACK_HANG1 = 487; //508
     int ROTATION_LIFT = 487; //498 //was 467 before stopper
     int ROTATION_CHAMBER = 258;
     int ROTATION_PREASCEND = 110;
     int ROTATION_CAMERA = 130;
-    public int ROTATION_TAKE_SPEC = 95;
+    public int ROTATION_TAKE_SPEC = 137;
 
     /* ------------------ ON-FLY ------------------ */
     public int targetRotationPos;
@@ -78,7 +80,7 @@ public class arm {
     /* no load 1:1.17 *///final PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.009, 0, 0.019, 0.028);
     /* load 1:1.17 *///final PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.02, 0, 0.04, 0.052);
     /* load 1:4 */ public PIDFCoefficients ROTATION_PIDF = new PIDFCoefficients(0.0023, 0, 0.0022, -0.0044);
-    public PIDFCoefficients EXTENSION_PIDF = new PIDFCoefficients(0.0034, 0, 0.0034, 0.004);/*0.017*/ /*d: 0.00460 -> 0.00475*/
+    public PIDFCoefficients EXTENSION_PIDF = new PIDFCoefficients(0.0038, 0, 0.0034, 0.004);/*0.017*/ /*d: 0.00460 -> 0.00475*/
     int oldExtensionError = 0;
     public double oldRotationError = 0;
     double rotDeltaRaw = 0;
@@ -133,7 +135,8 @@ public class arm {
         DOBOR,
         CAMERA,
         EXTENSION_SPEC_PREP,
-        EXTENSION_SPEC_SCORE
+        EXTENSION_SPEC_SCORE,
+        EXTENSION_TAKE_SPEC_FROM_FLOOR
     }
 
     public enum rotation {
@@ -155,7 +158,7 @@ public class arm {
         resetRotationEncoders();
 
         extensionMotor = HM.get(DcMotorEx.class, "armExtensionMotor");
-        extensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        extensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         extensionMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         resetExtensionEncoders();
 
@@ -170,7 +173,7 @@ public class arm {
         resetRotationEncoders();
 
         extensionMotor = HM.get(DcMotorEx.class, "armExtensionMotor");
-        extensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        extensionMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         extensionMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         resetExtensionEncoders();
         extensionState = extension.MANUAL;
@@ -213,6 +216,8 @@ public class arm {
         telemetry.addData("voltage ext", extensionMotor.getCurrent(CurrentUnit.AMPS));
         telemetry.addData("ext pos", extensionMotor.getCurrentPosition() + offset);
         telemetry.addData("btn pressed", rotationBtn.getVoltage() < 0.4);
+        telemetry.addData("ext reached", extensionReached());
+        telemetry.addData("rot reached", rotationReached());
         cycleTime = cycleTimer.milliseconds();
         cycleTimer.reset();
 
@@ -285,6 +290,8 @@ public class arm {
                 return EXTENSION_SPEC_PREP;
             case EXTENSION_SPEC_SCORE:
                 return EXTENSION_SPEC_SCORE;
+            case EXTENSION_TAKE_SPEC_FROM_FLOOR:
+                return  EXTENSION_TAKE_SPEC_FROM_FLOOR;
         }
         return -1;
     }
@@ -313,7 +320,7 @@ public class arm {
     }
 
     private double setExtensionMotorPower(double power){
-        if (Math.abs(extPower - power) > 0.00001) {
+        if (Math.abs(extPower - power) > 0.001 || power == 0) {
             ////logger.writeLn("set extension motor power to " + power);
             this.extPower = power;
             this.extensionMotor.setPower(extPower);
@@ -330,7 +337,7 @@ public class arm {
         return rotPower;
     }
 
-    private double pidCalculateExtensionPower(int targetPos){
+    public double pidCalculateExtensionPower(int targetPos){
         //if (extensionState == extension.EXTENDED && extensionMotor.getCurrentPosition() + offset < EXTENSION_FULL)
         //  return 1;
         int error = targetPos - extensionMotor.getCurrentPosition() - offset;
@@ -390,9 +397,11 @@ public class arm {
         this.targetExtensionPos = extensionPosToTicks(target);
         this.extensionState = target;
 
-        if (Math.abs(rotationPosToTicks(rotationState) - rotationMotor.getCurrentPosition() - rotOffset) >= 120 && targetExtensionPos != EXTENSION_SUPPORT && targetExtensionPos != EXTENSION_CLOSED_AUTO && teleop)
+        if (Math.abs(rotationPosToTicks(rotationState) - rotationMotor.getCurrentPosition() - rotOffset) >= 120 && targetExtensionPos != EXTENSION_SUPPORT && targetExtensionPos != EXTENSION_CLOSED_AUTO && targetExtensionPos != EXTENSION_SPEC_PREP && teleop)
             return this.setExtensionMotorPower(-0.1 + (teleop ? 0 : 1) * (-0.2));
-        else if (rotationState != rotation.LIFT || rotationReached() || Math.abs(rotationPosToTicks(rotationState) - rotationMotor.getCurrentPosition() - rotOffset) < 460/* || target == extension.CLOSED*/)
+        else if ((extensionState == extension.SUPPORT && extensionMotor.getCurrentPosition() > 600 || extensionState == extension.CLOSED) && rotationState == rotation.LIFT)
+            return this.setExtensionMotorPower(0);
+        else if (rotationState != rotation.LIFT && !(rotationState == rotation.RESET && wantedRotation == rotation.LIFT && extensionState == extension.EXTENDED) || rotationReached() && wantedRotation == rotationState || (wantedRotation == rotationState && Math.abs(rotationPosToTicks(rotationState) - rotationMotor.getCurrentPosition() - rotOffset) < 460)/* || target == extension.CLOSED*/)
             return this.setExtensionMotorPower(pidCalculateExtensionPower(targetExtensionPos));
         else
             return 0;
@@ -426,13 +435,13 @@ public class arm {
             resetRotationEncoders();
         }
 
-        if (target == rotation.PREASCEND || target == rotation.CHAMBER || target == rotation.BACK_HANG1 || rotationState == rotation.BACK_HANG1 || (extensionState == extension.CLOSED && extensionMotor.getCurrentPosition() + offset < 360) || (extensionMotor.getCurrentPosition() + offset < 240 && extensionState == extension.MANUAL) || (extensionState == extension.SUPPORT && extensionMotor.getCurrentPosition() + offset < 240) || (extensionState == extension.CLOSED_AUTO && extensionMotor.getCurrentPosition() + offset < 193) || (extensionState == extension.YELLOW_3_PRO && extensionMotor.getCurrentPosition() < EXTENSION_YELLOW_3_PRO + 86) || extensionState == extension.PID_MANUAL || extensionState == extension.CAMERA) {
+        if (target == rotation.PREASCEND || target == rotation.CHAMBER || target == rotation.BACK_HANG1 || rotationState == rotation.BACK_HANG1 || (extensionState == extension.CLOSED && extensionMotor.getCurrentPosition() + offset < 360) || (extensionMotor.getCurrentPosition() + offset < 240 && extensionState == extension.MANUAL) || (extensionState == extension.SUPPORT && extensionMotor.getCurrentPosition() + offset < 240) || (extensionState == extension.CLOSED_AUTO && extensionMotor.getCurrentPosition() + offset < 193) || (extensionState == extension.YELLOW_3_PRO && extensionMotor.getCurrentPosition() < EXTENSION_YELLOW_3_PRO + 86) || extensionState == extension.PID_MANUAL || extensionState == extension.CAMERA || extensionMotor.getCurrentPosition() + offset < 100) {
             rotationState = wantedRotation;
             this.targetRotationPos = rotationPosToTicks(target);
         }
 
-        if (target == rotation.LIFT && rotationMotor.getCurrentPosition() + rotOffset > ROTATION_LIFT - 20)
-            return setRotationMotorPower(0.03 + (teleop ? 0 : 1) * 0.15);
+        if (target == rotation.LIFT && rotationMotor.getCurrentPosition() + rotOffset > ROTATION_LIFT - 20 && (dataStorage.RobotVelocity.norm() > 5 || !teleop))
+            return setRotationMotorPower(0.12 + (teleop ? 0 : 1) * 0.06);
 
         return this.setRotationMotorPower(pidCalculateRotationPower(targetRotationPos));
     }
